@@ -1,0 +1,31 @@
+# Banco de dados
+/storage/database/*.sqlite
+/storage/database/*.db
+
+# Logs
+/storage/logs/*
+!/storage/logs/.gitkeep
+
+# Variáveis de ambiente
+.env
+.env.*
+
+# Arquivos do sistema
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Dependências futuras
+/vendor/
+node_modules/
+
+# Arquivos temporários
+*.tmp
+*.log
+
+# Backups
+*.bak
+*.backup
