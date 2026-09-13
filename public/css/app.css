@@ -1,0 +1,42 @@
+:root {
+    --uai-bg: #f5f7fb;
+    --uai-primary: #198754;
+    --uai-text: #212529;
+    --uai-muted: #6c757d;
+}
+
+html,
+body {
+    min-height: 100%;
+}
+
+body {
+    background: var(--uai-bg);
+    color: var(--uai-text);
+}
+
+.auth-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 430px;
+    border: 0;
+    border-radius: 18px;
+    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.08);
+}
+
+.auth-logo {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--uai-primary);
+}
+
+.auth-subtitle {
+    color: var(--uai-muted);
+}

@@ -7,4 +7,6 @@ return [
     'environment' => 'development',
     'debug' => true,
     'timezone' => 'America/Sao_Paulo',
+
+    'base_path' => '/uaimoney-mvp/public',
 ];
