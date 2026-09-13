@@ -3,9 +3,11 @@
 declare(strict_types=1);
 
 use App\Controllers\AuthController;
+use App\Controllers\UserPreferenceController;
 use App\Core\Router;
 use App\Repositories\UserRepository;
 use App\Services\AuthService;
+use App\Services\UserPreferenceService;
 
 
 /*
@@ -31,6 +33,7 @@ $csrf = $app['csrf'];
 $basePath = $app['config']['base_path']
     ?? '';
 
+
 /*
 |--------------------------------------------------------------------------
 | Dependências
@@ -46,8 +49,19 @@ $authService = new AuthService(
     $session
 );
 
+$preferenceService = new UserPreferenceService(
+    $userRepository
+);
+
 $authController = new AuthController(
     $authService,
+    $csrf,
+    $basePath
+);
+
+$userPreferenceController = new UserPreferenceController(
+    $authService,
+    $preferenceService,
     $csrf,
     $basePath
 );
@@ -76,6 +90,7 @@ $registerRoutes = require dirname(__DIR__)
 $registerRoutes(
     $router,
     $authController,
+    $userPreferenceController,
     $authService,
     $csrf,
     $basePath
@@ -90,8 +105,8 @@ $registerRoutes(
 
 $router->dispatch(
     $_SERVER['REQUEST_METHOD']
-    ?? 'GET',
+        ?? 'GET',
 
     $_SERVER['REQUEST_URI']
-    ?? '/'
+        ?? '/'
 );

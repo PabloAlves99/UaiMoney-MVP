@@ -3,12 +3,20 @@
 declare(strict_types=1);
 
 use App\Controllers\AuthController;
+use App\Controllers\UserPreferenceController;
+use App\Core\Csrf;
 use App\Core\Router;
 use App\Core\View;
 use App\Services\AuthService;
-use App\Core\Csrf;
 
-return function (Router $router, AuthController $authController, AuthService $authService, Csrf $csrf, string $basePath): void {
+return function (
+    Router $router,
+    AuthController $authController,
+    UserPreferenceController $userPreferenceController,
+    AuthService $authService,
+    Csrf $csrf,
+    string $basePath
+): void {
 
     /*
      * Autenticação
@@ -39,6 +47,11 @@ return function (Router $router, AuthController $authController, AuthService $au
     $router->post(
         '/logout',
         [$authController, 'logout']
+    );
+
+    $router->post(
+        '/preferencias/tema',
+        [$userPreferenceController, 'updateTheme']
     );
 
 

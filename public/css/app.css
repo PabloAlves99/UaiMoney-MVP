@@ -5,13 +5,19 @@
     --uai-muted: #6c757d;
 }
 
+[data-bs-theme="dark"] {
+    --uai-bg: #15171a;
+    --uai-text: #f1f3f5;
+    --uai-muted: #adb5bd;
+}
+
 html,
 body {
     min-height: 100%;
 }
 
 body {
-    background: var(--uai-bg);
+    background-color: var(--uai-bg);
     color: var(--uai-text);
 }
 

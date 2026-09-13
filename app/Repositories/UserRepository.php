@@ -25,6 +25,7 @@ final class UserRepository
                 senha_hash,
                 tipo,
                 ativo,
+                tema,
                 criado_em,
                 atualizado_em
             FROM usuarios
@@ -53,6 +54,7 @@ final class UserRepository
                 senha_hash,
                 tipo,
                 ativo,
+                tema,
                 criado_em,
                 atualizado_em
             FROM usuarios
@@ -81,6 +83,7 @@ final class UserRepository
                 senha_hash,
                 tipo,
                 ativo,
+                tema,
                 criado_em,
                 atualizado_em
             FROM usuarios
@@ -108,6 +111,7 @@ final class UserRepository
             senha_hash,
             tipo,
             ativo,
+            tema,
             criado_em,
             atualizado_em
         FROM usuarios
@@ -159,5 +163,24 @@ final class UserRepository
         ]);
 
         return (int) $this->pdo->lastInsertId();
+    }
+
+    public function updateTheme(
+        int $usuarioId,
+        string $tema
+    ): void {
+
+        $stmt = $this->pdo->prepare("
+        UPDATE usuarios
+        SET
+            tema = :tema,
+            atualizado_em = CURRENT_TIMESTAMP
+        WHERE id = :id
+    ");
+
+        $stmt->execute([
+            ':tema' => $tema,
+            ':id' => $usuarioId
+        ]);
     }
 }
