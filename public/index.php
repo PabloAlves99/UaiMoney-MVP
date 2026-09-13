@@ -19,6 +19,7 @@ $app = require dirname(__DIR__)
 
 $pdo = $app['pdo'];
 $session = $app['session'];
+$csrf = $app['csrf'];
 
 
 /*
@@ -47,6 +48,7 @@ $authService = new AuthService(
 
 $authController = new AuthController(
     $authService,
+    $csrf,
     $basePath
 );
 
@@ -75,6 +77,7 @@ $registerRoutes(
     $router,
     $authController,
     $authService,
+    $csrf,
     $basePath
 );
 

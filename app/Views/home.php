@@ -44,6 +44,12 @@
         'UTF-8'
     ) ?>">
 
+        <input type="hidden" name="_token" value="<?= htmlspecialchars(
+            $csrfToken,
+            ENT_QUOTES,
+            'UTF-8'
+        ) ?>">
+
         <button type="submit">
             Sair
         </button>

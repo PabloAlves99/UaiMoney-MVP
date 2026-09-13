@@ -6,12 +6,14 @@ namespace App\Controllers;
 
 use App\Core\View;
 use App\Services\AuthService;
+use App\Core\Csrf;
 use DomainException;
 
 final class AuthController
 {
     public function __construct(
         private readonly AuthService $authService,
+        private readonly Csrf $csrf,
         private readonly string $basePath
     ) {
     }
@@ -29,13 +31,16 @@ final class AuthController
             [
                 'basePath' => $this->basePath,
                 'error' => null,
-                'identifier' => ''
+                'identifier' => '',
+                'csrfToken' => $this->csrf->token()
             ]
         );
     }
 
     public function login(): void
     {
+        $this->validateCsrf();
+
         $identifier = $_POST['identifier']
             ?? '';
 
@@ -49,6 +54,8 @@ final class AuthController
                 $senha
             );
 
+            $this->csrf->regenerate();
+
             $this->redirect('/');
 
         } catch (DomainException $e) {
@@ -60,7 +67,8 @@ final class AuthController
                 [
                     'basePath' => $this->basePath,
                     'error' => $e->getMessage(),
-                    'identifier' => $identifier
+                    'identifier' => $identifier,
+                    'csrfToken' => $this->csrf->token()
                 ]
             );
         }
@@ -81,13 +89,16 @@ final class AuthController
                 'error' => null,
                 'nome' => '',
                 'login' => '',
-                'email' => ''
+                'email' => '',
+                'csrfToken' => $this->csrf->token()
             ]
         );
     }
 
     public function register(): void
     {
+        $this->validateCsrf();
+
         $nome = $_POST['nome']
             ?? '';
 
@@ -122,6 +133,8 @@ final class AuthController
                 $senha
             );
 
+            $this->csrf->regenerate();
+
             $this->redirect('/');
 
         } catch (DomainException $e) {
@@ -135,7 +148,8 @@ final class AuthController
                     'error' => $e->getMessage(),
                     'nome' => $nome,
                     'login' => $login,
-                    'email' => $email
+                    'email' => $email,
+                    'csrfToken' => $this->csrf->token()
                 ]
             );
         }
@@ -143,6 +157,8 @@ final class AuthController
 
     public function logout(): void
     {
+        $this->validateCsrf();
+
         $this->authService->logout();
 
         $this->redirect(
@@ -171,5 +187,25 @@ final class AuthController
         return $this->basePath
             . '/'
             . ltrim($path, '/');
+    }
+    private function validateCsrf(): void
+    {
+        $token = $_POST['_token']
+            ?? null;
+
+        if ($this->csrf->validate($token)) {
+            return;
+        }
+
+        http_response_code(419);
+
+        View::render(
+            'errors/419',
+            [
+                'basePath' => $this->basePath
+            ]
+        );
+
+        exit;
     }
 }

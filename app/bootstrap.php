@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Core\Database;
 use App\Core\Session;
+use App\Core\Csrf;
 
 require_once dirname(__DIR__) . '/vendor/autoload.php';
 
@@ -58,6 +59,11 @@ $session = new Session(
 $session->start();
 
 
+$csrf = new Csrf(
+    $session
+);
+
+
 /*
 |--------------------------------------------------------------------------
 | Retorno do bootstrap
@@ -68,5 +74,6 @@ return [
     'config' => $appConfig,
     'database' => $database,
     'pdo' => $pdo,
-    'session' => $session
+    'session' => $session,
+    'csrf' => $csrf
 ];

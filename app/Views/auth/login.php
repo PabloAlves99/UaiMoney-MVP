@@ -87,6 +87,12 @@
 
                     </div>
 
+                    <input type="hidden" name="_token" value="<?= htmlspecialchars(
+                        $csrfToken,
+                        ENT_QUOTES,
+                        'UTF-8'
+                    ) ?>">
+
 
                     <button type="submit" class="btn btn-success btn-lg w-100">
                         Entrar

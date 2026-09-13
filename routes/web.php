@@ -6,13 +6,9 @@ use App\Controllers\AuthController;
 use App\Core\Router;
 use App\Core\View;
 use App\Services\AuthService;
+use App\Core\Csrf;
 
-return function (
-    Router $router,
-    AuthController $authController,
-    AuthService $authService,
-    string $basePath
-): void {
+return function (Router $router, AuthController $authController, AuthService $authService, Csrf $csrf, string $basePath): void {
 
     /*
      * Autenticação
@@ -52,10 +48,7 @@ return function (
 
     $router->get(
         '/',
-        function () use (
-            $authService,
-            $basePath
-        ): void {
+        function () use ($authService, $csrf, $basePath): void {
 
             $usuario = $authService
                 ->currentUser();
@@ -75,7 +68,8 @@ return function (
                 'home',
                 [
                     'usuario' => $usuario,
-                    'basePath' => $basePath
+                    'basePath' => $basePath,
+                    'csrfToken' => $csrf->token()
                 ]
             );
         }
