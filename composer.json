@@ -1,0 +1,13 @@
+{
+    "name": "pabloalves99/uaimoney-mvp",
+    "description": "Aplicação de controle e planejamento financeiro pessoal.",
+    "type": "project",
+    "require": {
+        "php": ">=8.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/"
+        }
+    }
+}

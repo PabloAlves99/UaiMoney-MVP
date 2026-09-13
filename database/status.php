@@ -2,16 +2,9 @@
 
 declare(strict_types=1);
 
-require_once dirname(__DIR__) . '/app/Core/Database.php';
+$app = require dirname(__DIR__) . '/app/bootstrap.php';
 
-use App\Core\Database;
-
-$config = require dirname(__DIR__) . '/config/database.php';
-
-$database = new Database($config);
-
-$pdo = $database->connect();
-
+$pdo = $app['pdo'];
 
 /*
 |--------------------------------------------------------------------------
