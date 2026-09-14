@@ -1,130 +1,92 @@
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener("DOMContentLoaded", () => {
+  const button = document.querySelector("#themeToggle");
 
-    const button = document.querySelector('#themeToggle');
-    const csrfInput = document.querySelector('#csrfToken');
+  if (!button) {
+    return;
+  }
 
-    if (!button || !csrfInput) {
-        console.error(
-            'Botão de tema ou token CSRF não encontrado.'
-        );
+  const storageKey = "uaimoney_theme";
 
-        return;
-    }
+  const getCurrentTheme = () => {
+    return document.documentElement.getAttribute("data-bs-theme") || "light";
+  };
 
+  const updateButton = () => {
+    const theme = getCurrentTheme();
 
-    function updateButton() {
+    button.textContent = theme === "dark" ? "☀️ Claro" : "🌙 Escuro";
+  };
 
-        const currentTheme =
-            document.documentElement.getAttribute(
-                'data-bs-theme'
-            ) || 'light';
+  /*
+   * Mantém a preferência deste navegador.
+   */
 
-        button.textContent =
-            currentTheme === 'dark'
-                ? '☀️ Tema claro'
-                : '🌙 Tema escuro';
-    }
+  localStorage.setItem(storageKey, getCurrentTheme());
 
+  updateButton();
+
+  button.addEventListener("click", async () => {
+    const html = document.documentElement;
+
+    const currentTheme = getCurrentTheme();
+
+    const newTheme = currentTheme === "dark" ? "light" : "dark";
+
+    /*
+     * Troca imediatamente.
+     */
+
+    html.setAttribute("data-bs-theme", newTheme);
+
+    localStorage.setItem(storageKey, newTheme);
 
     updateButton();
 
+    /*
+     * Se não estivermos autenticados,
+     * termina aqui.
+     */
 
-    button.addEventListener('click', async () => {
+    if (!window.UaiMoney || !window.UaiMoney.themeUrl) {
+      return;
+    }
 
-        const html = document.documentElement;
+    const csrfInput = document.querySelector("#csrfToken");
 
-        const currentTheme =
-            html.getAttribute(
-                'data-bs-theme'
-            ) || 'light';
+    if (!csrfInput) {
+      return;
+    }
 
-        const newTheme =
-            currentTheme === 'dark'
-                ? 'light'
-                : 'dark';
+    const formData = new FormData();
 
+    formData.append("tema", newTheme);
 
-        /*
-         * Altera visualmente primeiro.
-         */
+    formData.append("_token", csrfInput.value);
 
-        html.setAttribute(
-            'data-bs-theme',
-            newTheme
-        );
+    try {
+      const response = await fetch(window.UaiMoney.themeUrl, {
+        method: "POST",
+        body: formData,
+      });
 
-        updateButton();
+      if (!response.ok) {
+        const message = await response.text();
 
+        throw new Error(message || "Não foi possível salvar o tema.");
+      }
+    } catch (error) {
+      /*
+       * Banco não salvou.
+       * Volta ao estado anterior.
+       */
 
-        /*
-         * Prepara envio para PHP.
-         */
+      html.setAttribute("data-bs-theme", currentTheme);
 
-        const formData = new FormData();
+      localStorage.setItem(storageKey, currentTheme);
 
-        formData.append(
-            'tema',
-            newTheme
-        );
+      updateButton();
 
-        formData.append(
-            '_token',
-            csrfInput.value
-        );
-
-
-        try {
-
-            const response = await fetch(
-                window.UaiMoney.themeUrl,
-                {
-                    method: 'POST',
-                    body: formData
-                }
-            );
-
-
-            if (!response.ok) {
-
-                const message =
-                    await response.text();
-
-                throw new Error(
-                    message ||
-                    'Não foi possível salvar o tema.'
-                );
-            }
-
-
-            const result =
-                await response.json();
-
-            console.log(
-                'Tema salvo:',
-                result
-            );
-
-
-        } catch (error) {
-
-            /*
-             * Se falhar no backend,
-             * desfaz a mudança visual.
-             */
-
-            html.setAttribute(
-                'data-bs-theme',
-                currentTheme
-            );
-
-            updateButton();
-
-            console.error(
-                'Erro ao alterar tema:',
-                error
-            );
-        }
-
-    });
-
+      console.error("Erro ao alterar tema:", error);
+    }
+  });
 });

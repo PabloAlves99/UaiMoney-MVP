@@ -30,10 +30,12 @@ final class AuthController
             'auth/login',
             [
                 'basePath' => $this->basePath,
+                'pageTitle' => 'Entrar - UaiMoney',
                 'error' => null,
                 'identifier' => '',
                 'csrfToken' => $this->csrf->token()
-            ]
+            ],
+            'layouts/auth'
         );
     }
 
@@ -66,10 +68,12 @@ final class AuthController
                 'auth/login',
                 [
                     'basePath' => $this->basePath,
+                    'pageTitle' => 'Entrar - UaiMoney',
                     'error' => $e->getMessage(),
                     'identifier' => $identifier,
                     'csrfToken' => $this->csrf->token()
-                ]
+                ],
+                'layouts/auth'
             );
         }
     }
@@ -86,12 +90,14 @@ final class AuthController
             'auth/register',
             [
                 'basePath' => $this->basePath,
+                'pageTitle' => 'Criar conta - UaiMoney',
                 'error' => null,
                 'nome' => '',
                 'login' => '',
                 'email' => '',
                 'csrfToken' => $this->csrf->token()
-            ]
+            ],
+            'layouts/auth'
         );
     }
 
@@ -145,12 +151,14 @@ final class AuthController
                 'auth/register',
                 [
                     'basePath' => $this->basePath,
+                    'pageTitle' => 'Criar conta - UaiMoney',
                     'error' => $e->getMessage(),
                     'nome' => $nome,
                     'login' => $login,
                     'email' => $email,
                     'csrfToken' => $this->csrf->token()
-                ]
+                ],
+                'layouts/auth'
             );
         }
     }
@@ -202,8 +210,10 @@ final class AuthController
         View::render(
             'errors/419',
             [
-                'basePath' => $this->basePath
-            ]
+                'basePath' => $this->basePath,
+                'pageTitle' => 'Sessão expirada - UaiMoney'
+            ],
+            'layouts/auth'
         );
 
         exit;

@@ -9,14 +9,7 @@ use App\Core\Router;
 use App\Core\View;
 use App\Services\AuthService;
 
-return function (
-    Router $router,
-    AuthController $authController,
-    UserPreferenceController $userPreferenceController,
-    AuthService $authService,
-    Csrf $csrf,
-    string $basePath
-): void {
+return function (Router $router, AuthController $authController, UserPreferenceController $userPreferenceController, AuthService $authService, Csrf $csrf, string $basePath): void {
 
     /*
      * Autenticação
@@ -82,8 +75,10 @@ return function (
                 [
                     'usuario' => $usuario,
                     'basePath' => $basePath,
-                    'csrfToken' => $csrf->token()
-                ]
+                    'csrfToken' => $csrf->token(),
+                    'pageTitle' => 'Início - UaiMoney'
+                ],
+                'layouts/app'
             );
         }
     );

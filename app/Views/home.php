@@ -1,87 +1,34 @@
-<!DOCTYPE html>
-<html lang="pt-BR" data-bs-theme="<?= htmlspecialchars(
-    $usuario['tema'],
-    ENT_QUOTES,
-    'UTF-8'
-) ?>">
+<div class="mb-4">
 
-<head>
-    <meta charset="UTF-8">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="<?= htmlspecialchars(
-        $basePath . '/css/app.css',
-        ENT_QUOTES,
-        'UTF-8'
-    ) ?>">
-
-    <title>UaiMoney</title>
-</head>
-
-<body>
-    <button type="button" class="btn btn-outline-secondary" id="themeToggle">
-        Alternar tema
-    </button>
-
-    <h1>
-        UaiMoney
+    <h1 class="h3">
+        Olá,
+        <?= htmlspecialchars(
+            $usuario['nome'],
+            ENT_QUOTES,
+            'UTF-8'
+        ) ?>!
     </h1>
 
-    <p>
-        Bem-vindo,
-        <strong>
-            <?= htmlspecialchars(
-                $usuario['nome'],
-                ENT_QUOTES,
-                'UTF-8'
-            ) ?>
-        </strong>
+    <p class="text-secondary mb-0">
+        Bem-vindo ao seu controle financeiro.
     </p>
 
-
-    <p>
-        Seu login é:
-
-        <?= htmlspecialchars(
-            $usuario['login'],
-            ENT_QUOTES,
-            'UTF-8'
-        ) ?>
-    </p>
+</div>
 
 
-    <form method="POST" action="<?= htmlspecialchars(
-        $basePath . '/logout',
-        ENT_QUOTES,
-        'UTF-8'
-    ) ?>">
+<div class="card">
 
-        <input type="hidden" id="csrfToken" name="_token" value="<?= htmlspecialchars(
-            $csrfToken,
-            ENT_QUOTES,
-            'UTF-8'
-        ) ?>">
+    <div class="card-body">
 
-        <button type="submit">
-            Sair
-        </button>
+        <h5 class="card-title">
+            UaiMoney
+        </h5>
 
-    </form>
+        <p class="card-text">
+            Sua área financeira está pronta para receber
+            contas, categorias e movimentações.
+        </p>
 
-    <script>
-        window.UaiMoney = {
-            themeUrl: <?= json_encode(
-                $basePath . '/preferencias/tema'
-            ) ?>
-        };
-    </script>
+    </div>
 
-    <script src="<?= htmlspecialchars(
-        $basePath . '/js/theme.js',
-        ENT_QUOTES,
-        'UTF-8'
-    ) ?>">
-    </script>
-</body>
-
-</html>
+</div>
