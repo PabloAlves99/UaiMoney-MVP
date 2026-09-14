@@ -1,6 +1,13 @@
 # Banco de dados
 /storage/database/*.sqlite
+/storage/database/*.sqlite-wal
+/storage/database/*.sqlite-shm
+/storage/database/*.sqlite-journal
+
 /storage/database/*.db
+/storage/database/*.db-wal
+/storage/database/*.db-shm
+/storage/database/*.db-journal
 
 # Logs
 /storage/logs/*
