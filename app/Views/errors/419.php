@@ -13,7 +13,7 @@
         $basePath . '/login',
         ENT_QUOTES,
         'UTF-8'
-    ) ?>" class="btn btn-success">
+    ) ?>" class="btn btn-uai-primary">
         Voltar ao login
     </a>
 
