@@ -1,48 +1,262 @@
-:root {
-    --uai-bg: #f5f7fb;
-    --uai-primary: #198754;
-    --uai-text: #212529;
-    --uai-muted: #6c757d;
+/*
+|--------------------------------------------------------------------------
+| UaiMoney Design Tokens
+|--------------------------------------------------------------------------
+*/
+
+:root,
+[data-bs-theme="light"] {
+  --uai-bg: #f6f8fa;
+  --uai-surface: #ffffff;
+  --uai-surface-secondary: #f1f5f9;
+
+  --uai-primary: #0f766e;
+  --uai-primary-hover: #115e59;
+  --uai-accent: #14b8a6;
+
+  --uai-text: #0f172a;
+  --uai-muted: #64748b;
+
+  --uai-border: #e2e8f0;
+
+  --uai-success: #16a34a;
+  --uai-warning: #d97706;
+  --uai-danger: #dc2626;
+
+  --uai-shadow: 0 10px 30px rgba(15, 23, 42, 0.07);
 }
 
 [data-bs-theme="dark"] {
-    --uai-bg: #15171a;
-    --uai-text: #f1f3f5;
-    --uai-muted: #adb5bd;
+  --uai-bg: #0b1220;
+  --uai-surface: #111827;
+  --uai-surface-secondary: #172033;
+
+  --uai-primary: #2dd4bf;
+  --uai-primary-hover: #5eead4;
+  --uai-accent: #34d399;
+
+  --uai-text: #f8fafc;
+  --uai-muted: #94a3b8;
+
+  --uai-border: #243041;
+
+  --uai-success: #4ade80;
+  --uai-warning: #fbbf24;
+  --uai-danger: #f87171;
+
+  --uai-shadow: 0 12px 35px rgba(0, 0, 0, 0.25);
 }
+
+/*
+|--------------------------------------------------------------------------
+| Base
+|--------------------------------------------------------------------------
+*/
 
 html,
 body {
-    min-height: 100%;
+  min-height: 100%;
 }
 
 body {
-    background-color: var(--uai-bg);
-    color: var(--uai-text);
+  background-color: var(--uai-bg);
+  color: var(--uai-text);
+
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
 
+/*
+|--------------------------------------------------------------------------
+| Links
+|--------------------------------------------------------------------------
+*/
+
+a {
+  color: var(--uai-primary);
+}
+
+a:hover {
+  color: var(--uai-primary-hover);
+}
+
+/*
+|--------------------------------------------------------------------------
+| Cards
+|--------------------------------------------------------------------------
+*/
+
+.card {
+  background-color: var(--uai-surface);
+
+  border-color: var(--uai-border);
+
+  box-shadow: var(--uai-shadow);
+}
+
+/*
+|--------------------------------------------------------------------------
+| Navbar
+|--------------------------------------------------------------------------
+*/
+
+.navbar {
+  background-color: var(--uai-surface);
+  border-color: var(--uai-border) !important;
+}
+
+/*
+|--------------------------------------------------------------------------
+| Brand
+|--------------------------------------------------------------------------
+*/
+
+.uai-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+
+  color: var(--uai-text);
+
+  text-decoration: none;
+}
+
+.uai-brand:hover {
+  color: var(--uai-text);
+}
+
+.uai-brand-mark {
+  width: 34px;
+  height: 34px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 10px;
+
+  color: #ffffff;
+
+  font-weight: 800;
+
+  background: linear-gradient(135deg, #0f766e, #14b8a6);
+
+  box-shadow: 0 5px 15px rgba(20, 184, 166, 0.25);
+}
+
+.uai-brand-name {
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+/*
+|--------------------------------------------------------------------------
+| Botão principal
+|--------------------------------------------------------------------------
+*/
+
+.btn-uai-primary {
+  --bs-btn-color: #ffffff;
+
+  --bs-btn-bg: var(--uai-primary);
+
+  --bs-btn-border-color: var(--uai-primary);
+
+  --bs-btn-hover-color: #ffffff;
+
+  --bs-btn-hover-bg: var(--uai-primary-hover);
+
+  --bs-btn-hover-border-color: var(--uai-primary-hover);
+
+  --bs-btn-active-color: #ffffff;
+
+  --bs-btn-active-bg: var(--uai-primary-hover);
+
+  --bs-btn-active-border-color: var(--uai-primary-hover);
+}
+
+/*
+|--------------------------------------------------------------------------
+| Formulários
+|--------------------------------------------------------------------------
+*/
+
+.form-control,
+.form-select {
+  background-color: var(--uai-surface);
+
+  color: var(--uai-text);
+
+  border-color: var(--uai-border);
+}
+
+.form-control:focus,
+.form-select:focus {
+  background-color: var(--uai-surface);
+
+  color: var(--uai-text);
+
+  border-color: var(--uai-primary);
+
+  box-shadow: 0 0 0 0.2rem
+    color-mix(in srgb, var(--uai-primary) 20%, transparent);
+}
+
+/*
+|--------------------------------------------------------------------------
+| Autenticação
+|--------------------------------------------------------------------------
+*/
+
 .auth-page {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
+  min-height: 100vh;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  padding: 24px;
 }
 
 .auth-card {
-    width: 100%;
-    max-width: 430px;
-    border: 0;
-    border-radius: 18px;
-    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.08);
+  width: 100%;
+
+  max-width: 430px;
+
+  border-radius: 20px;
 }
 
 .auth-logo {
-    font-size: 2rem;
-    font-weight: 700;
-    color: var(--uai-primary);
+  font-size: 2rem;
+
+  font-weight: 800;
+
+  letter-spacing: -0.04em;
+
+  color: var(--uai-primary);
 }
 
 .auth-subtitle {
-    color: var(--uai-muted);
+  color: var(--uai-muted);
+}
+
+/*
+|--------------------------------------------------------------------------
+| Utilidades
+|--------------------------------------------------------------------------
+*/
+
+.text-uai-muted {
+  color: var(--uai-muted);
+}
+
+.bg-uai-surface {
+  background-color: var(--uai-surface);
+}
+
+.border-uai {
+  border-color: var(--uai-border) !important;
 }

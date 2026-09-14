@@ -38,12 +38,20 @@
 
         <div class="container-fluid">
 
-            <a class="navbar-brand fw-bold" href="<?= htmlspecialchars(
+            <a class="uai-brand" href="<?= htmlspecialchars(
                 $basePath . '/',
                 ENT_QUOTES,
                 'UTF-8'
             ) ?>">
-                UaiMoney
+
+                <span class="uai-brand-mark">
+                    U
+                </span>
+
+                <span class="uai-brand-name">
+                    UaiMoney
+                </span>
+
             </a>
 
 
