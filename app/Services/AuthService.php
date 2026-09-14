@@ -255,9 +255,17 @@ final class AuthService
         return $usuario;
     }
 
-
     public function isAuthenticated(): bool
     {
         return $this->currentUser() !== null;
     }
+
+    public function isAdmin(): bool
+    {
+        $usuario = $this->currentUser();
+
+        return $usuario !== null
+            && ($usuario['tipo'] ?? null) === 'admin';
+    }
+
 }

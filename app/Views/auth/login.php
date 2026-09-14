@@ -1,7 +1,19 @@
 <div class="text-center mb-4">
 
-    <div class="auth-logo">
-        UaiMoney
+    <div class="text-center mb-4">
+
+        <div class="d-flex justify-content-center mb-3">
+
+            <span class="uai-brand-mark">
+                U
+            </span>
+
+        </div>
+
+        <div class="auth-logo">
+            UaiMoney
+        </div>
+
     </div>
 
     <div class="auth-subtitle mt-2">
@@ -73,20 +85,3 @@
     </button>
 
 </form>
-
-
-<div class="text-center mt-4">
-
-    <span class="text-secondary">
-        Ainda não possui conta?
-    </span>
-
-    <a href="<?= htmlspecialchars(
-        $basePath . '/register',
-        ENT_QUOTES,
-        'UTF-8'
-    ) ?>" class="text-decoration-none fw-semibold">
-        Criar conta
-    </a>
-
-</div>

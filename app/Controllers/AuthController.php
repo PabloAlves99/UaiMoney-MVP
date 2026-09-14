@@ -80,29 +80,35 @@ final class AuthController
 
     public function showRegister(): void
     {
-        if ($this->authService->isAuthenticated()) {
-            $this->redirect('/');
+        $usuario = $this->requireAdmin();
 
-            return;
-        }
+        $created = (
+            $_GET['created'] ?? null
+        ) === '1';
 
         View::render(
             'auth/register',
             [
+                'usuario' => $usuario,
                 'basePath' => $this->basePath,
-                'pageTitle' => 'Criar conta - UaiMoney',
+                'pageTitle' => 'Cadastrar usuário - UaiMoney',
                 'error' => null,
+                'success' => $created
+                    ? 'Usuário cadastrado com sucesso.'
+                    : null,
                 'nome' => '',
                 'login' => '',
                 'email' => '',
                 'csrfToken' => $this->csrf->token()
             ],
-            'layouts/auth'
+            'layouts/app'
         );
     }
 
     public function register(): void
     {
+        $usuario = $this->requireAdmin();
+
         $this->validateCsrf();
 
         $nome = $_POST['nome']
@@ -131,17 +137,14 @@ final class AuthController
             );
 
             /*
-             * Após criar a conta,
-             * já autenticamos o usuário.
+             * NÃO fazemos login com o novo usuário.
+             *
+             * O administrador permanece autenticado.
              */
-            $this->authService->login(
-                $login,
-                $senha
+
+            $this->redirect(
+                '/register?created=1'
             );
-
-            $this->csrf->regenerate();
-
-            $this->redirect('/');
 
         } catch (DomainException $e) {
 
@@ -150,15 +153,17 @@ final class AuthController
             View::render(
                 'auth/register',
                 [
+                    'usuario' => $usuario,
                     'basePath' => $this->basePath,
-                    'pageTitle' => 'Criar conta - UaiMoney',
+                    'pageTitle' => 'Cadastrar usuário - UaiMoney',
                     'error' => $e->getMessage(),
+                    'success' => null,
                     'nome' => $nome,
                     'login' => $login,
                     'email' => $email,
                     'csrfToken' => $this->csrf->token()
                 ],
-                'layouts/auth'
+                'layouts/app'
             );
         }
     }
@@ -217,5 +222,41 @@ final class AuthController
         );
 
         exit;
+    }
+
+    private function requireAdmin(): array
+    {
+        $usuario = $this->authService
+            ->currentUser();
+
+        /*
+         * Nem está logado.
+         */
+        if ($usuario === null) {
+            $this->redirect('/login');
+        }
+
+        /*
+         * Está logado, mas não é admin.
+         */
+        if (($usuario['tipo'] ?? null) !== 'admin') {
+
+            http_response_code(403);
+
+            View::render(
+                'errors/403',
+                [
+                    'usuario' => $usuario,
+                    'basePath' => $this->basePath,
+                    'csrfToken' => $this->csrf->token(),
+                    'pageTitle' => 'Acesso negado - UaiMoney'
+                ],
+                'layouts/app'
+            );
+
+            exit;
+        }
+
+        return $usuario;
     }
 }
