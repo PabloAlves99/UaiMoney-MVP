@@ -5,20 +5,13 @@ declare(strict_types=1);
 use App\Controllers\AuthController;
 use App\Controllers\UserPreferenceController;
 use App\Controllers\CategoryController;
+use App\Controllers\AccountController;
 use App\Core\Csrf;
 use App\Core\Router;
 use App\Core\View;
 use App\Services\AuthService;
 
-return function (
-    Router $router,
-    AuthController $authController,
-    UserPreferenceController $userPreferenceController,
-    CategoryController $categoryController,
-    AuthService $authService,
-    Csrf $csrf,
-    string $basePath
-): void {
+return function (Router $router, AuthController $authController, UserPreferenceController $userPreferenceController, CategoryController $categoryController, AccountController $accountController, AuthService $authService, Csrf $csrf, string $basePath): void {
     /*
      * Autenticação
      */
@@ -71,8 +64,8 @@ return function (
 
                 header(
                     'Location: '
-                        . $basePath
-                        . '/login'
+                    . $basePath
+                    . '/login'
                 );
 
                 exit;
@@ -124,5 +117,28 @@ return function (
     $router->post(
         '/categorias/subgrupos/{id}/desativar',
         [$categoryController, 'deactivateSubgroup']
+    );
+
+    /*
+    |--------------------------------------------------------------------------
+    | Contas
+    |--------------------------------------------------------------------------
+    */
+
+    $router->get(
+        '/contas',
+        [$accountController, 'index']
+    );
+
+
+    $router->post(
+        '/contas',
+        [$accountController, 'store']
+    );
+
+
+    $router->post(
+        '/contas/{id}/desativar',
+        [$accountController, 'deactivate']
     );
 };

@@ -5,15 +5,18 @@ declare(strict_types=1);
 use App\Controllers\AuthController;
 use App\Controllers\CategoryController;
 use App\Controllers\UserPreferenceController;
+use App\Controllers\AccountController;
 
 use App\Core\Router;
 
 use App\Repositories\CategoryRepository;
 use App\Repositories\UserRepository;
+use App\Repositories\AccountRepository;
 
 use App\Services\AuthService;
 use App\Services\CategoryService;
 use App\Services\UserPreferenceService;
+use App\Services\AccountService;
 
 /*
 |--------------------------------------------------------------------------
@@ -53,6 +56,10 @@ $categoryRepository = new CategoryRepository(
     $pdo
 );
 
+$accountRepository = new AccountRepository(
+    $pdo
+);
+
 
 /*
 |--------------------------------------------------------------------------
@@ -73,6 +80,9 @@ $categoryService = new CategoryService(
     $categoryRepository
 );
 
+$accountService = new AccountService(
+    $accountRepository
+);
 
 /*
 |--------------------------------------------------------------------------
@@ -99,6 +109,14 @@ $categoryController = new CategoryController(
     $csrf,
     $basePath
 );
+
+$accountController = new AccountController(
+    $authService,
+    $accountService,
+    $csrf,
+    $basePath
+);
+
 /*
 |--------------------------------------------------------------------------
 | Router
@@ -124,6 +142,7 @@ $registerRoutes(
     $authController,
     $userPreferenceController,
     $categoryController,
+    $accountController,
     $authService,
     $csrf,
     $basePath
