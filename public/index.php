@@ -3,12 +3,17 @@
 declare(strict_types=1);
 
 use App\Controllers\AuthController;
+use App\Controllers\CategoryController;
 use App\Controllers\UserPreferenceController;
-use App\Core\Router;
-use App\Repositories\UserRepository;
-use App\Services\AuthService;
-use App\Services\UserPreferenceService;
 
+use App\Core\Router;
+
+use App\Repositories\CategoryRepository;
+use App\Repositories\UserRepository;
+
+use App\Services\AuthService;
+use App\Services\CategoryService;
+use App\Services\UserPreferenceService;
 
 /*
 |--------------------------------------------------------------------------
@@ -36,13 +41,24 @@ $basePath = $app['config']['base_path']
 
 /*
 |--------------------------------------------------------------------------
-| Dependências
+| Repositories
 |--------------------------------------------------------------------------
 */
 
 $userRepository = new UserRepository(
     $pdo
 );
+
+$categoryRepository = new CategoryRepository(
+    $pdo
+);
+
+
+/*
+|--------------------------------------------------------------------------
+| Services
+|--------------------------------------------------------------------------
+*/
 
 $authService = new AuthService(
     $userRepository,
@@ -52,6 +68,17 @@ $authService = new AuthService(
 $preferenceService = new UserPreferenceService(
     $userRepository
 );
+
+$categoryService = new CategoryService(
+    $categoryRepository
+);
+
+
+/*
+|--------------------------------------------------------------------------
+| Controllers
+|--------------------------------------------------------------------------
+*/
 
 $authController = new AuthController(
     $authService,
@@ -66,7 +93,12 @@ $userPreferenceController = new UserPreferenceController(
     $basePath
 );
 
-
+$categoryController = new CategoryController(
+    $authService,
+    $categoryService,
+    $csrf,
+    $basePath
+);
 /*
 |--------------------------------------------------------------------------
 | Router
@@ -91,6 +123,7 @@ $registerRoutes(
     $router,
     $authController,
     $userPreferenceController,
+    $categoryController,
     $authService,
     $csrf,
     $basePath

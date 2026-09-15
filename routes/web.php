@@ -4,13 +4,21 @@ declare(strict_types=1);
 
 use App\Controllers\AuthController;
 use App\Controllers\UserPreferenceController;
+use App\Controllers\CategoryController;
 use App\Core\Csrf;
 use App\Core\Router;
 use App\Core\View;
 use App\Services\AuthService;
 
-return function (Router $router, AuthController $authController, UserPreferenceController $userPreferenceController, AuthService $authService, Csrf $csrf, string $basePath): void {
-
+return function (
+    Router $router,
+    AuthController $authController,
+    UserPreferenceController $userPreferenceController,
+    CategoryController $categoryController,
+    AuthService $authService,
+    Csrf $csrf,
+    string $basePath
+): void {
     /*
      * Autenticação
      */
@@ -63,8 +71,8 @@ return function (Router $router, AuthController $authController, UserPreferenceC
 
                 header(
                     'Location: '
-                    . $basePath
-                    . '/login'
+                        . $basePath
+                        . '/login'
                 );
 
                 exit;
@@ -81,5 +89,40 @@ return function (Router $router, AuthController $authController, UserPreferenceC
                 'layouts/app'
             );
         }
+    );
+
+    /*
+    |--------------------------------------------------------------------------
+    | Categorias
+    |--------------------------------------------------------------------------
+    */
+
+    $router->get(
+        '/categorias',
+        [$categoryController, 'index']
+    );
+
+
+    $router->post(
+        '/categorias/grupos',
+        [$categoryController, 'storeGroup']
+    );
+
+
+    $router->post(
+        '/categorias/subgrupos',
+        [$categoryController, 'storeSubgroup']
+    );
+
+
+    $router->post(
+        '/categorias/grupos/{id}/desativar',
+        [$categoryController, 'deactivateGroup']
+    );
+
+
+    $router->post(
+        '/categorias/subgrupos/{id}/desativar',
+        [$categoryController, 'deactivateSubgroup']
     );
 };
