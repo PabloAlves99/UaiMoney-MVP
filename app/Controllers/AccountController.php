@@ -10,14 +10,19 @@ use App\Services\AccountService;
 use App\Services\AuthService;
 use DomainException;
 
-final class AccountController
+final class AccountController extends BaseController
 {
     public function __construct(
-        private readonly AuthService $authService,
+        AuthService $authService,
         private readonly AccountService $accountService,
-        private readonly Csrf $csrf,
-        private readonly string $basePath
+        Csrf $csrf,
+        string $basePath
     ) {
+        parent::__construct(
+            $authService,
+            $csrf,
+            $basePath
+        );
     }
 
 
@@ -134,91 +139,4 @@ final class AccountController
         );
     }
 
-
-    private function requireUser(): array
-    {
-        $usuario = $this
-            ->authService
-            ->currentUser();
-
-
-        if ($usuario === null) {
-            $this->redirect(
-                '/login'
-            );
-        }
-
-
-        return $usuario;
-    }
-
-
-    private function validateCsrf(): void
-    {
-        $token = $_POST['_token']
-            ?? null;
-
-
-        if ($this->csrf->validate($token)) {
-            return;
-        }
-
-
-        http_response_code(419);
-
-
-        View::render(
-            'errors/419',
-            [
-                'basePath'
-                => $this->basePath,
-
-                'pageTitle'
-                => 'Sessão expirada - UaiMoney'
-            ],
-            'layouts/auth'
-        );
-
-
-        exit;
-    }
-
-
-    private function parseId(
-        string $id
-    ): int {
-        $parsedId = filter_var(
-            $id,
-            FILTER_VALIDATE_INT
-        );
-
-
-        if (
-            $parsedId === false ||
-            $parsedId <= 0
-        ) {
-            http_response_code(404);
-
-            echo '404 - Recurso não encontrado';
-
-            exit;
-        }
-
-
-        return $parsedId;
-    }
-
-
-    private function redirect(
-        string $path
-    ): never {
-        header(
-            'Location: '
-            . $this->basePath
-            . '/'
-            . ltrim($path, '/')
-        );
-
-        exit;
-    }
 }
