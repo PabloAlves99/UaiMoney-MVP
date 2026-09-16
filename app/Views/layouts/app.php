@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 
 <html lang="pt-BR" data-bs-theme="<?= htmlspecialchars(
-    $usuario['tema'] ?? 'light',
-    ENT_QUOTES,
-    'UTF-8'
-) ?>">
+                                        $usuario['tema'] ?? 'light',
+                                        ENT_QUOTES,
+                                        'UTF-8'
+                                    ) ?>">
 
 <head>
 
@@ -24,10 +24,10 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <link rel="stylesheet" href="<?= htmlspecialchars(
-        $basePath . '/css/app.css',
-        ENT_QUOTES,
-        'UTF-8'
-    ) ?>">
+                                        $basePath . '/css/app.css',
+                                        ENT_QUOTES,
+                                        'UTF-8'
+                                    ) ?>">
 
 </head>
 
@@ -39,10 +39,10 @@
         <div class="container-fluid">
 
             <a class="uai-brand" href="<?= htmlspecialchars(
-                $basePath . '/',
-                ENT_QUOTES,
-                'UTF-8'
-            ) ?>">
+                                            $basePath . '/',
+                                            ENT_QUOTES,
+                                            'UTF-8'
+                                        ) ?>">
 
                 <span class="uai-brand-mark">
                     U
@@ -55,19 +55,29 @@
             </a>
 
             <a href="<?= htmlspecialchars(
-                $basePath . '/categorias',
-                ENT_QUOTES,
-                'UTF-8'
-            ) ?>" class="btn btn-sm btn-outline-secondary">
+                            $basePath . '/categorias',
+                            ENT_QUOTES,
+                            'UTF-8'
+                        ) ?>" class="btn btn-sm btn-outline-secondary">
                 Categorias
             </a>
 
             <a href="<?= htmlspecialchars(
-                $basePath . '/contas',
-                ENT_QUOTES,
-                'UTF-8'
-            ) ?>" class="btn btn-sm btn-outline-secondary">
+                            $basePath . '/contas',
+                            ENT_QUOTES,
+                            'UTF-8'
+                        ) ?>" class="btn btn-sm btn-outline-secondary">
                 Contas
+            </a>
+
+            <a
+                href="<?= htmlspecialchars(
+                            $basePath . '/movimentacoes',
+                            ENT_QUOTES,
+                            'UTF-8'
+                        ) ?>"
+                class="btn btn-sm btn-outline-secondary">
+                Movimentações
             </a>
 
 
@@ -88,16 +98,16 @@
 
 
                 <form method="POST" action="<?= htmlspecialchars(
-                    $basePath . '/logout',
-                    ENT_QUOTES,
-                    'UTF-8'
-                ) ?>" class="m-0">
+                                                $basePath . '/logout',
+                                                ENT_QUOTES,
+                                                'UTF-8'
+                                            ) ?>" class="m-0">
 
                     <input type="hidden" id="csrfToken" name="_token" value="<?= htmlspecialchars(
-                        $csrfToken,
-                        ENT_QUOTES,
-                        'UTF-8'
-                    ) ?>">
+                                                                                    $csrfToken,
+                                                                                    ENT_QUOTES,
+                                                                                    'UTF-8'
+                                                                                ) ?>">
 
                     <button type="submit" class="btn btn-outline-danger btn-sm">
                         Sair
@@ -123,19 +133,19 @@
         window.UaiMoney = {
 
             themeUrl: <?= json_encode(
-                $basePath
-                . '/preferencias/tema'
-            ) ?>
+                            $basePath
+                                . '/preferencias/tema'
+                        ) ?>
 
         };
     </script>
 
 
     <script src="<?= htmlspecialchars(
-        $basePath . '/js/theme.js',
-        ENT_QUOTES,
-        'UTF-8'
-    ) ?>"></script>
+                        $basePath . '/js/theme.js',
+                        ENT_QUOTES,
+                        'UTF-8'
+                    ) ?>"></script>
 
 </body>
 

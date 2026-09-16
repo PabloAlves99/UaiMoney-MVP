@@ -6,12 +6,23 @@ use App\Controllers\AuthController;
 use App\Controllers\UserPreferenceController;
 use App\Controllers\CategoryController;
 use App\Controllers\AccountController;
+use App\Controllers\TransactionController;
 use App\Core\Csrf;
 use App\Core\Router;
 use App\Core\View;
 use App\Services\AuthService;
 
-return function (Router $router, AuthController $authController, UserPreferenceController $userPreferenceController, CategoryController $categoryController, AccountController $accountController, AuthService $authService, Csrf $csrf, string $basePath): void {
+return function (
+    Router $router,
+    AuthController $authController,
+    UserPreferenceController $userPreferenceController,
+    CategoryController $categoryController,
+    AccountController $accountController,
+    TransactionController $transactionController,
+    AuthService $authService,
+    Csrf $csrf,
+    string $basePath
+): void {
     /*
      * Autenticação
      */
@@ -64,8 +75,8 @@ return function (Router $router, AuthController $authController, UserPreferenceC
 
                 header(
                     'Location: '
-                    . $basePath
-                    . '/login'
+                        . $basePath
+                        . '/login'
                 );
 
                 exit;
@@ -140,5 +151,16 @@ return function (Router $router, AuthController $authController, UserPreferenceC
     $router->post(
         '/contas/{id}/desativar',
         [$accountController, 'deactivate']
+    );
+
+    /*
+    |--------------------------------------------------------------------------
+    | Movimentações
+    |--------------------------------------------------------------------------
+    */
+
+    $router->get(
+        '/movimentacoes',
+        [$transactionController, 'index']
     );
 };
