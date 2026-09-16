@@ -91,7 +91,9 @@ $accountService = new AccountService(
 );
 
 $transactionService = new TransactionService(
-    $transactionRepository
+    $transactionRepository,
+    $categoryRepository,
+    $accountRepository
 );
 
 /*
@@ -126,14 +128,14 @@ $accountController = new AccountController(
     $csrf,
     $basePath
 );
-
 $transactionController = new TransactionController(
     $authService,
     $transactionService,
+    $categoryService,
+    $accountService,
     $csrf,
     $basePath
 );
-
 /*
 |--------------------------------------------------------------------------
 | Router

@@ -163,4 +163,9 @@ return function (
         '/movimentacoes',
         [$transactionController, 'index']
     );
+
+    $router->post(
+        '/movimentacoes',
+        [$transactionController, 'store']
+    );
 };

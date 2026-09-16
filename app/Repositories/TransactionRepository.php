@@ -70,4 +70,63 @@ final class TransactionRepository
 
         return $stmt->fetchAll();
     }
+
+    public function create(
+        int $usuarioId,
+        int $subgrupoId,
+        ?int $contaId,
+        string $descricao,
+        int $valorCentavos,
+        string $dataCompetencia,
+        string $dataVencimento,
+        ?string $dataEfetivacao,
+        string $status,
+        ?string $meioPagamento,
+        ?string $observacao
+    ): int {
+        $stmt = $this->pdo->prepare("
+        INSERT INTO transacoes (
+            usuario_id,
+            subgrupo_id,
+            conta_id,
+            descricao,
+            valor_centavos,
+            data_competencia,
+            data_vencimento,
+            data_efetivacao,
+            status,
+            meio_pagamento,
+            observacao
+        )
+        VALUES (
+            :usuario_id,
+            :subgrupo_id,
+            :conta_id,
+            :descricao,
+            :valor_centavos,
+            :data_competencia,
+            :data_vencimento,
+            :data_efetivacao,
+            :status,
+            :meio_pagamento,
+            :observacao
+        )
+    ");
+
+        $stmt->execute([
+            ':usuario_id' => $usuarioId,
+            ':subgrupo_id' => $subgrupoId,
+            ':conta_id' => $contaId,
+            ':descricao' => $descricao,
+            ':valor_centavos' => $valorCentavos,
+            ':data_competencia' => $dataCompetencia,
+            ':data_vencimento' => $dataVencimento,
+            ':data_efetivacao' => $dataEfetivacao,
+            ':status' => $status,
+            ':meio_pagamento' => $meioPagamento,
+            ':observacao' => $observacao
+        ]);
+
+        return (int) $this->pdo->lastInsertId();
+    }
 }

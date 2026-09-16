@@ -247,4 +247,41 @@ final class CategoryRepository
             ':usuario_id' => $usuarioId
         ]);
     }
+
+    public function findSubgroupById(
+        int $subgrupoId,
+        int $usuarioId
+    ): ?array {
+        $stmt = $this->pdo->prepare("
+        SELECT
+            s.id,
+            s.grupo_id,
+            s.nome,
+            s.descricao,
+            s.ativo,
+
+            g.nome AS grupo_nome,
+            g.tipo,
+            g.ativo AS grupo_ativo
+
+        FROM subgrupos s
+
+        INNER JOIN grupos g
+            ON g.id = s.grupo_id
+
+        WHERE s.id = :id
+          AND g.usuario_id = :usuario_id
+
+        LIMIT 1
+    ");
+
+        $stmt->execute([
+            ':id' => $subgrupoId,
+            ':usuario_id' => $usuarioId
+        ]);
+
+        $subgrupo = $stmt->fetch();
+
+        return $subgrupo ?: null;
+    }
 }
