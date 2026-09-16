@@ -10,29 +10,75 @@ final class AccountRepository
 {
     public function __construct(
         private readonly PDO $pdo
-    ) {
-    }
+    ) {}
 
 
     public function listActive(
         int $usuarioId
     ): array {
         $stmt = $this->pdo->prepare("
-            SELECT
-                id,
-                nome,
-                tipo,
-                instituicao,
-                saldo_inicial_centavos,
-                saldo_inicial_em,
-                ativo,
-                criado_em,
-                atualizado_em
-            FROM contas
-            WHERE usuario_id = :usuario_id
-              AND ativo = 1
-            ORDER BY nome
-        ");
+        SELECT
+            c.id,
+            c.nome,
+            c.tipo,
+            c.instituicao,
+            c.saldo_inicial_centavos,
+            c.saldo_inicial_em,
+            c.ativo,
+            c.criado_em,
+            c.atualizado_em,
+
+            (
+                c.saldo_inicial_centavos
+
+                +
+
+                COALESCE(
+                    (
+                        SELECT
+                            SUM(
+                                CASE
+                                    WHEN g.tipo = 'receita'
+                                        THEN t.valor_centavos
+
+                                    WHEN g.tipo = 'despesa'
+                                        THEN -t.valor_centavos
+
+                                    ELSE 0
+                                END
+                            )
+
+                        FROM transacoes t
+
+                        INNER JOIN subgrupos s
+                            ON s.id = t.subgrupo_id
+
+                        INNER JOIN grupos g
+                            ON g.id = s.grupo_id
+
+                        WHERE t.usuario_id = c.usuario_id
+
+                          AND g.usuario_id = c.usuario_id
+
+                          AND t.conta_id = c.id
+
+                          AND t.status = 'efetivada'
+
+                          AND t.data_efetivacao IS NOT NULL
+
+                          AND t.data_efetivacao >= c.saldo_inicial_em
+                    ),
+                    0
+                )
+            ) AS saldo_atual_centavos
+
+        FROM contas c
+
+        WHERE c.usuario_id = :usuario_id
+          AND c.ativo = 1
+
+        ORDER BY c.nome
+    ");
 
         $stmt->execute([
             ':usuario_id' => $usuarioId
@@ -135,8 +181,8 @@ final class AccountRepository
             => $saldoInicialEm
         ]);
 
-        return (int) 
-            $this->pdo->lastInsertId();
+        return (int)
+        $this->pdo->lastInsertId();
     }
 
 

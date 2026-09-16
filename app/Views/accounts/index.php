@@ -54,16 +54,16 @@ use App\Core\Money;
 
 
                 <form method="POST" action="<?= htmlspecialchars(
-                    $basePath . '/contas',
-                    ENT_QUOTES,
-                    'UTF-8'
-                ) ?>">
+                                                $basePath . '/contas',
+                                                ENT_QUOTES,
+                                                'UTF-8'
+                                            ) ?>">
 
                     <input type="hidden" name="_token" value="<?= htmlspecialchars(
-                        $csrfToken,
-                        ENT_QUOTES,
-                        'UTF-8'
-                    ) ?>">
+                                                                    $csrfToken,
+                                                                    ENT_QUOTES,
+                                                                    'UTF-8'
+                                                                ) ?>">
 
 
                     <div class="mb-3">
@@ -221,7 +221,7 @@ use App\Core\Money;
 
                                             <?= htmlspecialchars(
                                                 $conta['instituicao']
-                                                ?? '',
+                                                    ?? '',
                                                 ENT_QUOTES,
                                                 'UTF-8'
                                             ) ?>
@@ -232,19 +232,19 @@ use App\Core\Money;
 
 
                                     <form method="POST" action="<?= htmlspecialchars(
-                                        $basePath
-                                        . '/contas/'
-                                        . (int) $conta['id']
-                                        . '/desativar',
-                                        ENT_QUOTES,
-                                        'UTF-8'
-                                    ) ?>">
+                                                                    $basePath
+                                                                        . '/contas/'
+                                                                        . (int) $conta['id']
+                                                                        . '/desativar',
+                                                                    ENT_QUOTES,
+                                                                    'UTF-8'
+                                                                ) ?>">
 
                                         <input type="hidden" name="_token" value="<?= htmlspecialchars(
-                                            $csrfToken,
-                                            ENT_QUOTES,
-                                            'UTF-8'
-                                        ) ?>">
+                                                                                        $csrfToken,
+                                                                                        ENT_QUOTES,
+                                                                                        'UTF-8'
+                                                                                    ) ?>">
 
                                         <button type="submit" class="btn btn-sm btn-outline-danger">
                                             Desativar
@@ -255,19 +255,31 @@ use App\Core\Money;
                                 </div>
 
 
+                                <?php
+
+                                $saldoAtual =
+                                    (int) $conta['saldo_atual_centavos'];
+
+                                $saldoInicial =
+                                    (int) $conta['saldo_inicial_centavos'];
+
+                                ?>
+
+
                                 <div class="mt-4">
 
                                     <small class="text-uai-muted">
-                                        Saldo inicial
+                                        Saldo atual
                                     </small>
 
-                                    <div class="fs-4 fw-semibold">
+                                    <div
+                                        class="fs-3 fw-semibold <?= $saldoAtual < 0
+                                                                    ? 'text-danger'
+                                                                    : ''
+                                                                ?>">
 
                                         <?= Money::format(
-                                            (int) 
-                                            $conta[
-                                                'saldo_inicial_centavos'
-                                            ]
+                                            $saldoAtual
                                         ) ?>
 
                                     </div>
@@ -275,20 +287,36 @@ use App\Core\Money;
                                 </div>
 
 
-                                <div class="mt-3 small text-uai-muted">
+                                <div class="mt-3">
 
-                                    Saldo informado em
+                                    <small class="text-uai-muted">
+                                        Saldo inicial
+                                    </small>
+
+                                    <div class="fw-semibold">
+
+                                        <?= Money::format(
+                                            $saldoInicial
+                                        ) ?>
+
+                                    </div>
+
+                                </div>
+
+
+                                <div class="mt-2 small text-uai-muted">
+
+                                    Saldo inicial informado em
 
                                     <?= date(
                                         'd/m/Y',
                                         strtotime(
-                                            $conta[
-                                                'saldo_inicial_em'
-                                            ]
+                                            $conta['saldo_inicial_em']
                                         )
                                     ) ?>
 
                                 </div>
+
 
                             </div>
 

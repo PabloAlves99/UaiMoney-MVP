@@ -64,12 +64,17 @@ final class Money
     public static function format(
         int $centavos
     ): string {
-        return 'R$ '
-            . number_format(
-                $centavos / 100,
-                2,
-                ',',
-                '.'
-            );
+        $negativo = $centavos < 0;
+
+        $valor = number_format(
+            abs($centavos) / 100,
+            2,
+            ',',
+            '.'
+        );
+
+        return ($negativo ? '- ' : '')
+            . 'R$ '
+            . $valor;
     }
 }
