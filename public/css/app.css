@@ -495,3 +495,120 @@ a:hover {
     padding: 0.85rem 1rem;
   }
 }
+
+/* ==========================================================
+   Contas
+   ========================================================== */
+
+.uai-account-summary-card {
+  border: 1px solid var(--uai-border);
+  box-shadow: none;
+}
+
+.uai-account-total {
+  margin-top: 0.15rem;
+
+  font-size: 1.7rem;
+  font-weight: 700;
+
+  letter-spacing: -0.03em;
+}
+
+.uai-account-card {
+  border: 1px solid var(--uai-border);
+
+  transition:
+    transform 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.uai-account-card:hover {
+  transform: translateY(-2px);
+
+  border-color: color-mix(in srgb, var(--uai-primary) 35%, var(--uai-border));
+
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+}
+
+.uai-account-icon {
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  width: 42px;
+  height: 42px;
+
+  flex: 0 0 42px;
+
+  border-radius: 12px;
+
+  background: linear-gradient(135deg, var(--uai-primary), var(--uai-accent));
+
+  color: #ffffff;
+
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.uai-account-balance {
+  margin-top: 2rem;
+}
+
+.uai-account-balance-value {
+  margin-top: 0.15rem;
+
+  font-size: 1.75rem;
+  font-weight: 700;
+
+  letter-spacing: -0.03em;
+}
+
+.uai-account-details {
+  display: flex;
+
+  justify-content: space-between;
+
+  gap: 1rem;
+
+  margin-top: 1.4rem;
+  padding-top: 1rem;
+
+  border-top: 1px solid var(--uai-border);
+
+  font-size: 0.78rem;
+}
+
+.uai-account-details > div {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 0.2rem;
+}
+
+.uai-account-details strong {
+  font-weight: 600;
+}
+
+@media (max-width: 575.98px) {
+  .uai-account-total {
+    font-size: 1.4rem;
+  }
+
+  .uai-account-balance-value {
+    font-size: 1.5rem;
+  }
+}
+
+.uai-account-icon-large {
+  width: 52px;
+  height: 52px;
+
+  flex-basis: 52px;
+
+  border-radius: 15px;
+
+  font-size: 1.15rem;
+}

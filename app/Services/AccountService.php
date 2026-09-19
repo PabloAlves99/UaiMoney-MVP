@@ -170,4 +170,143 @@ final class AccountService
             && $data->format('Y-m-d')
             === $date;
     }
+
+    public function get(
+        int $usuarioId,
+        int $contaId
+    ): array {
+        $conta = $this
+            ->accountRepository
+            ->findById(
+                $contaId,
+                $usuarioId
+            );
+
+
+        if (
+            $conta === null ||
+            (int) $conta['ativo'] !== 1
+        ) {
+            throw new DomainException(
+                'Conta não encontrada.'
+            );
+        }
+
+
+        return $conta;
+    }
+
+    public function update(
+        int $usuarioId,
+        int $contaId,
+        string $nome,
+        string $tipo,
+        ?string $instituicao
+    ): void {
+        /*
+         * Garante que a conta existe,
+         * está ativa e pertence ao usuário.
+         */
+
+        $this->get(
+            $usuarioId,
+            $contaId
+        );
+
+
+        $nome = trim(
+            $nome
+        );
+
+
+        $tipo = strtolower(
+            trim($tipo)
+        );
+
+
+        $instituicao =
+            $instituicao !== null
+            ? trim($instituicao)
+            : null;
+
+
+        /*
+         * Nome
+         */
+
+        if ($nome === '') {
+            throw new DomainException(
+                'Informe o nome da conta.'
+            );
+        }
+
+
+        if (strlen($nome) > 100) {
+            throw new DomainException(
+                'O nome da conta é muito longo.'
+            );
+        }
+
+
+        /*
+         * Tipo
+         */
+
+        if (
+            !in_array(
+                $tipo,
+                self::TYPES,
+                true
+            )
+        ) {
+            throw new DomainException(
+                'Tipo de conta inválido.'
+            );
+        }
+
+
+        /*
+         * Instituição
+         */
+
+        if ($instituicao === '') {
+            $instituicao = null;
+        }
+
+
+        /*
+         * Nome duplicado
+         */
+
+        if (
+            $this->accountRepository
+                ->existsByNameExceptId(
+                    $usuarioId,
+                    $nome,
+                    $contaId
+                )
+        ) {
+            throw new DomainException(
+                'Já existe outra conta com este nome.'
+            );
+        }
+
+
+        $updated = $this
+            ->accountRepository
+            ->updateDetails(
+                $contaId,
+                $usuarioId,
+                $nome,
+                $tipo,
+                $instituicao
+            );
+
+
+        if (!$updated) {
+            throw new DomainException(
+                'Não foi possível atualizar a conta.'
+            );
+        }
+    }
 }

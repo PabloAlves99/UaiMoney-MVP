@@ -10,7 +10,8 @@ final class AccountRepository
 {
     public function __construct(
         private readonly PDO $pdo
-    ) {}
+    ) {
+    }
 
 
     public function listActive(
@@ -93,22 +94,69 @@ final class AccountRepository
         int $usuarioId
     ): ?array {
         $stmt = $this->pdo->prepare("
-            SELECT
-                id,
-                usuario_id,
-                nome,
-                tipo,
-                instituicao,
-                saldo_inicial_centavos,
-                saldo_inicial_em,
-                ativo,
-                criado_em,
-                atualizado_em
-            FROM contas
-            WHERE id = :id
-              AND usuario_id = :usuario_id
-            LIMIT 1
-        ");
+        SELECT
+            c.id,
+            c.usuario_id,
+            c.nome,
+            c.tipo,
+            c.instituicao,
+            c.saldo_inicial_centavos,
+            c.saldo_inicial_em,
+            c.ativo,
+            c.criado_em,
+            c.atualizado_em,
+
+            (
+                c.saldo_inicial_centavos
+
+                +
+
+                COALESCE(
+                    (
+                        SELECT
+                            SUM(
+                                CASE
+                                    WHEN g.tipo = 'receita'
+                                        THEN t.valor_centavos
+
+                                    WHEN g.tipo = 'despesa'
+                                        THEN -t.valor_centavos
+
+                                    ELSE 0
+                                END
+                            )
+
+                        FROM transacoes t
+
+                        INNER JOIN subgrupos s
+                            ON s.id = t.subgrupo_id
+
+                        INNER JOIN grupos g
+                            ON g.id = s.grupo_id
+
+                        WHERE t.usuario_id = c.usuario_id
+
+                          AND g.usuario_id = c.usuario_id
+
+                          AND t.conta_id = c.id
+
+                          AND t.status = 'efetivada'
+
+                          AND t.data_efetivacao IS NOT NULL
+
+                          AND t.data_efetivacao >= c.saldo_inicial_em
+                    ),
+                    0
+                )
+            ) AS saldo_atual_centavos
+
+        FROM contas c
+
+        WHERE c.id = :id
+          AND c.usuario_id = :usuario_id
+
+        LIMIT 1
+    ");
 
         $stmt->execute([
             ':id' => $contaId,
@@ -181,8 +229,8 @@ final class AccountRepository
             => $saldoInicialEm
         ]);
 
-        return (int)
-        $this->pdo->lastInsertId();
+        return (int) 
+            $this->pdo->lastInsertId();
     }
 
 
@@ -203,5 +251,60 @@ final class AccountRepository
             ':id' => $contaId,
             ':usuario_id' => $usuarioId
         ]);
+    }
+
+    public function existsByNameExceptId(
+        int $usuarioId,
+        string $nome,
+        int $contaId
+    ): bool {
+        $stmt = $this->pdo->prepare("
+        SELECT 1
+        FROM contas
+        WHERE usuario_id = :usuario_id
+          AND nome = :nome
+          AND id <> :id
+        LIMIT 1
+    ");
+
+        $stmt->execute([
+            ':usuario_id' => $usuarioId,
+            ':nome' => $nome,
+            ':id' => $contaId
+        ]);
+
+        return $stmt->fetchColumn()
+            !== false;
+    }
+
+
+    public function updateDetails(
+        int $contaId,
+        int $usuarioId,
+        string $nome,
+        string $tipo,
+        ?string $instituicao
+    ): bool {
+        $stmt = $this->pdo->prepare("
+        UPDATE contas
+        SET
+            nome = :nome,
+            tipo = :tipo,
+            instituicao = :instituicao,
+            atualizado_em = CURRENT_TIMESTAMP
+        WHERE id = :id
+          AND usuario_id = :usuario_id
+          AND ativo = 1
+    ");
+
+        $stmt->execute([
+            ':nome' => $nome,
+            ':tipo' => $tipo,
+            ':instituicao' => $instituicao,
+            ':id' => $contaId,
+            ':usuario_id' => $usuarioId
+        ]);
+
+        return $stmt->rowCount() === 1;
     }
 }

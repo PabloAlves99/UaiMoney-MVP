@@ -125,9 +125,12 @@ $categoryController = new CategoryController(
 $accountController = new AccountController(
     $authService,
     $accountService,
+    $transactionService,
+    $categoryService,
     $csrf,
     $basePath
 );
+
 $transactionController = new TransactionController(
     $authService,
     $transactionService,
@@ -177,8 +180,8 @@ $registerRoutes(
 
 $router->dispatch(
     $_SERVER['REQUEST_METHOD']
-        ?? 'GET',
+    ?? 'GET',
 
     $_SERVER['REQUEST_URI']
-        ?? '/'
+    ?? '/'
 );

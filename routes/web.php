@@ -138,6 +138,24 @@ return function (Router $router, AuthController $authController, UserPreferenceC
     );
 
 
+    $router->get(
+        '/contas/{id}',
+        [$accountController, 'show']
+    );
+
+
+    $router->get(
+        '/contas/{id}/editar',
+        [$accountController, 'edit']
+    );
+
+
+    $router->post(
+        '/contas/{id}/editar',
+        [$accountController, 'update']
+    );
+
+
     $router->post(
         '/contas/{id}/desativar',
         [$accountController, 'deactivate']
