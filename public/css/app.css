@@ -747,3 +747,15 @@ a:hover {
     font-size: 0.68rem;
   }
 }
+
+.modal-dialog-scrollable .modal-body {
+  max-height: calc(100vh - 220px);
+  overflow-y: auto;
+}
+
+@media (max-width: 575.98px) {
+  .modal-dialog-scrollable .modal-body {
+    max-height: calc(100vh - 170px);
+    overflow-y: auto;
+  }
+}

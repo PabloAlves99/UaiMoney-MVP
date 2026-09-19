@@ -11,6 +11,7 @@ use App\Services\AuthService;
 use App\Services\CategoryService;
 use App\Services\TransactionService;
 use App\Services\InstallmentService;
+use App\Services\RecurrenceService;
 use DomainException;
 
 final class TransactionController extends BaseController
@@ -21,6 +22,7 @@ final class TransactionController extends BaseController
         private readonly CategoryService $categoryService,
         private readonly AccountService $accountService,
         private readonly InstallmentService $installmentService,
+        private readonly RecurrenceService $recurrenceService,
         Csrf $csrf,
         string $basePath
     ) {
@@ -667,6 +669,236 @@ final class TransactionController extends BaseController
 
             $this->redirect(
                 '/movimentacoes'
+            );
+
+
+        } catch (DomainException $e) {
+
+            http_response_code(422);
+
+            $this->renderIndex(
+                $usuario,
+                $e->getMessage()
+            );
+        }
+    }
+
+    public function storeRecurrence(): void
+    {
+        $usuario = $this->requireUser();
+
+        $this->validateCsrf();
+
+
+        $subgrupoId = filter_var(
+            $_POST['subgrupo_id'] ?? null,
+            FILTER_VALIDATE_INT
+        );
+
+
+        if (
+            $subgrupoId === false
+            ||
+            $subgrupoId <= 0
+        ) {
+
+            http_response_code(422);
+
+            $this->renderIndex(
+                $usuario,
+                'Categoria inválida.'
+            );
+
+            return;
+        }
+
+
+        $intervalo = filter_var(
+            $_POST['intervalo'] ?? 1,
+            FILTER_VALIDATE_INT
+        );
+
+
+        if (
+            $intervalo === false
+            ||
+            $intervalo <= 0
+        ) {
+
+            http_response_code(422);
+
+            $this->renderIndex(
+                $usuario,
+                'Intervalo inválido.'
+            );
+
+            return;
+        }
+
+
+        /*
+         * Conta opcional.
+         */
+
+        $contaId = null;
+
+
+        if (
+            isset($_POST['conta_id'])
+            &&
+            $_POST['conta_id'] !== ''
+        ) {
+
+            $parsedContaId =
+                filter_var(
+                    $_POST['conta_id'],
+                    FILTER_VALIDATE_INT
+                );
+
+
+            if (
+                $parsedContaId === false
+                ||
+                $parsedContaId <= 0
+            ) {
+
+                http_response_code(422);
+
+                $this->renderIndex(
+                    $usuario,
+                    'Conta inválida.'
+                );
+
+                return;
+            }
+
+
+            $contaId =
+                $parsedContaId;
+        }
+
+
+        /*
+         * Duração.
+         */
+
+        $tipoDuracao =
+            $_POST['tipo_duracao']
+            ?? 'indefinida';
+
+
+        $totalOcorrencias =
+            null;
+
+
+        if (
+            $tipoDuracao
+            === 'quantidade'
+        ) {
+
+            $parsedTotal =
+                filter_var(
+                    $_POST[
+                        'total_ocorrencias'
+                    ] ?? null,
+                    FILTER_VALIDATE_INT
+                );
+
+
+            if (
+                $parsedTotal === false
+                ||
+                $parsedTotal <= 0
+            ) {
+
+                http_response_code(422);
+
+                $this->renderIndex(
+                    $usuario,
+                    'Quantidade de ocorrências inválida.'
+                );
+
+                return;
+            }
+
+
+            $totalOcorrencias =
+                $parsedTotal;
+        }
+
+
+        try {
+
+            $this
+                ->recurrenceService
+                ->create(
+                    (int) $usuario['id'],
+                    $subgrupoId,
+                    $contaId,
+                    $_POST['descricao']
+                    ?? '',
+                    $_POST['valor']
+                    ?? '',
+                    $_POST['frequencia']
+                    ?? '',
+                    $intervalo,
+                    $_POST['data_inicio']
+                    ?? '',
+                    $totalOcorrencias,
+                    $_POST['meio_pagamento']
+                    ?? null,
+                    $_POST['observacao']
+                    ?? null
+                );
+
+
+            $this->redirect(
+                '/movimentacoes'
+            );
+
+
+        } catch (DomainException $e) {
+
+            http_response_code(422);
+
+            $this->renderIndex(
+                $usuario,
+                $e->getMessage()
+            );
+        }
+    }
+
+    public function processRecurrences(): void
+    {
+        $usuario = $this->requireUser();
+
+        $this->validateCsrf();
+
+
+        try {
+
+            $result = $this
+                ->recurrenceService
+                ->processDue(
+                    (int) $usuario['id']
+                );
+
+
+            $query = http_build_query([
+                'recorrencias_processadas' => 1,
+                'recorrencias_verificadas'
+                => $result['recorrencias'],
+                'ocorrencias_criadas'
+                => $result['ocorrencias_criadas'],
+                'recorrencias_encerradas'
+                => $result[
+                        'recorrencias_encerradas'
+                    ]
+            ]);
+
+
+            $this->redirect(
+                '/movimentacoes?' . $query
             );
 
 

@@ -7,12 +7,13 @@ use App\Controllers\UserPreferenceController;
 use App\Controllers\CategoryController;
 use App\Controllers\AccountController;
 use App\Controllers\TransactionController;
+use App\Controllers\RecurrenceController;
 use App\Core\Csrf;
 use App\Core\Router;
 use App\Core\View;
 use App\Services\AuthService;
 
-return function (Router $router, AuthController $authController, UserPreferenceController $userPreferenceController, CategoryController $categoryController, AccountController $accountController, TransactionController $transactionController, AuthService $authService, Csrf $csrf, string $basePath): void {
+return function (Router $router, AuthController $authController, UserPreferenceController $userPreferenceController, CategoryController $categoryController, AccountController $accountController, TransactionController $transactionController, RecurrenceController $recurrenceController, AuthService $authService, Csrf $csrf, string $basePath): void {
     /*
      * Autenticação
      */
@@ -162,10 +163,10 @@ return function (Router $router, AuthController $authController, UserPreferenceC
     );
 
     /*
-    |--------------------------------------------------------------------------
-    | Movimentações
-    |--------------------------------------------------------------------------
-    */
+|--------------------------------------------------------------------------
+| Movimentações
+|--------------------------------------------------------------------------
+*/
 
     $router->get(
         '/movimentacoes',
@@ -176,50 +177,94 @@ return function (Router $router, AuthController $authController, UserPreferenceC
         '/movimentacoes',
         [$transactionController, 'store']
     );
-
-    $router->post(
-        '/parcelamentos',
-        [$transactionController, 'storeInstallment']
-    );
-
-    /*
-    |--------------------------------------------------------------------------
-    | Movimentações
-    |--------------------------------------------------------------------------
-    */
-
-    $router->get(
-        '/movimentacoes',
-        [$transactionController, 'index']
-    );
-
-
-    $router->post(
-        '/movimentacoes',
-        [$transactionController, 'store']
-    );
-
 
     $router->get(
         '/movimentacoes/{id}/editar',
         [$transactionController, 'edit']
     );
 
-
     $router->post(
         '/movimentacoes/{id}/editar',
         [$transactionController, 'update']
     );
-
 
     $router->post(
         '/movimentacoes/{id}/efetivar',
         [$transactionController, 'effect']
     );
 
-
     $router->post(
         '/movimentacoes/{id}/cancelar',
         [$transactionController, 'cancel']
+    );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Parcelamentos
+    |--------------------------------------------------------------------------
+    */
+
+    $router->post(
+        '/parcelamentos',
+        [$transactionController, 'storeInstallment']
+    );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Recorrências
+    |--------------------------------------------------------------------------
+    |
+    | O cadastro continua no TransactionController por enquanto.
+    | O gerenciamento fica no RecurrenceController.
+    |
+    */
+
+    $router->post(
+        '/recorrencias',
+        [$transactionController, 'storeRecurrence']
+    );
+
+    $router->get(
+        '/recorrencias',
+        [$recurrenceController, 'index']
+    );
+
+    $router->post(
+        '/recorrencias/processar',
+        [$recurrenceController, 'process']
+    );
+
+    $router->post(
+        '/recorrencias/{id}/pausar',
+        [$recurrenceController, 'pause']
+    );
+
+    $router->post(
+        '/recorrencias/{id}/retomar',
+        [$recurrenceController, 'resume']
+    );
+
+    $router->post(
+        '/recorrencias/{id}/encerrar',
+        [$recurrenceController, 'finish']
+    );
+
+    $router->get(
+        '/recorrencias/{id}/editar',
+        [
+            $recurrenceController,
+            'edit'
+        ]
+    );
+
+
+    $router->post(
+        '/recorrencias/{id}/editar',
+        [
+            $recurrenceController,
+            'update'
+        ]
     );
 };

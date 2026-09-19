@@ -7,6 +7,7 @@ use App\Controllers\CategoryController;
 use App\Controllers\UserPreferenceController;
 use App\Controllers\AccountController;
 use App\Controllers\TransactionController;
+use App\Controllers\RecurrenceController;
 
 use App\Core\Router;
 
@@ -15,6 +16,7 @@ use App\Repositories\UserRepository;
 use App\Repositories\AccountRepository;
 use App\Repositories\TransactionRepository;
 use App\Repositories\InstallmentRepository;
+use App\Repositories\RecurrenceRepository;
 
 use App\Services\AuthService;
 use App\Services\CategoryService;
@@ -22,6 +24,7 @@ use App\Services\UserPreferenceService;
 use App\Services\AccountService;
 use App\Services\TransactionService;
 use App\Services\InstallmentService;
+use App\Services\RecurrenceService;
 
 /*
 |--------------------------------------------------------------------------
@@ -73,6 +76,10 @@ $installmentRepository = new InstallmentRepository(
     $pdo
 );
 
+$recurrenceRepository = new RecurrenceRepository(
+    $pdo
+);
+
 /*
 |--------------------------------------------------------------------------
 | Services
@@ -105,6 +112,14 @@ $transactionService = new TransactionService(
 $installmentService = new InstallmentService(
     $pdo,
     $installmentRepository,
+    $transactionRepository,
+    $categoryRepository,
+    $accountRepository
+);
+
+$recurrenceService = new RecurrenceService(
+    $pdo,
+    $recurrenceRepository,
     $transactionRepository,
     $categoryRepository,
     $accountRepository
@@ -151,9 +166,19 @@ $transactionController = new TransactionController(
     $categoryService,
     $accountService,
     $installmentService,
+    $recurrenceService,
     $csrf,
     $basePath
 );
+
+$recurrenceController = new RecurrenceController(
+        $authService,
+        $recurrenceService,
+        $categoryService,
+        $accountService,
+        $csrf,
+        $basePath
+    );
 
 /*
 |--------------------------------------------------------------------------
@@ -182,6 +207,7 @@ $registerRoutes(
     $categoryController,
     $accountController,
     $transactionController,
+    $recurrenceController,
     $authService,
     $csrf,
     $basePath

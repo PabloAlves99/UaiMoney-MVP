@@ -468,4 +468,118 @@ final class TransactionRepository
         return (int) 
             $this->pdo->lastInsertId();
     }
+
+    public function recurringOccurrenceExists(
+        int $recorrenciaId,
+        string $dataVencimento
+    ): bool {
+        $stmt = $this->pdo->prepare("
+        SELECT 1
+
+        FROM transacoes
+
+        WHERE recorrencia_id
+            = :recorrencia_id
+
+          AND data_vencimento
+            = :data_vencimento
+
+        LIMIT 1
+    ");
+
+        $stmt->execute([
+            ':recorrencia_id'
+            => $recorrenciaId,
+
+            ':data_vencimento'
+            => $dataVencimento
+        ]);
+
+        return $stmt->fetchColumn()
+            !== false;
+    }
+
+    public function createRecurringOccurrence(
+        int $usuarioId,
+        int $subgrupoId,
+        ?int $contaId,
+        int $recorrenciaId,
+        string $descricao,
+        int $valorCentavos,
+        string $dataVencimento,
+        ?string $meioPagamento,
+        ?string $observacao
+    ): int {
+        $stmt = $this->pdo->prepare("
+        INSERT INTO transacoes (
+            usuario_id,
+            subgrupo_id,
+            conta_id,
+            recorrencia_id,
+
+            descricao,
+            valor_centavos,
+
+            data_competencia,
+            data_vencimento,
+            data_efetivacao,
+
+            status,
+            meio_pagamento,
+            observacao
+        )
+        VALUES (
+            :usuario_id,
+            :subgrupo_id,
+            :conta_id,
+            :recorrencia_id,
+
+            :descricao,
+            :valor_centavos,
+
+            :data_competencia,
+            :data_vencimento,
+            NULL,
+
+            'pendente',
+            :meio_pagamento,
+            :observacao
+        )
+    ");
+
+        $stmt->execute([
+            ':usuario_id'
+            => $usuarioId,
+
+            ':subgrupo_id'
+            => $subgrupoId,
+
+            ':conta_id'
+            => $contaId,
+
+            ':recorrencia_id'
+            => $recorrenciaId,
+
+            ':descricao'
+            => $descricao,
+
+            ':valor_centavos'
+            => $valorCentavos,
+
+            ':data_competencia'
+            => $dataVencimento,
+
+            ':data_vencimento'
+            => $dataVencimento,
+
+            ':meio_pagamento'
+            => $meioPagamento,
+
+            ':observacao'
+            => $observacao
+        ]);
+
+        return (int) 
+            $this->pdo->lastInsertId();
+    }
 }
