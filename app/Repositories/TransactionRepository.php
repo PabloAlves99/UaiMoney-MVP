@@ -10,7 +10,8 @@ final class TransactionRepository
 {
     public function __construct(
         private readonly PDO $pdo
-    ) {}
+    ) {
+    }
 
 
     public function listByUser(
@@ -128,5 +129,94 @@ final class TransactionRepository
         ]);
 
         return (int) $this->pdo->lastInsertId();
+    }
+
+    public function findById(
+        int $transacaoId,
+        int $usuarioId
+    ): ?array {
+        $stmt = $this->pdo->prepare("
+        SELECT
+            id,
+            usuario_id,
+            subgrupo_id,
+            conta_id,
+            descricao,
+            valor_centavos,
+            data_competencia,
+            data_vencimento,
+            data_efetivacao,
+            status,
+            meio_pagamento,
+            observacao
+        FROM transacoes
+        WHERE id = :id
+          AND usuario_id = :usuario_id
+        LIMIT 1
+    ");
+
+        $stmt->execute([
+            ':id' => $transacaoId,
+            ':usuario_id' => $usuarioId
+        ]);
+
+        $transacao = $stmt->fetch();
+
+        return $transacao ?: null;
+    }
+
+
+    public function effect(
+        int $transacaoId,
+        int $usuarioId,
+        int $contaId,
+        string $dataEfetivacao
+    ): bool {
+        $stmt = $this->pdo->prepare("
+        UPDATE transacoes
+        SET
+            conta_id = :conta_id,
+            data_efetivacao = :data_efetivacao,
+            status = 'efetivada',
+            atualizado_em = CURRENT_TIMESTAMP
+        WHERE id = :id
+          AND usuario_id = :usuario_id
+          AND status = 'pendente'
+    ");
+
+        $stmt->execute([
+            ':conta_id' => $contaId,
+            ':data_efetivacao' => $dataEfetivacao,
+            ':id' => $transacaoId,
+            ':usuario_id' => $usuarioId
+        ]);
+
+        return $stmt->rowCount() === 1;
+    }
+
+
+    public function cancel(
+        int $transacaoId,
+        int $usuarioId
+    ): bool {
+        $stmt = $this->pdo->prepare("
+        UPDATE transacoes
+        SET
+            status = 'cancelada',
+            atualizado_em = CURRENT_TIMESTAMP
+        WHERE id = :id
+          AND usuario_id = :usuario_id
+          AND status IN (
+              'pendente',
+              'efetivada'
+          )
+    ");
+
+        $stmt->execute([
+            ':id' => $transacaoId,
+            ':usuario_id' => $usuarioId
+        ]);
+
+        return $stmt->rowCount() === 1;
     }
 }

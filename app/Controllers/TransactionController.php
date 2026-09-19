@@ -173,9 +173,114 @@ final class TransactionController extends BaseController
                 'basePath' => $this->basePath,
                 'csrfToken' => $this->csrf->token(),
                 'pageTitle'
-                    => 'Movimentações - UaiMoney'
+                => 'Movimentações - UaiMoney'
             ],
             'layouts/app'
         );
+    }
+
+    public function effect(
+        string $id
+    ): void {
+        $usuario = $this->requireUser();
+
+        $this->validateCsrf();
+
+
+        $transacaoId = $this->parseId(
+            $id
+        );
+
+
+        $contaId = filter_var(
+            $_POST['conta_id'] ?? null,
+            FILTER_VALIDATE_INT
+        );
+
+
+        if (
+            $contaId === false ||
+            $contaId <= 0
+        ) {
+            http_response_code(422);
+
+            $this->renderIndex(
+                $usuario,
+                'Selecione uma conta válida.'
+            );
+
+            return;
+        }
+
+
+        $dataEfetivacao =
+            $_POST['data_efetivacao']
+            ?? '';
+
+
+        try {
+
+            $this->transactionService
+                ->effect(
+                    (int) $usuario['id'],
+                    $transacaoId,
+                    $contaId,
+                    $dataEfetivacao
+                );
+
+
+            $this->redirect(
+                '/movimentacoes'
+            );
+
+
+        } catch (DomainException $e) {
+
+            http_response_code(422);
+
+            $this->renderIndex(
+                $usuario,
+                $e->getMessage()
+            );
+        }
+    }
+
+
+    public function cancel(
+        string $id
+    ): void {
+        $usuario = $this->requireUser();
+
+        $this->validateCsrf();
+
+
+        $transacaoId = $this->parseId(
+            $id
+        );
+
+
+        try {
+
+            $this->transactionService
+                ->cancel(
+                    (int) $usuario['id'],
+                    $transacaoId
+                );
+
+
+            $this->redirect(
+                '/movimentacoes'
+            );
+
+
+        } catch (DomainException $e) {
+
+            http_response_code(422);
+
+            $this->renderIndex(
+                $usuario,
+                $e->getMessage()
+            );
+        }
     }
 }

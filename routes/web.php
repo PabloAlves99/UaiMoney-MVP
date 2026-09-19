@@ -12,17 +12,7 @@ use App\Core\Router;
 use App\Core\View;
 use App\Services\AuthService;
 
-return function (
-    Router $router,
-    AuthController $authController,
-    UserPreferenceController $userPreferenceController,
-    CategoryController $categoryController,
-    AccountController $accountController,
-    TransactionController $transactionController,
-    AuthService $authService,
-    Csrf $csrf,
-    string $basePath
-): void {
+return function (Router $router, AuthController $authController, UserPreferenceController $userPreferenceController, CategoryController $categoryController, AccountController $accountController, TransactionController $transactionController, AuthService $authService, Csrf $csrf, string $basePath): void {
     /*
      * Autenticação
      */
@@ -75,8 +65,8 @@ return function (
 
                 header(
                     'Location: '
-                        . $basePath
-                        . '/login'
+                    . $basePath
+                    . '/login'
                 );
 
                 exit;
@@ -167,5 +157,34 @@ return function (
     $router->post(
         '/movimentacoes',
         [$transactionController, 'store']
+    );
+
+    /*
+    |--------------------------------------------------------------------------
+    | Movimentações
+    |--------------------------------------------------------------------------
+    */
+
+    $router->get(
+        '/movimentacoes',
+        [$transactionController, 'index']
+    );
+
+
+    $router->post(
+        '/movimentacoes',
+        [$transactionController, 'store']
+    );
+
+
+    $router->post(
+        '/movimentacoes/{id}/efetivar',
+        [$transactionController, 'effect']
+    );
+
+
+    $router->post(
+        '/movimentacoes/{id}/cancelar',
+        [$transactionController, 'cancel']
     );
 };

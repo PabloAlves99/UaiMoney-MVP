@@ -7,8 +7,7 @@ use App\Core\Money;
 ?>
 
 
-<div
-    class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center mb-4">
 
     <div>
 
@@ -78,22 +77,17 @@ use App\Core\Money;
 
         <?php else: ?>
 
-            <form
-                method="POST"
-                action="<?= htmlspecialchars(
-                            $basePath . '/movimentacoes',
-                            ENT_QUOTES,
-                            'UTF-8'
-                        ) ?>">
+            <form method="POST" action="<?= htmlspecialchars(
+                $basePath . '/movimentacoes',
+                ENT_QUOTES,
+                'UTF-8'
+            ) ?>">
 
-                <input
-                    type="hidden"
-                    name="_token"
-                    value="<?= htmlspecialchars(
-                                $csrfToken,
-                                ENT_QUOTES,
-                                'UTF-8'
-                            ) ?>">
+                <input type="hidden" name="_token" value="<?= htmlspecialchars(
+                    $csrfToken,
+                    ENT_QUOTES,
+                    'UTF-8'
+                ) ?>">
 
 
                 <div class="row g-3">
@@ -103,19 +97,12 @@ use App\Core\Money;
 
                     <div class="col-md-6">
 
-                        <label
-                            for="descricao"
-                            class="form-label">
+                        <label for="descricao" class="form-label">
                             Descrição
                         </label>
 
-                        <input
-                            type="text"
-                            class="form-control"
-                            id="descricao"
-                            name="descricao"
-                            placeholder="Ex.: Conta de energia"
-                            required>
+                        <input type="text" class="form-control" id="descricao" name="descricao"
+                            placeholder="Ex.: Conta de energia" required>
 
                     </div>
 
@@ -124,21 +111,12 @@ use App\Core\Money;
 
                     <div class="col-md-3">
 
-                        <label
-                            for="valor"
-                            class="form-label">
+                        <label for="valor" class="form-label">
                             Valor
                         </label>
 
-                        <input
-                            type="number"
-                            class="form-control"
-                            id="valor"
-                            name="valor"
-                            min="0.01"
-                            step="0.01"
-                            placeholder="0,00"
-                            required>
+                        <input type="number" class="form-control" id="valor" name="valor" min="0.01" step="0.01"
+                            placeholder="0,00" required>
 
                     </div>
 
@@ -147,17 +125,11 @@ use App\Core\Money;
 
                     <div class="col-md-3">
 
-                        <label
-                            for="status"
-                            class="form-label">
+                        <label for="status" class="form-label">
                             Status
                         </label>
 
-                        <select
-                            class="form-select"
-                            id="status"
-                            name="status"
-                            required>
+                        <select class="form-select" id="status" name="status" required>
 
                             <option value="pendente">
                                 Pendente
@@ -176,17 +148,11 @@ use App\Core\Money;
 
                     <div class="col-md-6">
 
-                        <label
-                            for="subgrupoId"
-                            class="form-label">
+                        <label for="subgrupoId" class="form-label">
                             Categoria
                         </label>
 
-                        <select
-                            class="form-select"
-                            id="subgrupoId"
-                            name="subgrupo_id"
-                            required>
+                        <select class="form-select" id="subgrupoId" name="subgrupo_id" required>
 
                             <option value="">
                                 Selecione
@@ -199,11 +165,10 @@ use App\Core\Money;
                             ): ?>
 
 
-                                <optgroup
-                                    label="<?= $tipo === 'receita'
-                                                ? 'Receitas'
-                                                : 'Despesas'
-                                            ?>">
+                                <optgroup label="<?= $tipo === 'receita'
+                                    ? 'Receitas'
+                                    : 'Despesas'
+                                    ?>">
 
 
                                     <?php foreach (
@@ -223,15 +188,14 @@ use App\Core\Money;
                                             as $subgrupo
                                         ): ?>
 
-                                            <option
-                                                value="<?= (int)
-                                                        $subgrupo['id']
-                                                        ?>">
+                                            <option value="<?= (int) 
+                                                $subgrupo['id']
+                                                ?>">
 
                                                 <?= htmlspecialchars(
                                                     $grupo['nome']
-                                                        . ' - '
-                                                        . $subgrupo['nome'],
+                                                    . ' - '
+                                                    . $subgrupo['nome'],
                                                     ENT_QUOTES,
                                                     'UTF-8'
                                                 ) ?>
@@ -259,16 +223,11 @@ use App\Core\Money;
 
                     <div class="col-md-6">
 
-                        <label
-                            for="contaId"
-                            class="form-label">
+                        <label for="contaId" class="form-label">
                             Conta
                         </label>
 
-                        <select
-                            class="form-select"
-                            id="contaId"
-                            name="conta_id">
+                        <select class="form-select" id="contaId" name="conta_id">
 
                             <option value="">
                                 Nenhuma / definir depois
@@ -277,10 +236,9 @@ use App\Core\Money;
 
                             <?php foreach ($contas as $conta): ?>
 
-                                <option
-                                    value="<?= (int)
-                                            $conta['id']
-                                            ?>">
+                                <option value="<?= (int) 
+                                    $conta['id']
+                                    ?>">
 
                                     <?= htmlspecialchars(
                                         $conta['nome'],
@@ -309,19 +267,12 @@ use App\Core\Money;
 
                     <div class="col-md-4">
 
-                        <label
-                            for="dataCompetencia"
-                            class="form-label">
+                        <label for="dataCompetencia" class="form-label">
                             Competência
                         </label>
 
-                        <input
-                            type="date"
-                            class="form-control"
-                            id="dataCompetencia"
-                            name="data_competencia"
-                            value="<?= date('Y-m-d') ?>"
-                            required>
+                        <input type="date" class="form-control" id="dataCompetencia" name="data_competencia"
+                            value="<?= date('Y-m-d') ?>" required>
 
                     </div>
 
@@ -330,19 +281,12 @@ use App\Core\Money;
 
                     <div class="col-md-4">
 
-                        <label
-                            for="dataVencimento"
-                            class="form-label">
+                        <label for="dataVencimento" class="form-label">
                             Vencimento
                         </label>
 
-                        <input
-                            type="date"
-                            class="form-control"
-                            id="dataVencimento"
-                            name="data_vencimento"
-                            value="<?= date('Y-m-d') ?>"
-                            required>
+                        <input type="date" class="form-control" id="dataVencimento" name="data_vencimento"
+                            value="<?= date('Y-m-d') ?>" required>
 
                     </div>
 
@@ -351,17 +295,11 @@ use App\Core\Money;
 
                     <div class="col-md-4">
 
-                        <label
-                            for="dataEfetivacao"
-                            class="form-label">
+                        <label for="dataEfetivacao" class="form-label">
                             Efetivação
                         </label>
 
-                        <input
-                            type="date"
-                            class="form-control"
-                            id="dataEfetivacao"
-                            name="data_efetivacao">
+                        <input type="date" class="form-control" id="dataEfetivacao" name="data_efetivacao">
 
                         <div class="form-text">
 
@@ -377,16 +315,11 @@ use App\Core\Money;
 
                     <div class="col-md-4">
 
-                        <label
-                            for="meioPagamento"
-                            class="form-label">
+                        <label for="meioPagamento" class="form-label">
                             Meio de pagamento
                         </label>
 
-                        <select
-                            class="form-select"
-                            id="meioPagamento"
-                            name="meio_pagamento">
+                        <select class="form-select" id="meioPagamento" name="meio_pagamento">
 
                             <option value="">
                                 Não informado
@@ -429,17 +362,11 @@ use App\Core\Money;
 
                     <div class="col-md-8">
 
-                        <label
-                            for="observacao"
-                            class="form-label">
+                        <label for="observacao" class="form-label">
                             Observação
                         </label>
 
-                        <input
-                            type="text"
-                            class="form-control"
-                            id="observacao"
-                            name="observacao"
+                        <input type="text" class="form-control" id="observacao" name="observacao"
                             placeholder="Informação adicional...">
 
                     </div>
@@ -449,9 +376,7 @@ use App\Core\Money;
 
                     <div class="col-12">
 
-                        <button
-                            type="submit"
-                            class="btn btn-uai-primary">
+                        <button type="submit" class="btn btn-uai-primary">
                             Salvar movimentação
                         </button>
 
@@ -474,8 +399,7 @@ use App\Core\Money;
 |--------------------------------------------------------------------------
 -->
 
-<div
-    class="d-flex justify-content-between align-items-center mb-3">
+<div class="d-flex justify-content-between align-items-center mb-3">
 
     <div>
 
@@ -525,8 +449,7 @@ use App\Core\Money;
 
         <div class="table-responsive">
 
-            <table
-                class="table align-middle mb-0">
+            <table class="table align-middle mb-0">
 
                 <thead>
 
@@ -554,6 +477,10 @@ use App\Core\Money;
 
                         <th class="text-end">
                             Valor
+                        </th>
+
+                        <th class="text-end">
+                            Ações
                         </th>
 
                     </tr>
@@ -691,8 +618,7 @@ use App\Core\Money;
                                     $meioPagamento !== null
                                 ): ?>
 
-                                    <small
-                                        class="text-uai-muted">
+                                    <small class="text-uai-muted">
 
                                         <?= htmlspecialchars(
                                             $meioPagamento,
@@ -711,8 +637,7 @@ use App\Core\Money;
 
                                     <div>
 
-                                        <small
-                                            class="text-uai-muted">
+                                        <small class="text-uai-muted">
 
                                             <?= htmlspecialchars(
                                                 $transacao['observacao'],
@@ -743,8 +668,7 @@ use App\Core\Money;
 
                                 </div>
 
-                                <small
-                                    class="text-uai-muted">
+                                <small class="text-uai-muted">
 
                                     <?= htmlspecialchars(
                                         $transacao['subgrupo_nome'],
@@ -774,8 +698,7 @@ use App\Core\Money;
 
                                 <?php else: ?>
 
-                                    <span
-                                        class="text-uai-muted">
+                                    <span class="text-uai-muted">
                                         —
                                     </span>
 
@@ -788,8 +711,7 @@ use App\Core\Money;
 
                             <td>
 
-                                <span
-                                    class="badge <?= $statusClass ?>">
+                                <span class="badge <?= $statusClass ?>">
 
                                     <?= htmlspecialchars(
                                         ucfirst($status),
@@ -804,20 +726,18 @@ use App\Core\Money;
 
                             <!-- Valor -->
 
-                            <td
-                                class="text-end fw-semibold">
+                            <td class="text-end fw-semibold">
 
 
                                 <?php if (
                                     $tipo === 'receita'
                                 ): ?>
 
-                                    <span
-                                        class="text-success">
+                                    <span class="text-success">
 
                                         +
                                         <?= Money::format(
-                                            (int)
+                                            (int) 
                                             $transacao['valor_centavos']
                                         ) ?>
 
@@ -826,12 +746,11 @@ use App\Core\Money;
 
                                 <?php else: ?>
 
-                                    <span
-                                        class="text-danger">
+                                    <span class="text-danger">
 
                                         -
                                         <?= Money::format(
-                                            (int)
+                                            (int) 
                                             $transacao['valor_centavos']
                                         ) ?>
 
@@ -839,6 +758,121 @@ use App\Core\Money;
 
                                 <?php endif; ?>
 
+
+                            </td>
+
+                            <td class="text-end">
+
+                                <?php if ($status === 'pendente'): ?>
+
+                                    <form method="POST" action="<?= htmlspecialchars(
+                                        $basePath
+                                        . '/movimentacoes/'
+                                        . (int) $transacao['id']
+                                        . '/efetivar',
+                                        ENT_QUOTES,
+                                        'UTF-8'
+                                    ) ?>" class="mb-2">
+
+                                        <input type="hidden" name="_token" value="<?= htmlspecialchars(
+                                            $csrfToken,
+                                            ENT_QUOTES,
+                                            'UTF-8'
+                                        ) ?>">
+
+
+                                        <div class="d-flex gap-2 justify-content-end flex-wrap">
+
+                                            <select name="conta_id" class="form-select form-select-sm" style="max-width: 170px;"
+                                                required>
+
+                                                <option value="">
+                                                    Conta
+                                                </option>
+
+
+                                                <?php foreach (
+                                                    $contas as $conta
+                                                ): ?>
+
+                                                    <option value="<?= (int) $conta['id'] ?>" <?= (
+                                                           $transacao['conta_id'] !== null
+                                                           &&
+                                                           (int) $transacao['conta_id']
+                                                           === (int) $conta['id']
+                                                       )
+                                                           ? 'selected'
+                                                           : ''
+                                                           ?>
+                            >
+
+                                                        <?= htmlspecialchars(
+                                                            $conta['nome'],
+                                                            ENT_QUOTES,
+                                                            'UTF-8'
+                                                        ) ?>
+
+                                                    </option>
+
+                                                <?php endforeach; ?>
+
+                                            </select>
+
+
+                                            <input type="date" name="data_efetivacao" class="form-control form-control-sm"
+                                                value="<?= date('Y-m-d') ?>" style="max-width: 150px;" required>
+
+
+                                            <button type="submit" class="btn btn-sm btn-success">
+                                                Efetivar
+                                            </button>
+
+                                        </div>
+
+                                    </form>
+
+                                <?php endif; ?>
+
+
+                                <?php if (
+                                    $status === 'pendente'
+                                    ||
+                                    $status === 'efetivada'
+                                ): ?>
+
+                                    <form method="POST" action="<?= htmlspecialchars(
+                                        $basePath
+                                        . '/movimentacoes/'
+                                        . (int) $transacao['id']
+                                        . '/cancelar',
+                                        ENT_QUOTES,
+                                        'UTF-8'
+                                    ) ?>">
+
+                                        <input type="hidden" name="_token" value="<?= htmlspecialchars(
+                                            $csrfToken,
+                                            ENT_QUOTES,
+                                            'UTF-8'
+                                        ) ?>">
+
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            Cancelar
+                                        </button>
+
+                                    </form>
+
+                                <?php endif; ?>
+
+
+                                <?php if (
+                                    $status === 'cancelada'
+                                ): ?>
+
+                                    <span class="text-uai-muted small">
+                                        Sem ações
+                                    </span>
+
+                                <?php endif; ?>
 
                             </td>
 

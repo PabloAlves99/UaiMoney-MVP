@@ -66,13 +66,13 @@ final class TransactionService
 
         $meioPagamento =
             $meioPagamento !== null
-                ? strtolower(trim($meioPagamento))
-                : null;
+            ? strtolower(trim($meioPagamento))
+            : null;
 
         $observacao =
             $observacao !== null
-                ? trim($observacao)
-                : null;
+            ? trim($observacao)
+            : null;
 
 
         if ($descricao === '') {
@@ -273,6 +273,126 @@ final class TransactionService
 
         return $parsed !== false
             && $parsed->format('Y-m-d')
-                === $date;
+            === $date;
+    }
+
+    public function effect(
+        int $usuarioId,
+        int $transacaoId,
+        int $contaId,
+        string $dataEfetivacao
+    ): void {
+        $transacao = $this
+            ->transactionRepository
+            ->findById(
+                $transacaoId,
+                $usuarioId
+            );
+
+
+        if ($transacao === null) {
+            throw new DomainException(
+                'Movimentação não encontrada.'
+            );
+        }
+
+
+        if (
+            $transacao['status'] !== 'pendente'
+        ) {
+            throw new DomainException(
+                'Somente movimentações pendentes podem ser efetivadas.'
+            );
+        }
+
+
+        $conta = $this
+            ->accountRepository
+            ->findById(
+                $contaId,
+                $usuarioId
+            );
+
+
+        if (
+            $conta === null ||
+            (int) $conta['ativo'] !== 1
+        ) {
+            throw new DomainException(
+                'Conta inválida.'
+            );
+        }
+
+
+        if (
+            !$this->isValidDate(
+                $dataEfetivacao
+            )
+        ) {
+            throw new DomainException(
+                'Data de efetivação inválida.'
+            );
+        }
+
+
+        $efetivada = $this
+            ->transactionRepository
+            ->effect(
+                $transacaoId,
+                $usuarioId,
+                $contaId,
+                $dataEfetivacao
+            );
+
+
+        if (!$efetivada) {
+            throw new DomainException(
+                'Não foi possível efetivar a movimentação.'
+            );
+        }
+    }
+
+
+    public function cancel(
+        int $usuarioId,
+        int $transacaoId
+    ): void {
+        $transacao = $this
+            ->transactionRepository
+            ->findById(
+                $transacaoId,
+                $usuarioId
+            );
+
+
+        if ($transacao === null) {
+            throw new DomainException(
+                'Movimentação não encontrada.'
+            );
+        }
+
+
+        if (
+            $transacao['status'] === 'cancelada'
+        ) {
+            throw new DomainException(
+                'Esta movimentação já está cancelada.'
+            );
+        }
+
+
+        $cancelada = $this
+            ->transactionRepository
+            ->cancel(
+                $transacaoId,
+                $usuarioId
+            );
+
+
+        if (!$cancelada) {
+            throw new DomainException(
+                'Não foi possível cancelar a movimentação.'
+            );
+        }
     }
 }
