@@ -34,8 +34,18 @@ final class TransactionController extends BaseController
     {
         $usuario = $this->requireUser();
 
+
+        $filters = $this
+            ->transactionService
+            ->normalizeFilters(
+                $_GET
+            );
+
+
         $this->renderIndex(
-            $usuario
+            $usuario,
+            null,
+            $filters
         );
     }
 
@@ -141,39 +151,70 @@ final class TransactionController extends BaseController
 
     private function renderIndex(
         array $usuario,
-        ?string $error = null
+        ?string $error = null,
+        array $filters = []
     ): void {
         $usuarioId =
             (int) $usuario['id'];
 
 
+        $filters = $this
+            ->transactionService
+            ->normalizeFilters(
+                $filters
+            );
+
+
         $transacoes = $this
             ->transactionService
-            ->list($usuarioId);
+            ->list(
+                $usuarioId,
+                $filters
+            );
 
 
         $grupos = $this
             ->categoryService
-            ->list($usuarioId);
+            ->list(
+                $usuarioId
+            );
 
 
         $contas = $this
             ->accountService
-            ->list($usuarioId);
+            ->list(
+                $usuarioId
+            );
 
 
         View::render(
             'transactions/index',
             [
                 'usuario' => $usuario,
-                'transacoes' => $transacoes,
-                'grupos' => $grupos,
-                'contas' => $contas,
-                'error' => $error,
-                'basePath' => $this->basePath,
-                'csrfToken' => $this->csrf->token(),
-                'pageTitle'
-                => 'Movimentações - UaiMoney'
+
+                'transacoes' =>
+                    $transacoes,
+
+                'grupos' =>
+                    $grupos,
+
+                'contas' =>
+                    $contas,
+
+                'filters' =>
+                    $filters,
+
+                'error' =>
+                    $error,
+
+                'basePath' =>
+                    $this->basePath,
+
+                'csrfToken' =>
+                    $this->csrf->token(),
+
+                'pageTitle' =>
+                    'Movimentações - UaiMoney'
             ],
             'layouts/app'
         );

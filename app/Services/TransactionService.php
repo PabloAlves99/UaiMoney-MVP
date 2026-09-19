@@ -37,11 +37,20 @@ final class TransactionService
 
 
     public function list(
-        int $usuarioId
+        int $usuarioId,
+        array $filters = []
     ): array {
+        $filters = $this->normalizeFilters(
+            $filters
+        );
+
+
         return $this
             ->transactionRepository
-            ->listByUser($usuarioId);
+            ->listByUser(
+                $usuarioId,
+                $filters
+            );
     }
 
 
@@ -628,5 +637,168 @@ final class TransactionService
                 'Não foi possível cancelar a movimentação.'
             );
         }
+    }
+
+    public function normalizeFilters(
+        array $filters
+    ): array {
+        $normalized = [
+            'data_inicio' => '',
+            'data_fim' => '',
+            'status' => '',
+            'tipo' => '',
+            'conta_id' => null,
+            'grupo_id' => null
+        ];
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Datas
+        |--------------------------------------------------------------------------
+        */
+
+        $dataInicio = trim(
+            (string) (
+                $filters['data_inicio']
+                ?? ''
+            )
+        );
+
+
+        if (
+            $dataInicio !== '' &&
+            $this->isValidDate($dataInicio)
+        ) {
+            $normalized['data_inicio'] =
+                $dataInicio;
+        }
+
+
+        $dataFim = trim(
+            (string) (
+                $filters['data_fim']
+                ?? ''
+            )
+        );
+
+
+        if (
+            $dataFim !== '' &&
+            $this->isValidDate($dataFim)
+        ) {
+            $normalized['data_fim'] =
+                $dataFim;
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Status
+        |--------------------------------------------------------------------------
+        */
+
+        $status = strtolower(
+            trim(
+                (string) (
+                    $filters['status']
+                    ?? ''
+                )
+            )
+        );
+
+
+        if (
+            in_array(
+                $status,
+                [
+                    'pendente',
+                    'efetivada',
+                    'cancelada'
+                ],
+                true
+            )
+        ) {
+            $normalized['status'] =
+                $status;
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Tipo
+        |--------------------------------------------------------------------------
+        */
+
+        $tipo = strtolower(
+            trim(
+                (string) (
+                    $filters['tipo']
+                    ?? ''
+                )
+            )
+        );
+
+
+        if (
+            in_array(
+                $tipo,
+                [
+                    'receita',
+                    'despesa'
+                ],
+                true
+            )
+        ) {
+            $normalized['tipo'] =
+                $tipo;
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Conta
+        |--------------------------------------------------------------------------
+        */
+
+        $contaId = filter_var(
+            $filters['conta_id']
+            ?? null,
+            FILTER_VALIDATE_INT
+        );
+
+
+        if (
+            $contaId !== false &&
+            $contaId > 0
+        ) {
+            $normalized['conta_id'] =
+                $contaId;
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Categoria
+        |--------------------------------------------------------------------------
+        */
+
+        $grupoId = filter_var(
+            $filters['grupo_id']
+            ?? null,
+            FILTER_VALIDATE_INT
+        );
+
+
+        if (
+            $grupoId !== false &&
+            $grupoId > 0
+        ) {
+            $normalized['grupo_id'] =
+                $grupoId;
+        }
+
+
+        return $normalized;
     }
 }

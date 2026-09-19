@@ -260,3 +260,238 @@ a:hover {
 .border-uai {
   border-color: var(--uai-border) !important;
 }
+
+/* ==========================================================
+   Movimentações
+   ========================================================== */
+
+.uai-summary-card {
+  border: 1px solid var(--uai-border);
+  box-shadow: none;
+}
+
+.uai-summary-label {
+  font-size: 0.82rem;
+  color: var(--uai-text-muted);
+  margin-bottom: 0.35rem;
+}
+
+.uai-summary-value {
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.uai-summary-caption {
+  margin-top: 0.35rem;
+  font-size: 0.75rem;
+  color: var(--uai-text-muted);
+}
+
+.uai-history-card {
+  overflow: hidden;
+}
+
+.uai-transaction-list {
+  width: 100%;
+}
+
+.uai-transaction-item {
+  display: grid;
+
+  grid-template-columns:
+    75px
+    minmax(220px, 1fr)
+    110px
+    145px
+    48px;
+
+  gap: 1rem;
+
+  align-items: center;
+
+  padding: 1rem 1.25rem;
+
+  border-top: 1px solid var(--uai-border);
+}
+
+.uai-transaction-item:first-child {
+  border-top: 0;
+}
+
+.uai-transaction-item:hover {
+  background: var(--uai-surface-secondary);
+}
+
+.uai-transaction-date {
+  font-size: 0.9rem;
+}
+
+.uai-transaction-main {
+  min-width: 0;
+}
+
+.uai-transaction-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+
+  font-size: 0.78rem;
+
+  color: var(--uai-text-muted);
+}
+
+.uai-meta-separator {
+  opacity: 0.55;
+}
+
+.uai-type-indicator {
+  width: 8px;
+  height: 8px;
+
+  flex: 0 0 8px;
+
+  border-radius: 50%;
+}
+
+.uai-type-income {
+  background: var(--uai-success);
+}
+
+.uai-type-expense {
+  background: var(--uai-danger);
+}
+
+.uai-transaction-status {
+  text-align: center;
+}
+
+.uai-status {
+  display: inline-flex;
+  align-items: center;
+
+  padding: 0.28rem 0.55rem;
+
+  border-radius: 999px;
+
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.uai-status-success {
+  color: var(--uai-success);
+  background: color-mix(in srgb, var(--uai-success) 12%, transparent);
+}
+
+.uai-status-warning {
+  color: var(--uai-warning);
+  background: color-mix(in srgb, var(--uai-warning) 14%, transparent);
+}
+
+.uai-status-muted {
+  color: var(--uai-text-muted);
+  background: var(--uai-surface-secondary);
+}
+
+.uai-transaction-value {
+  text-align: right;
+
+  font-weight: 700;
+
+  white-space: nowrap;
+}
+
+.uai-transaction-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.uai-action-button {
+  min-width: 38px;
+
+  border-color: var(--uai-border);
+}
+
+/*
+|--------------------------------------------------------------------------
+| Responsividade
+|--------------------------------------------------------------------------
+*/
+
+@media (max-width: 767.98px) {
+  .uai-transaction-item {
+    grid-template-columns:
+      56px
+      minmax(0, 1fr)
+      auto;
+
+    gap: 0.7rem;
+
+    padding: 1rem;
+  }
+
+  .uai-transaction-main {
+    grid-column: 2 / 3;
+  }
+
+  .uai-transaction-status {
+    grid-column: 2 / 3;
+
+    text-align: left;
+  }
+
+  .uai-transaction-value {
+    grid-column: 2 / 3;
+
+    text-align: left;
+  }
+
+  .uai-transaction-actions {
+    grid-column: 3 / 4;
+
+    grid-row: 1 / 2;
+  }
+
+  .uai-summary-value {
+    font-size: 1.1rem;
+  }
+
+  .uai-summary-caption {
+    display: none;
+  }
+}
+
+/* ==========================================================
+   Filtros de movimentações
+   ========================================================== */
+
+.uai-filter-bar {
+  padding: 0.85rem 1.25rem;
+
+  border-top: 1px solid var(--uai-border);
+
+  border-bottom: 1px solid var(--uai-border);
+
+  background: var(--uai-surface-secondary);
+}
+
+.uai-filter-label {
+  margin-bottom: 0.3rem;
+
+  font-size: 0.72rem;
+  font-weight: 600;
+
+  color: var(--uai-text-muted);
+}
+
+.uai-filter-bar .form-control,
+.uai-filter-bar .form-select {
+  min-height: 34px;
+}
+
+@media (max-width: 767.98px) {
+  .uai-filter-bar {
+    padding: 0.85rem 1rem;
+  }
+}

@@ -15,59 +15,191 @@ final class TransactionRepository
 
 
     public function listByUser(
-        int $usuarioId
+        int $usuarioId,
+        array $filters = []
     ): array {
-        $stmt = $this->pdo->prepare("
-            SELECT
-                t.id,
+        $sql = "
+        SELECT
+            t.id,
 
-                t.descricao,
-                t.valor_centavos,
+            t.descricao,
+            t.valor_centavos,
 
-                t.data_competencia,
-                t.data_vencimento,
-                t.data_efetivacao,
+            t.data_competencia,
+            t.data_vencimento,
+            t.data_efetivacao,
 
-                t.status,
-                t.meio_pagamento,
-                t.observacao,
+            t.status,
+            t.meio_pagamento,
+            t.observacao,
 
-                s.id AS subgrupo_id,
-                s.nome AS subgrupo_nome,
+            s.id AS subgrupo_id,
+            s.nome AS subgrupo_nome,
 
-                g.id AS grupo_id,
-                g.nome AS grupo_nome,
-                g.tipo,
+            g.id AS grupo_id,
+            g.nome AS grupo_nome,
+            g.tipo,
 
-                c.id AS conta_id,
-                c.nome AS conta_nome
+            c.id AS conta_id,
+            c.nome AS conta_nome
 
-            FROM transacoes t
+        FROM transacoes t
 
-            INNER JOIN subgrupos s
-                ON s.id = t.subgrupo_id
+        INNER JOIN subgrupos s
+            ON s.id = t.subgrupo_id
 
-            INNER JOIN grupos g
-                ON g.id = s.grupo_id
+        INNER JOIN grupos g
+            ON g.id = s.grupo_id
 
-            LEFT JOIN contas c
-                ON c.id = t.conta_id
+        LEFT JOIN contas c
+            ON c.id = t.conta_id
 
-            WHERE t.usuario_id = :usuario_id
+        WHERE t.usuario_id = :usuario_id
+    ";
 
-            ORDER BY
-                COALESCE(
-                    t.data_efetivacao,
-                    t.data_vencimento,
-                    t.data_competencia
-                ) DESC,
 
-                t.id DESC
-        ");
-
-        $stmt->execute([
+        $params = [
             ':usuario_id' => $usuarioId
-        ]);
+        ];
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Período
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            isset($filters['data_inicio']) &&
+            $filters['data_inicio'] !== ''
+        ) {
+            $sql .= "
+            AND COALESCE(
+                t.data_efetivacao,
+                t.data_vencimento,
+                t.data_competencia
+            ) >= :data_inicio
+        ";
+
+            $params[':data_inicio'] =
+                $filters['data_inicio'];
+        }
+
+
+        if (
+            isset($filters['data_fim']) &&
+            $filters['data_fim'] !== ''
+        ) {
+            $sql .= "
+            AND COALESCE(
+                t.data_efetivacao,
+                t.data_vencimento,
+                t.data_competencia
+            ) <= :data_fim
+        ";
+
+            $params[':data_fim'] =
+                $filters['data_fim'];
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Status
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            isset($filters['status']) &&
+            $filters['status'] !== ''
+        ) {
+            $sql .= "
+            AND t.status = :status
+        ";
+
+            $params[':status'] =
+                $filters['status'];
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Tipo
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            isset($filters['tipo']) &&
+            $filters['tipo'] !== ''
+        ) {
+            $sql .= "
+            AND g.tipo = :tipo
+        ";
+
+            $params[':tipo'] =
+                $filters['tipo'];
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Conta
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            isset($filters['conta_id']) &&
+            $filters['conta_id'] !== null
+        ) {
+            $sql .= "
+            AND t.conta_id = :conta_id
+        ";
+
+            $params[':conta_id'] =
+                $filters['conta_id'];
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Categoria
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            isset($filters['grupo_id']) &&
+            $filters['grupo_id'] !== null
+        ) {
+            $sql .= "
+            AND g.id = :grupo_id
+        ";
+
+            $params[':grupo_id'] =
+                $filters['grupo_id'];
+        }
+
+
+        $sql .= "
+        ORDER BY
+            COALESCE(
+                t.data_efetivacao,
+                t.data_vencimento,
+                t.data_competencia
+            ) DESC,
+
+            t.id DESC
+    ";
+
+
+        $stmt = $this->pdo->prepare(
+            $sql
+        );
+
+
+        $stmt->execute(
+            $params
+        );
+
 
         return $stmt->fetchAll();
     }
