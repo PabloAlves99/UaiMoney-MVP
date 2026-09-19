@@ -21,9 +21,11 @@ final class TransactionRepository
         $sql = "
         SELECT
             t.id,
-
             t.descricao,
             t.valor_centavos,
+
+            t.parcelamento_id,
+            t.numero_parcela,
 
             t.data_competencia,
             t.data_vencimento,
@@ -41,7 +43,10 @@ final class TransactionRepository
             g.tipo,
 
             c.id AS conta_id,
-            c.nome AS conta_nome
+            c.nome AS conta_nome,
+
+            p.total_parcelas,
+            p.descricao AS parcelamento_descricao
 
         FROM transacoes t
 
@@ -53,6 +58,9 @@ final class TransactionRepository
 
         LEFT JOIN contas c
             ON c.id = t.conta_id
+
+        LEFT JOIN parcelamentos p
+            ON p.id = t.parcelamento_id
 
         WHERE t.usuario_id = :usuario_id
     ";
@@ -395,5 +403,69 @@ final class TransactionRepository
         ]);
 
         return $stmt->rowCount() === 1;
+    }
+
+    public function createInstallment(
+        int $usuarioId,
+        int $subgrupoId,
+        ?int $contaId,
+        int $parcelamentoId,
+        int $numeroParcela,
+        string $descricao,
+        int $valorCentavos,
+        string $dataCompetencia,
+        string $dataVencimento,
+        ?string $meioPagamento,
+        ?string $observacao
+    ): int {
+        $stmt = $this->pdo->prepare("
+        INSERT INTO transacoes (
+            usuario_id,
+            subgrupo_id,
+            conta_id,
+            parcelamento_id,
+            numero_parcela,
+            descricao,
+            valor_centavos,
+            data_competencia,
+            data_vencimento,
+            data_efetivacao,
+            status,
+            meio_pagamento,
+            observacao
+        )
+        VALUES (
+            :usuario_id,
+            :subgrupo_id,
+            :conta_id,
+            :parcelamento_id,
+            :numero_parcela,
+            :descricao,
+            :valor_centavos,
+            :data_competencia,
+            :data_vencimento,
+            NULL,
+            'pendente',
+            :meio_pagamento,
+            :observacao
+        )
+    ");
+
+        $stmt->execute([
+            ':usuario_id' => $usuarioId,
+            ':subgrupo_id' => $subgrupoId,
+            ':conta_id' => $contaId,
+            ':parcelamento_id' => $parcelamentoId,
+            ':numero_parcela' => $numeroParcela,
+            ':descricao' => $descricao,
+            ':valor_centavos' => $valorCentavos,
+            ':data_competencia' => $dataCompetencia,
+            ':data_vencimento' => $dataVencimento,
+            ':meio_pagamento' => $meioPagamento,
+            ':observacao' => $observacao
+        ]);
+
+        return (int) 
+            $this->pdo->lastInsertId();
     }
 }

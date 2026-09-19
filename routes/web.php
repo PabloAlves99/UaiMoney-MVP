@@ -177,6 +177,11 @@ return function (Router $router, AuthController $authController, UserPreferenceC
         [$transactionController, 'store']
     );
 
+    $router->post(
+        '/parcelamentos',
+        [$transactionController, 'storeInstallment']
+    );
+
     /*
     |--------------------------------------------------------------------------
     | Movimentações

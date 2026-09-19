@@ -10,6 +10,7 @@ use App\Services\AccountService;
 use App\Services\AuthService;
 use App\Services\CategoryService;
 use App\Services\TransactionService;
+use App\Services\InstallmentService;
 use DomainException;
 
 final class TransactionController extends BaseController
@@ -19,6 +20,7 @@ final class TransactionController extends BaseController
         private readonly TransactionService $transactionService,
         private readonly CategoryService $categoryService,
         private readonly AccountService $accountService,
+        private readonly InstallmentService $installmentService,
         Csrf $csrf,
         string $basePath
     ) {
@@ -559,5 +561,123 @@ final class TransactionController extends BaseController
             ],
             'layouts/app'
         );
+    }
+
+    public function storeInstallment(): void
+    {
+        $usuario = $this->requireUser();
+
+        $this->validateCsrf();
+
+
+        $subgrupoId = filter_var(
+            $_POST['subgrupo_id'] ?? null,
+            FILTER_VALIDATE_INT
+        );
+
+
+        if (
+            $subgrupoId === false ||
+            $subgrupoId <= 0
+        ) {
+            http_response_code(422);
+
+            $this->renderIndex(
+                $usuario,
+                'Categoria inválida.'
+            );
+
+            return;
+        }
+
+
+        $totalParcelas = filter_var(
+            $_POST['total_parcelas'] ?? null,
+            FILTER_VALIDATE_INT
+        );
+
+
+        if (
+            $totalParcelas === false ||
+            $totalParcelas <= 0
+        ) {
+            http_response_code(422);
+
+            $this->renderIndex(
+                $usuario,
+                'Quantidade de parcelas inválida.'
+            );
+
+            return;
+        }
+
+
+        $contaId = null;
+
+
+        if (
+            isset($_POST['conta_id']) &&
+            $_POST['conta_id'] !== ''
+        ) {
+
+            $parsedContaId = filter_var(
+                $_POST['conta_id'],
+                FILTER_VALIDATE_INT
+            );
+
+
+            if (
+                $parsedContaId === false ||
+                $parsedContaId <= 0
+            ) {
+                http_response_code(422);
+
+                $this->renderIndex(
+                    $usuario,
+                    'Conta inválida.'
+                );
+
+                return;
+            }
+
+
+            $contaId =
+                $parsedContaId;
+        }
+
+
+        try {
+
+            $this->installmentService
+                ->create(
+                    (int) $usuario['id'],
+                    $subgrupoId,
+                    $contaId,
+                    $_POST['descricao'] ?? '',
+                    $_POST['valor_total'] ?? '',
+                    $totalParcelas,
+                    $_POST['primeiro_vencimento']
+                    ?? '',
+                    $_POST['meio_pagamento']
+                    ?? null,
+                    $_POST['observacao']
+                    ?? null
+                );
+
+
+            $this->redirect(
+                '/movimentacoes'
+            );
+
+
+        } catch (DomainException $e) {
+
+            http_response_code(422);
+
+            $this->renderIndex(
+                $usuario,
+                $e->getMessage()
+            );
+        }
     }
 }

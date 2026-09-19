@@ -14,12 +14,14 @@ use App\Repositories\CategoryRepository;
 use App\Repositories\UserRepository;
 use App\Repositories\AccountRepository;
 use App\Repositories\TransactionRepository;
+use App\Repositories\InstallmentRepository;
 
 use App\Services\AuthService;
 use App\Services\CategoryService;
 use App\Services\UserPreferenceService;
 use App\Services\AccountService;
 use App\Services\TransactionService;
+use App\Services\InstallmentService;
 
 /*
 |--------------------------------------------------------------------------
@@ -67,6 +69,10 @@ $transactionRepository = new TransactionRepository(
     $pdo
 );
 
+$installmentRepository = new InstallmentRepository(
+    $pdo
+);
+
 /*
 |--------------------------------------------------------------------------
 | Services
@@ -91,6 +97,14 @@ $accountService = new AccountService(
 );
 
 $transactionService = new TransactionService(
+    $transactionRepository,
+    $categoryRepository,
+    $accountRepository
+);
+
+$installmentService = new InstallmentService(
+    $pdo,
+    $installmentRepository,
     $transactionRepository,
     $categoryRepository,
     $accountRepository
@@ -136,9 +150,11 @@ $transactionController = new TransactionController(
     $transactionService,
     $categoryService,
     $accountService,
+    $installmentService,
     $csrf,
     $basePath
 );
+
 /*
 |--------------------------------------------------------------------------
 | Router
