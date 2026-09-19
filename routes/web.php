@@ -177,6 +177,18 @@ return function (Router $router, AuthController $authController, UserPreferenceC
     );
 
 
+    $router->get(
+        '/movimentacoes/{id}/editar',
+        [$transactionController, 'edit']
+    );
+
+
+    $router->post(
+        '/movimentacoes/{id}/editar',
+        [$transactionController, 'update']
+    );
+
+
     $router->post(
         '/movimentacoes/{id}/efetivar',
         [$transactionController, 'effect']

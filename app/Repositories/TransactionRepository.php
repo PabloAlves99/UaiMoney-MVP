@@ -219,4 +219,49 @@ final class TransactionRepository
 
         return $stmt->rowCount() === 1;
     }
+
+    public function updatePending(
+        int $transacaoId,
+        int $usuarioId,
+        int $subgrupoId,
+        ?int $contaId,
+        string $descricao,
+        int $valorCentavos,
+        string $dataCompetencia,
+        string $dataVencimento,
+        ?string $meioPagamento,
+        ?string $observacao
+    ): bool {
+        $stmt = $this->pdo->prepare("
+        UPDATE transacoes
+        SET
+            subgrupo_id = :subgrupo_id,
+            conta_id = :conta_id,
+            descricao = :descricao,
+            valor_centavos = :valor_centavos,
+            data_competencia = :data_competencia,
+            data_vencimento = :data_vencimento,
+            meio_pagamento = :meio_pagamento,
+            observacao = :observacao,
+            atualizado_em = CURRENT_TIMESTAMP
+        WHERE id = :id
+          AND usuario_id = :usuario_id
+          AND status = 'pendente'
+    ");
+
+        $stmt->execute([
+            ':subgrupo_id' => $subgrupoId,
+            ':conta_id' => $contaId,
+            ':descricao' => $descricao,
+            ':valor_centavos' => $valorCentavos,
+            ':data_competencia' => $dataCompetencia,
+            ':data_vencimento' => $dataVencimento,
+            ':meio_pagamento' => $meioPagamento,
+            ':observacao' => $observacao,
+            ':id' => $transacaoId,
+            ':usuario_id' => $usuarioId
+        ]);
+
+        return $stmt->rowCount() === 1;
+    }
 }

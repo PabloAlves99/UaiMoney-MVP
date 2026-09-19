@@ -283,4 +283,240 @@ final class TransactionController extends BaseController
             );
         }
     }
+
+    public function edit(
+        string $id
+    ): void {
+        $usuario = $this->requireUser();
+
+        $transacaoId = $this->parseId(
+            $id
+        );
+
+
+        try {
+
+            $transacao = $this
+                ->transactionService
+                ->getPendingForEdit(
+                    (int) $usuario['id'],
+                    $transacaoId
+                );
+
+
+        } catch (DomainException $e) {
+
+            http_response_code(404);
+
+            $this->renderIndex(
+                $usuario,
+                $e->getMessage()
+            );
+
+            return;
+        }
+
+
+        $usuarioId =
+            (int) $usuario['id'];
+
+
+        $grupos = $this
+            ->categoryService
+            ->list(
+                $usuarioId
+            );
+
+
+        $contas = $this
+            ->accountService
+            ->list(
+                $usuarioId
+            );
+
+
+        View::render(
+            'transactions/edit',
+            [
+                'usuario' => $usuario,
+                'transacao' => $transacao,
+                'grupos' => $grupos,
+                'contas' => $contas,
+                'basePath' => $this->basePath,
+                'csrfToken' => $this->csrf->token(),
+                'error' => null,
+                'pageTitle'
+                => 'Editar movimentação - UaiMoney'
+            ],
+            'layouts/app'
+        );
+    }
+
+    public function update(
+        string $id
+    ): void {
+        $usuario = $this->requireUser();
+
+        $this->validateCsrf();
+
+
+        $transacaoId = $this->parseId(
+            $id
+        );
+
+
+        $subgrupoId = filter_var(
+            $_POST['subgrupo_id'] ?? null,
+            FILTER_VALIDATE_INT
+        );
+
+
+        if (
+            $subgrupoId === false ||
+            $subgrupoId <= 0
+        ) {
+            $this->renderEditError(
+                $usuario,
+                $transacaoId,
+                'Categoria inválida.'
+            );
+
+            return;
+        }
+
+
+        /*
+         * Conta continua opcional
+         * enquanto estiver pendente.
+         */
+
+        $contaId = null;
+
+
+        if (
+            isset($_POST['conta_id']) &&
+            $_POST['conta_id'] !== ''
+        ) {
+
+            $parsedContaId = filter_var(
+                $_POST['conta_id'],
+                FILTER_VALIDATE_INT
+            );
+
+
+            if (
+                $parsedContaId === false ||
+                $parsedContaId <= 0
+            ) {
+                $this->renderEditError(
+                    $usuario,
+                    $transacaoId,
+                    'Conta inválida.'
+                );
+
+                return;
+            }
+
+
+            $contaId = $parsedContaId;
+        }
+
+
+        try {
+
+            $this->transactionService
+                ->updatePending(
+                    (int) $usuario['id'],
+                    $transacaoId,
+                    $subgrupoId,
+                    $contaId,
+                    $_POST['descricao'] ?? '',
+                    $_POST['valor'] ?? '',
+                    $_POST['data_competencia'] ?? '',
+                    $_POST['data_vencimento'] ?? '',
+                    $_POST['meio_pagamento'] ?? null,
+                    $_POST['observacao'] ?? null
+                );
+
+
+            $this->redirect(
+                '/movimentacoes'
+            );
+
+
+        } catch (DomainException $e) {
+
+            $this->renderEditError(
+                $usuario,
+                $transacaoId,
+                $e->getMessage()
+            );
+        }
+    }
+
+    private function renderEditError(
+        array $usuario,
+        int $transacaoId,
+        string $error
+    ): void {
+        try {
+
+            $transacao = $this
+                ->transactionService
+                ->getPendingForEdit(
+                    (int) $usuario['id'],
+                    $transacaoId
+                );
+
+
+        } catch (DomainException $e) {
+
+            http_response_code(404);
+
+            $this->renderIndex(
+                $usuario,
+                $e->getMessage()
+            );
+
+            return;
+        }
+
+
+        $usuarioId =
+            (int) $usuario['id'];
+
+
+        $grupos = $this
+            ->categoryService
+            ->list(
+                $usuarioId
+            );
+
+
+        $contas = $this
+            ->accountService
+            ->list(
+                $usuarioId
+            );
+
+
+        http_response_code(422);
+
+
+        View::render(
+            'transactions/edit',
+            [
+                'usuario' => $usuario,
+                'transacao' => $transacao,
+                'grupos' => $grupos,
+                'contas' => $contas,
+                'basePath' => $this->basePath,
+                'csrfToken' => $this->csrf->token(),
+                'error' => $error,
+                'pageTitle'
+                => 'Editar movimentação - UaiMoney'
+            ],
+            'layouts/app'
+        );
+    }
 }

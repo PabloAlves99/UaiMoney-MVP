@@ -765,6 +765,17 @@ use App\Core\Money;
 
                                 <?php if ($status === 'pendente'): ?>
 
+                                    <a href="<?= htmlspecialchars(
+                                        $basePath
+                                        . '/movimentacoes/'
+                                        . (int) $transacao['id']
+                                        . '/editar',
+                                        ENT_QUOTES,
+                                        'UTF-8'
+                                    ) ?>" class="btn btn-sm btn-outline-secondary mb-2">
+                                        Editar
+                                    </a>
+
                                     <form method="POST" action="<?= htmlspecialchars(
                                         $basePath
                                         . '/movimentacoes/'
@@ -803,8 +814,7 @@ use App\Core\Money;
                                                        )
                                                            ? 'selected'
                                                            : ''
-                                                           ?>
-                            >
+                                                           ?>>
 
                                                         <?= htmlspecialchars(
                                                             $conta['nome'],

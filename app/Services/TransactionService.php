@@ -261,6 +261,240 @@ final class TransactionService
             );
     }
 
+    public function getPendingForEdit(
+        int $usuarioId,
+        int $transacaoId
+    ): array {
+        $transacao = $this
+            ->transactionRepository
+            ->findById(
+                $transacaoId,
+                $usuarioId
+            );
+
+
+        if ($transacao === null) {
+            throw new DomainException(
+                'Movimentação não encontrada.'
+            );
+        }
+
+
+        if (
+            $transacao['status'] !== 'pendente'
+        ) {
+            throw new DomainException(
+                'Somente movimentações pendentes podem ser editadas.'
+            );
+        }
+
+
+        return $transacao;
+    }
+
+
+    public function updatePending(
+        int $usuarioId,
+        int $transacaoId,
+        int $subgrupoId,
+        ?int $contaId,
+        string $descricao,
+        string $valor,
+        string $dataCompetencia,
+        string $dataVencimento,
+        ?string $meioPagamento,
+        ?string $observacao
+    ): void {
+        /*
+         * Primeiro garantimos que a movimentação
+         * existe, pertence ao usuário e continua
+         * pendente.
+         */
+
+        $this->getPendingForEdit(
+            $usuarioId,
+            $transacaoId
+        );
+
+
+        $descricao = trim(
+            $descricao
+        );
+
+
+        if ($descricao === '') {
+            throw new DomainException(
+                'Informe a descrição da movimentação.'
+            );
+        }
+
+
+        if (strlen($descricao) > 200) {
+            throw new DomainException(
+                'A descrição da movimentação é muito longa.'
+            );
+        }
+
+
+        /*
+         * Subcategoria
+         */
+
+        $subgrupo = $this
+            ->categoryRepository
+            ->findSubgroupById(
+                $subgrupoId,
+                $usuarioId
+            );
+
+
+        if (
+            $subgrupo === null ||
+            (int) $subgrupo['ativo'] !== 1 ||
+            (int) $subgrupo['grupo_ativo'] !== 1
+        ) {
+            throw new DomainException(
+                'Categoria inválida.'
+            );
+        }
+
+
+        /*
+         * Valor
+         */
+
+        $valorCentavos = Money::toCents(
+            $valor
+        );
+
+
+        if ($valorCentavos <= 0) {
+            throw new DomainException(
+                'O valor deve ser maior que zero.'
+            );
+        }
+
+
+        /*
+         * Datas
+         */
+
+        if (
+            !$this->isValidDate(
+                $dataCompetencia
+            )
+        ) {
+            throw new DomainException(
+                'Data de competência inválida.'
+            );
+        }
+
+
+        if (
+            !$this->isValidDate(
+                $dataVencimento
+            )
+        ) {
+            throw new DomainException(
+                'Data de vencimento inválida.'
+            );
+        }
+
+
+        /*
+         * Conta opcional
+         */
+
+        if ($contaId !== null) {
+
+            $conta = $this
+                ->accountRepository
+                ->findById(
+                    $contaId,
+                    $usuarioId
+                );
+
+
+            if (
+                $conta === null ||
+                (int) $conta['ativo'] !== 1
+            ) {
+                throw new DomainException(
+                    'Conta inválida.'
+                );
+            }
+        }
+
+
+        /*
+         * Meio de pagamento
+         */
+
+        $meioPagamento =
+            $meioPagamento !== null
+            ? strtolower(
+                trim($meioPagamento)
+            )
+            : null;
+
+
+        if ($meioPagamento === '') {
+            $meioPagamento = null;
+        }
+
+
+        if (
+            $meioPagamento !== null &&
+            !in_array(
+                $meioPagamento,
+                self::PAYMENT_METHODS,
+                true
+            )
+        ) {
+            throw new DomainException(
+                'Meio de pagamento inválido.'
+            );
+        }
+
+
+        /*
+         * Observação
+         */
+
+        $observacao =
+            $observacao !== null
+            ? trim($observacao)
+            : null;
+
+
+        if ($observacao === '') {
+            $observacao = null;
+        }
+
+
+        $updated = $this
+            ->transactionRepository
+            ->updatePending(
+                $transacaoId,
+                $usuarioId,
+                $subgrupoId,
+                $contaId,
+                $descricao,
+                $valorCentavos,
+                $dataCompetencia,
+                $dataVencimento,
+                $meioPagamento,
+                $observacao
+            );
+
+
+        if (!$updated) {
+            throw new DomainException(
+                'Não foi possível atualizar a movimentação.'
+            );
+        }
+    }
+
 
     private function isValidDate(
         string $date
