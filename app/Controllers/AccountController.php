@@ -38,6 +38,15 @@ final class AccountController extends BaseController
         );
     }
 
+    public function reactivate(string $id): void
+    {
+        $usuario=$this->requireUser();
+        $this->validateCsrf();
+        $this->accountService->reactivate((int)$usuario['id'],$this->parseId($id));
+        $_SESSION['flash']=['type'=>'success','message'=>'Conta reativada.'];
+        $this->redirect('/contas');
+    }
+
     public function show(
         string $id
     ): void {
@@ -226,6 +235,7 @@ final class AccountController extends BaseController
             [
                 'usuario' => $usuario,
                 'contas' => $contas,
+                'inativas' => $this->accountService->inactive((int)$usuario['id']),
                 'error' => $error,
                 'basePath' => $this->basePath,
                 'csrfToken'

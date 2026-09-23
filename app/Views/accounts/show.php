@@ -106,6 +106,8 @@ $meiosPagamento = [
 ];
 
 ?>
+<a class="btn btn-outline-secondary mb-3" href="<?= htmlspecialchars($basePath.'/carteira?conta='.(int)$conta['id'],ENT_QUOTES,'UTF-8') ?>">Ver extrato de caixa completo, transferências e conferências →</a>
+
 
 
 <!-- Voltar -->
@@ -323,7 +325,7 @@ $meiosPagamento = [
             <div class="card-body">
 
                 <div class="uai-summary-label">
-                    Entradas
+                    Receitas realizadas
                 </div>
 
                 <div class="uai-summary-value text-success">
@@ -335,7 +337,7 @@ $meiosPagamento = [
                 </div>
 
                 <div class="uai-summary-caption">
-                    No filtro atual
+                    Lançamentos no filtro, antes de estornos
                 </div>
 
             </div>
@@ -354,7 +356,7 @@ $meiosPagamento = [
             <div class="card-body">
 
                 <div class="uai-summary-label">
-                    Saídas
+                    Despesas realizadas
                 </div>
 
                 <div class="uai-summary-value text-danger">
@@ -366,7 +368,7 @@ $meiosPagamento = [
                 </div>
 
                 <div class="uai-summary-caption">
-                    No filtro atual
+                    Lançamentos no filtro, antes de estornos
                 </div>
 
             </div>
@@ -395,7 +397,7 @@ $meiosPagamento = [
                 </div>
 
                 <div class="uai-summary-caption">
-                    No filtro atual
+                    Lançamentos no filtro, antes de estornos
                 </div>
 
             </div>

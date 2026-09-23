@@ -14,160 +14,40 @@ final class AccountRepository
     }
 
 
-    public function listActive(
-        int $usuarioId
-    ): array {
-        $stmt = $this->pdo->prepare("
-        SELECT
-            c.id,
-            c.nome,
-            c.tipo,
-            c.instituicao,
-            c.saldo_inicial_centavos,
-            c.saldo_inicial_em,
-            c.ativo,
-            c.criado_em,
-            c.atualizado_em,
+    private function balances(): string
+    {
+        return "SELECT c.*, CASE WHEN c.saldo_inicial_em <= :hoje THEN c.saldo_inicial_centavos ELSE 0 END
+            + COALESCE((SELECT SUM(m.valor_centavos) FROM movimentos_caixa m
+                WHERE m.usuario_id=c.usuario_id AND m.conta_id=c.id
+                AND m.data>=c.saldo_inicial_em AND m.data<=:hoje),0) AS saldo_atual_centavos FROM contas c";
+    }
 
-            (
-                c.saldo_inicial_centavos
-
-                +
-
-                COALESCE(
-                    (
-                        SELECT
-                            SUM(
-                                CASE
-                                    WHEN g.tipo = 'receita'
-                                        THEN t.valor_centavos
-
-                                    WHEN g.tipo = 'despesa'
-                                        THEN -t.valor_centavos
-
-                                    ELSE 0
-                                END
-                            )
-
-                        FROM transacoes t
-
-                        INNER JOIN subgrupos s
-                            ON s.id = t.subgrupo_id
-
-                        INNER JOIN grupos g
-                            ON g.id = s.grupo_id
-
-                        WHERE t.usuario_id = c.usuario_id
-
-                          AND g.usuario_id = c.usuario_id
-
-                          AND t.conta_id = c.id
-
-                          AND t.status = 'efetivada'
-
-                          AND t.data_efetivacao IS NOT NULL
-
-                          AND t.data_efetivacao >= c.saldo_inicial_em
-                    ),
-                    0
-                )
-            ) AS saldo_atual_centavos
-
-        FROM contas c
-
-        WHERE c.usuario_id = :usuario_id
-          AND c.ativo = 1
-
-        ORDER BY c.nome
-    ");
-
-        $stmt->execute([
-            ':usuario_id' => $usuarioId
-        ]);
-
+    public function listActive(int $usuarioId): array
+    {
+        $stmt = $this->pdo->prepare($this->balances().' WHERE c.usuario_id=:usuario AND c.ativo=1 ORDER BY c.nome');
+        $stmt->execute([':usuario'=>$usuarioId, ':hoje'=>date('Y-m-d')]);
         return $stmt->fetchAll();
     }
 
-
-    public function findById(
-        int $contaId,
-        int $usuarioId
-    ): ?array {
-        $stmt = $this->pdo->prepare("
-        SELECT
-            c.id,
-            c.usuario_id,
-            c.nome,
-            c.tipo,
-            c.instituicao,
-            c.saldo_inicial_centavos,
-            c.saldo_inicial_em,
-            c.ativo,
-            c.criado_em,
-            c.atualizado_em,
-
-            (
-                c.saldo_inicial_centavos
-
-                +
-
-                COALESCE(
-                    (
-                        SELECT
-                            SUM(
-                                CASE
-                                    WHEN g.tipo = 'receita'
-                                        THEN t.valor_centavos
-
-                                    WHEN g.tipo = 'despesa'
-                                        THEN -t.valor_centavos
-
-                                    ELSE 0
-                                END
-                            )
-
-                        FROM transacoes t
-
-                        INNER JOIN subgrupos s
-                            ON s.id = t.subgrupo_id
-
-                        INNER JOIN grupos g
-                            ON g.id = s.grupo_id
-
-                        WHERE t.usuario_id = c.usuario_id
-
-                          AND g.usuario_id = c.usuario_id
-
-                          AND t.conta_id = c.id
-
-                          AND t.status = 'efetivada'
-
-                          AND t.data_efetivacao IS NOT NULL
-
-                          AND t.data_efetivacao >= c.saldo_inicial_em
-                    ),
-                    0
-                )
-            ) AS saldo_atual_centavos
-
-        FROM contas c
-
-        WHERE c.id = :id
-          AND c.usuario_id = :usuario_id
-
-        LIMIT 1
-    ");
-
-        $stmt->execute([
-            ':id' => $contaId,
-            ':usuario_id' => $usuarioId
-        ]);
-
-        $conta = $stmt->fetch();
-
-        return $conta ?: null;
+    public function listInactive(int $usuarioId): array
+    {
+        $stmt=$this->pdo->prepare('SELECT id,nome FROM contas WHERE usuario_id=? AND ativo=0 ORDER BY nome');
+        $stmt->execute([$usuarioId]);
+        return $stmt->fetchAll();
     }
 
+    public function reactivate(int $usuarioId,int $contaId): void
+    {
+        $stmt=$this->pdo->prepare('UPDATE contas SET ativo=1,atualizado_em=CURRENT_TIMESTAMP WHERE usuario_id=? AND id=?');
+        $stmt->execute([$usuarioId,$contaId]);
+    }
+
+    public function findById(int $contaId, int $usuarioId): ?array
+    {
+        $stmt = $this->pdo->prepare($this->balances().' WHERE c.usuario_id=:usuario AND c.id=:id');
+        $stmt->execute([':usuario'=>$usuarioId, ':id'=>$contaId, ':hoje'=>date('Y-m-d')]);
+        return $stmt->fetch() ?: null;
+    }
 
     public function existsByName(
         int $usuarioId,

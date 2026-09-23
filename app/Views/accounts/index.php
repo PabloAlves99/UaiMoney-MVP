@@ -615,7 +615,7 @@ $tiposConta = [
                                 Saldo inicial
                             </label>
 
-                            <input type="number" class="form-control" id="novoSaldoInicial" name="saldo_inicial" min="0"
+                            <input type="number" class="form-control" id="novoSaldoInicial" name="saldo_inicial"
                                 step="0.01" value="0.00" required>
 
                         </div>
@@ -675,3 +675,4 @@ $tiposConta = [
     </div>
 
 </div>
+<?php if(!empty($inativas)): ?><details class="card mt-4"><summary class="card-body">Contas desativadas</summary><div class="card-body pt-0"><?php foreach($inativas as $inativa): ?><div class="list-row"><span><?= htmlspecialchars($inativa['nome'],ENT_QUOTES,'UTF-8') ?></span><form method="post" action="<?= htmlspecialchars($basePath.'/contas/'.(int)$inativa['id'].'/reativar',ENT_QUOTES,'UTF-8') ?>"><input type="hidden" name="_token" value="<?= htmlspecialchars($csrfToken,ENT_QUOTES,'UTF-8') ?>"><button class="btn btn-sm btn-outline-secondary">Reativar</button></form></div><?php endforeach; ?></div></details><?php endif; ?>

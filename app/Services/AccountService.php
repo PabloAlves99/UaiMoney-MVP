@@ -102,7 +102,7 @@ final class AccountService
 
 
         $saldoInicialCentavos =
-            Money::toCents(
+            Money::toSignedCents(
                 $saldoInicial
             );
 
@@ -150,11 +150,25 @@ final class AccountService
         }
 
 
+        if ((int)$conta['saldo_atual_centavos'] !== 0) {
+            throw new DomainException('Transfira ou confira o saldo antes de desativar uma conta com saldo diferente de zero.');
+        }
+
         $this->accountRepository
             ->deactivate(
                 $contaId,
                 $usuarioId
             );
+    }
+
+    public function inactive(int $usuarioId): array
+    {
+        return $this->accountRepository->listInactive($usuarioId);
+    }
+
+    public function reactivate(int $usuarioId,int $contaId): void
+    {
+        $this->accountRepository->reactivate($usuarioId,$contaId);
     }
 
 
