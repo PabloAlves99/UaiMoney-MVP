@@ -1,28 +1,31 @@
 # UaiMoney
 
-UaiMoney é uma aplicação web para controle e planejamento financeiro pessoal.
+Controle financeiro pessoal em PHP 8.1+, SQLite, Bootstrap e JavaScript. A versão atual permite cadastro público e uso por várias pessoas, com registros isolados por usuário. A assinatura mensal é um objetivo futuro; cobrança e gestão de planos ainda não estão implementadas.
 
-O projeto está sendo desenvolvido inicialmente em PHP + SQLite como MVP, com foco em validar regras de negócio e experiência do usuário.
+Contas, categorias, movimentações, parcelamentos, recorrências, cartões, faturas, orçamento, análises, transferências, conferência de saldo e estornos trabalham na mesma base. A interface usa temas claro/escuro e se adapta ao celular.
 
-Posteriormente, a aplicação será migrada para uma arquitetura baseada em Python, React e PostgreSQL.
+## Executar
 
-## Status
+1. Instale PHP 8.1+ com PDO SQLite e mbstring; gere o autoload com `composer install`.
+2. Execute `php database/migrate.php`.
+3. Configure o Apache para servir `public/`. No ambiente local existente: `http://localhost:8090/uaimoney-mvp/public/`.
+4. Use **Criar minha conta** e siga **Primeiros passos**. Novos cadastros recebem o papel `usuario`, nunca administrador.
 
-🚧 Em desenvolvimento
+Em uma instalação existente, execute `php bin/backup.php` antes das migrations. Não exclua nem recrie o banco para atualizar.
 
-## Tecnologias atuais
+As variáveis opcionais `UAIMONEY_DATABASE`, `UAIMONEY_BASE_PATH` e `UAIMONEY_ENV` configuram banco, prefixo da URL e ambiente. Em produção, use `UAIMONEY_ENV=production` e HTTPS. As variáveis são lidas do ambiente do processo; não há carregador de `.env`.
 
-- PHP
-- SQLite
-- Bootstrap
-- JavaScript
+## Verificar
 
-## Objetivos
+```text
+php tests/run.php
+php tests/upgrade.php
+php database/status.php
+```
 
-- Controle de receitas e despesas
-- Contas e cartões
-- Categorias e subcategorias
-- Parcelamentos
-- Recorrências
-- Planejamento financeiro
-- Dashboards e análises
+Os testes financeiros usam SQLite em memória. O teste de atualização parte do schema 017 com lançamentos existentes e verifica preservação de registros, saldo e integridade ao migrar para 019.
+
+- [Implementação, regras e teste HTTP](docs/mvp-implementation.md)
+- [Backup, restauração e publicação](docs/operations.md)
+
+A separação Controller → Service → Repository foi mantida. Dinheiro é armazenado em centavos; consumo e caixa possuem consultas próprias para evitar dupla contagem. Não é necessário migrar a stack para validar o produto com poucos usuários.
