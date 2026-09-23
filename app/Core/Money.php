@@ -19,31 +19,13 @@ final class Money
             );
         }
 
-        /*
-         * Aceita:
-         *
-         * 1500
-         * 1500.50
-         * 1500,50
-         */
-
-        $value = str_replace(
-            ',',
-            '.',
-            $value
-        );
-
-        if (
-            !preg_match(
-                '/^\d+(?:\.\d{1,2})?$/',
-                $value
-            )
-        ) {
-            throw new DomainException(
-                'Informe um valor monetário válido.'
-            );
+        if (preg_match('/^\\d{1,3}(?:\\.\\d{3})+,\\d{1,2}$/', $value)) {
+            $value = str_replace('.', '', $value);
         }
-
+        $value = str_replace(',', '.', $value);
+        if (!preg_match('/^\\d{1,10}(?:\\.\\d{1,2})?$/', $value)) {
+            throw new DomainException('Informe um valor válido, como 1234,56 ou 1.234,56.');
+        }
         [$inteiro, $decimal] = array_pad(
             explode('.', $value, 2),
             2,
@@ -76,5 +58,12 @@ final class Money
         return ($negativo ? '- ' : '')
             . 'R$ '
             . $valor;
+    }
+
+    public static function toSignedCents(string $value): int
+    {
+        $value = trim($value);
+        $negative = str_starts_with($value, '-');
+        return self::toCents($negative ? substr($value, 1) : $value) * ($negative ? -1 : 1);
     }
 }
