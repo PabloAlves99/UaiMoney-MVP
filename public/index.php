@@ -134,7 +134,8 @@ $recurrenceService = new RecurrenceService(
 $authController = new AuthController(
     $authService,
     $csrf,
-    $basePath
+    $basePath,
+    new \App\Core\RateLimiter($pdo)
 );
 
 $userPreferenceController = new UserPreferenceController(
@@ -213,6 +214,8 @@ $registerRoutes(
     $basePath
 );
 
+
+require dirname(__DIR__) . '/routes/finance.php';
 
 /*
 |--------------------------------------------------------------------------

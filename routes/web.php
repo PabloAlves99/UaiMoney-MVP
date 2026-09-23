@@ -29,6 +29,9 @@ return function (Router $router, AuthController $authController, UserPreferenceC
     );
 
 
+    $router->get('/criar-conta', [$authController, 'signup']);
+    $router->post('/criar-conta', [$authController, 'signup']);
+
     $router->get(
         '/register',
         [$authController, 'showRegister']
@@ -50,41 +53,6 @@ return function (Router $router, AuthController $authController, UserPreferenceC
         [$userPreferenceController, 'updateTheme']
     );
 
-
-    /*
-     * Home
-     */
-
-    $router->get(
-        '/',
-        function () use ($authService, $csrf, $basePath): void {
-
-            $usuario = $authService
-                ->currentUser();
-
-            if ($usuario === null) {
-
-                header(
-                    'Location: '
-                    . $basePath
-                    . '/login'
-                );
-
-                exit;
-            }
-
-            View::render(
-                'home',
-                [
-                    'usuario' => $usuario,
-                    'basePath' => $basePath,
-                    'csrfToken' => $csrf->token(),
-                    'pageTitle' => 'Início - UaiMoney'
-                ],
-                'layouts/app'
-            );
-        }
-    );
 
     /*
     |--------------------------------------------------------------------------
@@ -161,6 +129,7 @@ return function (Router $router, AuthController $authController, UserPreferenceC
         '/contas/{id}/desativar',
         [$accountController, 'deactivate']
     );
+    $router->post('/contas/{id}/reativar', [$accountController, 'reactivate']);
 
     /*
 |--------------------------------------------------------------------------
@@ -168,10 +137,7 @@ return function (Router $router, AuthController $authController, UserPreferenceC
 |--------------------------------------------------------------------------
 */
 
-    $router->get(
-        '/movimentacoes',
-        [$transactionController, 'index']
-    );
+
 
     $router->post(
         '/movimentacoes',
