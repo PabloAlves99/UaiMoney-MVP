@@ -10,6 +10,7 @@ use App\Services\AccountService;
 use App\Services\AuthService;
 use App\Services\CategoryService;
 use App\Services\TransactionService;
+use App\Services\AccountExportService;
 use DomainException;
 
 final class AccountController extends BaseController
@@ -19,6 +20,7 @@ final class AccountController extends BaseController
         private readonly AccountService $accountService,
         private readonly TransactionService $transactionService,
         private readonly CategoryService $categoryService,
+        private readonly AccountExportService $accountExportService,
         Csrf $csrf,
         string $basePath
     ) {
@@ -40,10 +42,10 @@ final class AccountController extends BaseController
 
     public function reactivate(string $id): void
     {
-        $usuario=$this->requireUser();
+        $usuario = $this->requireUser();
         $this->validateCsrf();
-        $this->accountService->reactivate((int)$usuario['id'],$this->parseId($id));
-        $_SESSION['flash']=['type'=>'success','message'=>'Conta reativada.'];
+        $this->accountService->reactivate((int)$usuario['id'], $this->parseId($id));
+        $_SESSION['flash'] = ['type' => 'success', 'message' => 'Conta reativada.'];
         $this->redirect('/contas');
     }
 
@@ -68,8 +70,6 @@ final class AccountController extends BaseController
                     $usuarioId,
                     $contaId
                 );
-
-
         } catch (DomainException $e) {
 
             http_response_code(404);
@@ -142,6 +142,76 @@ final class AccountController extends BaseController
         );
     }
 
+    public function exportPdf(
+        string $id
+    ): void {
+        $context =
+            $this->buildExportContext(
+                $id
+            );
+
+
+        if ($context === null) {
+            return;
+        }
+
+
+        $content =
+            $this->accountExportService
+            ->generatePdf(
+                $context['conta'],
+                $context['transacoes'],
+                $context['filters'],
+                $context['grupos']
+            );
+
+
+        $this->sendDownload(
+            $content,
+            'application/pdf',
+            $this->accountExportService
+                ->filename(
+                    $context['conta'],
+                    'pdf'
+                )
+        );
+    }
+
+
+    public function exportExcel(
+        string $id
+    ): void {
+        $context =
+            $this->buildExportContext(
+                $id
+            );
+
+
+        if ($context === null) {
+            return;
+        }
+
+
+        $content =
+            $this->accountExportService
+            ->generateExcel(
+                $context['conta'],
+                $context['transacoes'],
+                $context['filters'],
+                $context['grupos']
+            );
+
+
+        $this->sendDownload(
+            $content,
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            $this->accountExportService
+                ->filename(
+                    $context['conta'],
+                    'xlsx'
+                )
+        );
+    }
 
     public function store(): void
     {
@@ -166,8 +236,6 @@ final class AccountController extends BaseController
             $this->redirect(
                 '/contas'
             );
-
-
         } catch (DomainException $e) {
 
             http_response_code(422);
@@ -205,8 +273,6 @@ final class AccountController extends BaseController
             $this->redirect(
                 '/contas'
             );
-
-
         } catch (DomainException $e) {
 
             http_response_code(404);
@@ -265,8 +331,6 @@ final class AccountController extends BaseController
                     (int) $usuario['id'],
                     $contaId
                 );
-
-
         } catch (DomainException $e) {
 
             http_response_code(404);
@@ -314,8 +378,6 @@ final class AccountController extends BaseController
             $this->redirect(
                 '/contas/' . $contaId
             );
-
-
         } catch (DomainException $e) {
 
             try {
@@ -326,8 +388,6 @@ final class AccountController extends BaseController
                         (int) $usuario['id'],
                         $contaId
                     );
-
-
             } catch (DomainException) {
 
                 http_response_code(404);
@@ -350,15 +410,15 @@ final class AccountController extends BaseController
                 $e->getMessage(),
                 [
                     'nome' =>
-                        $_POST['nome']
+                    $_POST['nome']
                         ?? $conta['nome'],
 
                     'tipo' =>
-                        $_POST['tipo']
+                    $_POST['tipo']
                         ?? $conta['tipo'],
 
                     'instituicao' =>
-                        $_POST['instituicao']
+                    $_POST['instituicao']
                         ?? $conta['instituicao']
                 ]
             );
@@ -375,13 +435,13 @@ final class AccountController extends BaseController
 
             $formData = [
                 'nome' =>
-                    $conta['nome'],
+                $conta['nome'],
 
                 'tipo' =>
-                    $conta['tipo'],
+                $conta['tipo'],
 
                 'instituicao' =>
-                    $conta['instituicao']
+                $conta['instituicao']
             ];
         }
 
@@ -395,9 +455,9 @@ final class AccountController extends BaseController
                 'error' => $error,
                 'basePath' => $this->basePath,
                 'csrfToken' =>
-                    $this->csrf->token(),
+                $this->csrf->token(),
                 'pageTitle' =>
-                    'Editar '
+                'Editar '
                     . $conta['nome']
                     . ' - UaiMoney'
             ],
@@ -405,4 +465,136 @@ final class AccountController extends BaseController
         );
     }
 
+    private function buildExportContext(
+        string $id
+    ): ?array {
+        $usuario =
+            $this->requireUser();
+
+
+        $usuarioId =
+            (int) $usuario['id'];
+
+
+        $contaId =
+            $this->parseId(
+                $id
+            );
+
+
+        /*
+     * Continua respeitando usuario_id.
+     *
+     * Portanto um usuário não consegue
+     * exportar conta de outro usuário
+     * simplesmente alterando a URL.
+     */
+
+        try {
+
+            $conta =
+                $this->accountService
+                ->get(
+                    $usuarioId,
+                    $contaId
+                );
+        } catch (DomainException $e) {
+
+            http_response_code(404);
+
+            $this->renderIndex(
+                $usuario,
+                $e->getMessage()
+            );
+
+            return null;
+        }
+
+
+        /*
+     * Mesma normalização usada
+     * pela tela de detalhe.
+     */
+
+        $filters =
+            $this->transactionService
+            ->normalizeFilters(
+                $_GET
+            );
+
+
+        /*
+     * A conta da URL continua soberana.
+     */
+
+        $filters['conta_id'] =
+            $contaId;
+
+
+        return [
+
+            'conta' =>
+            $conta,
+
+            'transacoes' =>
+            $this->transactionService
+                ->list(
+                    $usuarioId,
+                    $filters
+                ),
+
+            'filters' =>
+            $filters,
+
+            'grupos' =>
+            $this->categoryService
+                ->list(
+                    $usuarioId
+                )
+
+        ];
+    }
+
+
+    private function sendDownload(
+        string $content,
+        string $contentType,
+        string $filename
+    ): never {
+        /*
+     * Qualquer espaço/BOM enviado antes
+     * poderia corromper XLSX ou PDF.
+     */
+
+        while (
+            ob_get_level() > 0
+        ) {
+            ob_end_clean();
+        }
+
+
+        header(
+            'Content-Type: '
+                . $contentType
+        );
+
+        header(
+            'Content-Disposition: attachment; filename="'
+                . $filename
+                . '"'
+        );
+
+        header(
+            'Cache-Control: private, no-store, max-age=0'
+        );
+
+        header(
+            'X-Content-Type-Options: nosniff'
+        );
+
+
+        echo $content;
+
+        exit;
+    }
 }

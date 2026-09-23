@@ -65,9 +65,7 @@ foreach ($transacoes as $transacao) {
         === 'receita'
     ) {
         $totalEntradas +=
-            (int) $transacao[
-                'valor_centavos'
-            ];
+            (int) $transacao['valor_centavos'];
     }
 
 
@@ -76,9 +74,7 @@ foreach ($transacoes as $transacao) {
         === 'despesa'
     ) {
         $totalSaidas +=
-            (int) $transacao[
-                'valor_centavos'
-            ];
+            (int) $transacao['valor_centavos'];
     }
 }
 
@@ -105,8 +101,54 @@ $meiosPagamento = [
     'outro' => 'Outro'
 ];
 
+/*
+|--------------------------------------------------------------------------
+| Filtros da exportação
+|--------------------------------------------------------------------------
+|
+| Mantemos os filtros que estão atualmente
+| aplicados na tela.
+|
+*/
+
+$exportFilters = array_filter(
+    [
+        'data_inicio' =>
+        $filters['data_inicio'],
+
+        'data_fim' =>
+        $filters['data_fim'],
+
+        'tipo' =>
+        $filters['tipo'],
+
+        'status' =>
+        $filters['status'],
+
+        'grupo_id' =>
+        $filters['grupo_id'],
+    ],
+
+    static fn($value) =>
+    $value !== ''
+        &&
+        $value !== null
+);
+
+
+$exportQuery =
+    http_build_query(
+        $exportFilters
+    );
+
+
+$exportSuffix =
+    $exportQuery !== ''
+    ? '?' . $exportQuery
+    : '';
+
 ?>
-<a class="btn btn-outline-secondary mb-3" href="<?= htmlspecialchars($basePath.'/carteira?conta='.(int)$conta['id'],ENT_QUOTES,'UTF-8') ?>">Ver extrato de caixa completo, transferências e conferências →</a>
+<a class="btn btn-outline-secondary mb-3" href="<?= htmlspecialchars($basePath . '/carteira?conta=' . (int)$conta['id'], ENT_QUOTES, 'UTF-8') ?>">Ver extrato de caixa completo, transferências e conferências →</a>
 
 
 
@@ -115,10 +157,10 @@ $meiosPagamento = [
 <div class="mb-3">
 
     <a href="<?= htmlspecialchars(
-        $basePath . '/contas',
-        ENT_QUOTES,
-        'UTF-8'
-    ) ?>" class="text-decoration-none">
+                    $basePath . '/contas',
+                    ENT_QUOTES,
+                    'UTF-8'
+                ) ?>" class="text-decoration-none">
         ← Voltar para contas
     </a>
 
@@ -175,9 +217,7 @@ $meiosPagamento = [
 
 
                 <?php if (
-                    !empty(
-                    $conta['instituicao']
-                )
+                    !empty($conta['instituicao'])
                 ): ?>
 
                     <span class="mx-1">
@@ -199,61 +239,141 @@ $meiosPagamento = [
     </div>
 
 
-    <div class="dropdown">
+    <div class="d-flex align-items-center gap-2">
 
-        <button type="button" class="btn btn-outline-secondary" data-bs-toggle="dropdown">
-            •••
-        </button>
+        <!-- Exportar -->
 
+        <div class="dropdown">
 
-        <ul class="dropdown-menu dropdown-menu-end">
-
-            <li>
-
-                <a class="dropdown-item" href="<?= htmlspecialchars(
-                    $basePath
-                    . '/contas/'
-                    . (int) $conta['id']
-                    . '/editar',
-                    ENT_QUOTES,
-                    'UTF-8'
-                ) ?>">
-                    Editar conta
-                </a>
-
-            </li>
+            <button
+                type="button"
+                class="btn btn-uai-primary dropdown-toggle"
+                data-bs-toggle="dropdown"
+                aria-expanded="false">
+                Exportar
+            </button>
 
 
-            <li>
-                <hr class="dropdown-divider">
-            </li>
+            <ul class="dropdown-menu dropdown-menu-end">
 
-            <li>
+                <li>
 
-                <form method="POST" action="<?= htmlspecialchars(
-                    $basePath
-                    . '/contas/'
-                    . (int) $conta['id']
-                    . '/desativar',
-                    ENT_QUOTES,
-                    'UTF-8'
-                ) ?>" onsubmit="return confirm('Deseja realmente desativar esta conta?');">
+                    <a
+                        class="dropdown-item"
+                        href="<?= htmlspecialchars(
+                                    $basePath
+                                        . '/contas/'
+                                        . (int) $conta['id']
+                                        . '/exportar/pdf'
+                                        . $exportSuffix,
+                                    ENT_QUOTES,
+                                    'UTF-8'
+                                ) ?>">
+                        PDF
+                    </a>
 
-                    <input type="hidden" name="_token" value="<?= htmlspecialchars(
-                        $csrfToken,
-                        ENT_QUOTES,
-                        'UTF-8'
-                    ) ?>">
+                </li>
 
-                    <button class="dropdown-item text-danger" type="submit">
-                        Desativar conta
-                    </button>
 
-                </form>
+                <li>
 
-            </li>
+                    <a
+                        class="dropdown-item"
+                        href="<?= htmlspecialchars(
+                                    $basePath
+                                        . '/contas/'
+                                        . (int) $conta['id']
+                                        . '/exportar/excel'
+                                        . $exportSuffix,
+                                    ENT_QUOTES,
+                                    'UTF-8'
+                                ) ?>">
+                        Excel
+                    </a>
 
-        </ul>
+                </li>
+
+            </ul>
+
+        </div>
+
+
+        <!-- Menu atual -->
+
+        <div class="dropdown">
+
+            <button
+                type="button"
+                class="btn btn-outline-secondary"
+                data-bs-toggle="dropdown">
+                •••
+            </button>
+
+
+            <ul class="dropdown-menu dropdown-menu-end">
+
+                <li>
+
+                    <a
+                        class="dropdown-item"
+                        href="<?= htmlspecialchars(
+                                    $basePath
+                                        . '/contas/'
+                                        . (int) $conta['id']
+                                        . '/editar',
+                                    ENT_QUOTES,
+                                    'UTF-8'
+                                ) ?>">
+                        Editar conta
+                    </a>
+
+                </li>
+
+
+                <li>
+                    <hr class="dropdown-divider">
+                </li>
+
+
+                <li>
+
+                    <form
+                        method="POST"
+                        action="<?= htmlspecialchars(
+                                    $basePath
+                                        . '/contas/'
+                                        . (int) $conta['id']
+                                        . '/desativar',
+                                    ENT_QUOTES,
+                                    'UTF-8'
+                                ) ?>"
+                        onsubmit="return confirm(
+                        'Deseja realmente desativar esta conta?'
+                    );">
+
+                        <input
+                            type="hidden"
+                            name="_token"
+                            value="<?= htmlspecialchars(
+                                        $csrfToken,
+                                        ENT_QUOTES,
+                                        'UTF-8'
+                                    ) ?>">
+
+
+                        <button
+                            class="dropdown-item text-danger"
+                            type="submit">
+                            Desativar conta
+                        </button>
+
+                    </form>
+
+                </li>
+
+            </ul>
+
+        </div>
 
     </div>
 
@@ -281,18 +401,16 @@ $meiosPagamento = [
                     Saldo atual
                 </div>
 
-                <div class="uai-summary-value <?= (int) 
-                    $conta['saldo_atual_centavos']
-                    < 0
-                    ? 'text-danger'
-                    : ''
-                    ?>">
+                <div class="uai-summary-value <?= (int)
+                                                $conta['saldo_atual_centavos']
+                                                    < 0
+                                                    ? 'text-danger'
+                                                    : ''
+                                                ?>">
 
                     <?= Money::format(
-                        (int) 
-                        $conta[
-                            'saldo_atual_centavos'
-                        ]
+                        (int)
+                        $conta['saldo_atual_centavos']
                     ) ?>
 
                 </div>
@@ -301,10 +419,8 @@ $meiosPagamento = [
 
                     Inicial:
                     <?= Money::format(
-                        (int) 
-                        $conta[
-                            'saldo_inicial_centavos'
-                        ]
+                        (int)
+                        $conta['saldo_inicial_centavos']
                     ) ?>
 
                 </div>
@@ -431,10 +547,8 @@ $meiosPagamento = [
                 <div class="fw-semibold">
 
                     <?= Money::format(
-                        (int) 
-                        $conta[
-                            'saldo_inicial_centavos'
-                        ]
+                        (int)
+                        $conta['saldo_inicial_centavos']
                     ) ?>
 
                 </div>
@@ -453,9 +567,7 @@ $meiosPagamento = [
                     <?= date(
                         'd/m/Y',
                         strtotime(
-                            $conta[
-                                'saldo_inicial_em'
-                            ]
+                            $conta['saldo_inicial_em']
                         )
                     ) ?>
 
@@ -474,7 +586,7 @@ $meiosPagamento = [
 
                     <?= htmlspecialchars(
                         $conta['instituicao']
-                        ?: 'Não informada',
+                            ?: 'Não informada',
                         ENT_QUOTES,
                         'UTF-8'
                     ) ?>
@@ -531,7 +643,7 @@ $meiosPagamento = [
             <?= count($transacoes) === 1
                 ? 'movimentação encontrada'
                 : 'movimentações encontradas'
-                ?>
+            ?>
 
 
             <?php if ($temFiltros): ?>
@@ -552,12 +664,12 @@ $meiosPagamento = [
     <div class="uai-filter-bar">
 
         <form method="GET" action="<?= htmlspecialchars(
-            $basePath
-            . '/contas/'
-            . (int) $conta['id'],
-            ENT_QUOTES,
-            'UTF-8'
-        ) ?>">
+                                        $basePath
+                                            . '/contas/'
+                                            . (int) $conta['id'],
+                                        ENT_QUOTES,
+                                        'UTF-8'
+                                    ) ?>">
 
             <div class="row g-2 align-items-end">
 
@@ -569,10 +681,10 @@ $meiosPagamento = [
                     </label>
 
                     <input type="date" class="form-control form-control-sm" name="data_inicio" value="<?= htmlspecialchars(
-                        $filters['data_inicio'],
-                        ENT_QUOTES,
-                        'UTF-8'
-                    ) ?>">
+                                                                                                            $filters['data_inicio'],
+                                                                                                            ENT_QUOTES,
+                                                                                                            'UTF-8'
+                                                                                                        ) ?>">
 
                 </div>
 
@@ -584,10 +696,10 @@ $meiosPagamento = [
                     </label>
 
                     <input type="date" class="form-control form-control-sm" name="data_fim" value="<?= htmlspecialchars(
-                        $filters['data_fim'],
-                        ENT_QUOTES,
-                        'UTF-8'
-                    ) ?>">
+                                                                                                        $filters['data_fim'],
+                                                                                                        ENT_QUOTES,
+                                                                                                        'UTF-8'
+                                                                                                    ) ?>">
 
                 </div>
 
@@ -605,18 +717,18 @@ $meiosPagamento = [
                         </option>
 
                         <option value="receita" <?= $filters['tipo']
-                            === 'receita'
-                            ? 'selected'
-                            : ''
-                            ?>>
+                                                    === 'receita'
+                                                    ? 'selected'
+                                                    : ''
+                                                ?>>
                             Receita
                         </option>
 
                         <option value="despesa" <?= $filters['tipo']
-                            === 'despesa'
-                            ? 'selected'
-                            : ''
-                            ?>>
+                                                    === 'despesa'
+                                                    ? 'selected'
+                                                    : ''
+                                                ?>>
                             Despesa
                         </option>
 
@@ -638,26 +750,26 @@ $meiosPagamento = [
                         </option>
 
                         <option value="pendente" <?= $filters['status']
-                            === 'pendente'
-                            ? 'selected'
-                            : ''
-                            ?>>
+                                                        === 'pendente'
+                                                        ? 'selected'
+                                                        : ''
+                                                    ?>>
                             Pendente
                         </option>
 
                         <option value="efetivada" <?= $filters['status']
-                            === 'efetivada'
-                            ? 'selected'
-                            : ''
-                            ?>>
+                                                        === 'efetivada'
+                                                        ? 'selected'
+                                                        : ''
+                                                    ?>>
                             Efetivada
                         </option>
 
                         <option value="cancelada" <?= $filters['status']
-                            === 'cancelada'
-                            ? 'selected'
-                            : ''
-                            ?>>
+                                                        === 'cancelada'
+                                                        ? 'selected'
+                                                        : ''
+                                                    ?>>
                             Cancelada
                         </option>
 
@@ -683,21 +795,21 @@ $meiosPagamento = [
                             $grupos as $grupo
                         ): ?>
 
-                            <option value="<?= (int) 
-                                $grupo['id']
-                                ?>" <?= (
-                                $filters['grupo_id']
-                                !== null
-                                &&
-                                (int) 
-                                $filters['grupo_id']
-                                ===
-                                (int) 
-                                $grupo['id']
-                            )
-                                ? 'selected'
-                                : ''
-                                ?>>
+                            <option value="<?= (int)
+                                            $grupo['id']
+                                            ?>" <?= (
+                                                    $filters['grupo_id']
+                                                    !== null
+                                                    &&
+                                                    (int)
+                                                    $filters['grupo_id']
+                                                    ===
+                                                    (int)
+                                                    $grupo['id']
+                                                )
+                                                    ? 'selected'
+                                                    : ''
+                                                ?>>
 
                                 <?= htmlspecialchars(
                                     $grupo['nome'],
@@ -726,12 +838,12 @@ $meiosPagamento = [
                         <?php if ($temFiltros): ?>
 
                             <a href="<?= htmlspecialchars(
-                                $basePath
-                                . '/contas/'
-                                . (int) $conta['id'],
-                                ENT_QUOTES,
-                                'UTF-8'
-                            ) ?>" class="btn btn-sm btn-outline-secondary">
+                                            $basePath
+                                                . '/contas/'
+                                                . (int) $conta['id'],
+                                            ENT_QUOTES,
+                                            'UTF-8'
+                                        ) ?>" class="btn btn-sm btn-outline-secondary">
                                 Limpar
                             </a>
 
@@ -836,12 +948,8 @@ $meiosPagamento = [
 
 
                 $meio =
-                    $meiosPagamento[
-                        $transacao[
-                            'meio_pagamento'
-                        ]
-                        ?? ''
-                    ]
+                    $meiosPagamento[$transacao['meio_pagamento']
+                        ?? '']
                     ?? null;
 
                 ?>
@@ -882,17 +990,15 @@ $meiosPagamento = [
                         <div class="d-flex align-items-center gap-2 mb-1">
 
                             <span class="uai-type-indicator <?= $tipo === 'receita'
-                                ? 'uai-type-income'
-                                : 'uai-type-expense'
-                                ?>"></span>
+                                                                ? 'uai-type-income'
+                                                                : 'uai-type-expense'
+                                                            ?>"></span>
 
 
                             <span class="fw-semibold">
 
                                 <?= htmlspecialchars(
-                                    $transacao[
-                                        'descricao'
-                                    ],
+                                    $transacao['descricao'],
                                     ENT_QUOTES,
                                     'UTF-8'
                                 ) ?>
@@ -907,9 +1013,7 @@ $meiosPagamento = [
                             <span>
 
                                 <?= htmlspecialchars(
-                                    $transacao[
-                                        'grupo_nome'
-                                    ],
+                                    $transacao['grupo_nome'],
                                     ENT_QUOTES,
                                     'UTF-8'
                                 ) ?>
@@ -917,9 +1021,7 @@ $meiosPagamento = [
                                 &rsaquo;
 
                                 <?= htmlspecialchars(
-                                    $transacao[
-                                        'subgrupo_nome'
-                                    ],
+                                    $transacao['subgrupo_nome'],
                                     ENT_QUOTES,
                                     'UTF-8'
                                 ) ?>
@@ -968,20 +1070,18 @@ $meiosPagamento = [
 
 
                     <div class="uai-transaction-value <?= $tipo === 'receita'
-                        ? 'text-success'
-                        : 'text-danger'
-                        ?>">
+                                                            ? 'text-success'
+                                                            : 'text-danger'
+                                                        ?>">
 
                         <?= $tipo === 'receita'
                             ? '+'
                             : '-'
-                            ?>
+                        ?>
 
                         <?= Money::format(
-                            (int) 
-                            $transacao[
-                                'valor_centavos'
-                            ]
+                            (int)
+                            $transacao['valor_centavos']
                         ) ?>
 
                     </div>
@@ -990,11 +1090,11 @@ $meiosPagamento = [
                     <div class="uai-transaction-actions">
 
                         <a href="<?= htmlspecialchars(
-                            $basePath
-                            . '/movimentacoes',
-                            ENT_QUOTES,
-                            'UTF-8'
-                        ) ?>" class="btn btn-sm btn-outline-secondary" title="Abrir movimentações">
+                                        $basePath
+                                            . '/movimentacoes',
+                                        ENT_QUOTES,
+                                        'UTF-8'
+                                    ) ?>" class="btn btn-sm btn-outline-secondary" title="Abrir movimentações">
                             →
                         </a>
 

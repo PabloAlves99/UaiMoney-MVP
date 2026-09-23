@@ -25,6 +25,7 @@ use App\Services\AccountService;
 use App\Services\TransactionService;
 use App\Services\InstallmentService;
 use App\Services\RecurrenceService;
+use App\Services\AccountExportService;
 
 /*
 |--------------------------------------------------------------------------
@@ -125,6 +126,13 @@ $recurrenceService = new RecurrenceService(
     $accountRepository
 );
 
+$accountService = new AccountService(
+    $accountRepository
+);
+
+$accountExportService =
+    new AccountExportService();
+
 /*
 |--------------------------------------------------------------------------
 | Controllers
@@ -157,6 +165,7 @@ $accountController = new AccountController(
     $accountService,
     $transactionService,
     $categoryService,
+    $accountExportService,
     $csrf,
     $basePath
 );
@@ -173,13 +182,13 @@ $transactionController = new TransactionController(
 );
 
 $recurrenceController = new RecurrenceController(
-        $authService,
-        $recurrenceService,
-        $categoryService,
-        $accountService,
-        $csrf,
-        $basePath
-    );
+    $authService,
+    $recurrenceService,
+    $categoryService,
+    $accountService,
+    $csrf,
+    $basePath
+);
 
 /*
 |--------------------------------------------------------------------------
@@ -225,8 +234,8 @@ require dirname(__DIR__) . '/routes/finance.php';
 
 $router->dispatch(
     $_SERVER['REQUEST_METHOD']
-    ?? 'GET',
+        ?? 'GET',
 
     $_SERVER['REQUEST_URI']
-    ?? '/'
+        ?? '/'
 );

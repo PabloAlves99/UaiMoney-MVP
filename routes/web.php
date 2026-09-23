@@ -112,6 +112,17 @@ return function (Router $router, AuthController $authController, UserPreferenceC
         [$accountController, 'show']
     );
 
+    $router->get(
+        '/contas/{id}/exportar/pdf',
+        [$accountController, 'exportPdf']
+    );
+
+
+    $router->get(
+        '/contas/{id}/exportar/excel',
+        [$accountController, 'exportExcel']
+    );
+
 
     $router->get(
         '/contas/{id}/editar',
