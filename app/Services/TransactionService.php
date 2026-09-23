@@ -21,7 +21,6 @@ final class TransactionService
         'pix',
         'dinheiro',
         'debito',
-        'credito',
         'boleto',
         'transferencia',
         'outro'
@@ -196,6 +195,8 @@ final class TransactionService
 
         if ($status === 'efetivada') {
 
+            \App\Core\FinancialDate::past((string)$dataEfetivacao);
+
             if ($contaId === null) {
                 throw new DomainException(
                     'Uma movimentação efetivada precisa de uma conta.'
@@ -289,9 +290,7 @@ final class TransactionService
         }
 
 
-        if (
-            $transacao['status'] !== 'pendente'
-        ) {
+        if ($transacao['status'] !== 'pendente' || !empty($transacao['cartao_id'])) {
             throw new DomainException(
                 'Somente movimentações pendentes podem ser editadas.'
             );
@@ -525,6 +524,7 @@ final class TransactionService
         int $contaId,
         string $dataEfetivacao
     ): void {
+        \App\Core\FinancialDate::past($dataEfetivacao);
         $transacao = $this
             ->transactionRepository
             ->findById(
@@ -540,9 +540,7 @@ final class TransactionService
         }
 
 
-        if (
-            $transacao['status'] !== 'pendente'
-        ) {
+        if ($transacao['status'] !== 'pendente' || !empty($transacao['cartao_id'])) {
             throw new DomainException(
                 'Somente movimentações pendentes podem ser efetivadas.'
             );
@@ -615,11 +613,9 @@ final class TransactionService
         }
 
 
-        if (
-            $transacao['status'] === 'cancelada'
-        ) {
+        if ($transacao['status'] !== 'pendente' || !empty($transacao['cartao_id'])) {
             throw new DomainException(
-                'Esta movimentação já está cancelada.'
+                'Somente pendências podem ser canceladas. Para corrigir um lançamento realizado, use o estorno no detalhe.'
             );
         }
 

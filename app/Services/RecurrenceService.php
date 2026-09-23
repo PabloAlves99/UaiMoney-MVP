@@ -28,7 +28,6 @@ final class RecurrenceService
         'pix',
         'dinheiro',
         'debito',
-        'credito',
         'boleto',
         'transferencia',
         'outro'

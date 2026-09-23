@@ -42,14 +42,24 @@ final class RecurrenceController extends BaseController
             );
 
 
+        $filterStatus = (string) ($_GET['status'] ?? '');
+        $filterFrequency = (string) ($_GET['frequencia'] ?? '');
+        $filterText = trim((string) ($_GET['q'] ?? ''));
+        $recorrencias = array_values(array_filter($recorrencias, static function ($r) use ($filterStatus, $filterFrequency, $filterText) {
+            $status = (int) $r['ativo'] === 1 ? 'ativa' : ($r['proxima_ocorrencia'] === null ? 'encerrada' : 'pausada');
+            return ($filterStatus === '' || $status === $filterStatus)
+                && ($filterFrequency === '' || $r['frequencia'] === $filterFrequency)
+                && ($filterText === '' || mb_stripos($r['descricao'], $filterText) !== false);
+        }));
         View::render(
             'recurrences/index',
             [
                 'usuario' =>
                     $usuario,
 
-                'recorrencias' =>
-                    $recorrencias,
+                'recorrencias' => $recorrencias,
+                'grupos' => $this->categoryService->list((int) $usuario['id']),
+                'contas' => $this->accountService->list((int) $usuario['id']),
 
                 'basePath' =>
                     $this->basePath,

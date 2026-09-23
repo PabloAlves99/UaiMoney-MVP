@@ -229,6 +229,12 @@ foreach ($recorrencias as $item) {
 </div>
 
 
+<form method="get" class="card mb-4"><div class="card-body row g-3">
+<div class="col-md-4"><label for="recurrence-q" class="form-label">Buscar descrição</label><input id="recurrence-q" name="q" class="form-control" value="<?= htmlspecialchars($_GET['q'] ?? '', ENT_QUOTES, 'UTF-8') ?>"></div>
+<div class="col-md-3"><label for="recurrence-status-filter" class="form-label">Situação</label><select id="recurrence-status-filter" name="status" class="form-select"><option value="">Todas</option><?php foreach(['ativa'=>'Ativa','pausada'=>'Pausada','encerrada'=>'Encerrada'] as $key=>$label): ?><option value="<?= $key ?>" <?= ($_GET['status'] ?? '')===$key ? 'selected' : '' ?>><?= $label ?></option><?php endforeach; ?></select></div>
+<div class="col-md-3"><label for="recurrence-frequency-filter" class="form-label">Frequência</label><select id="recurrence-frequency-filter" name="frequencia" class="form-select"><option value="">Todas</option><?php foreach(['diaria'=>'Diária','semanal'=>'Semanal','mensal'=>'Mensal','anual'=>'Anual'] as $key=>$label): ?><option value="<?= $key ?>" <?= ($_GET['frequencia'] ?? '')===$key ? 'selected' : '' ?>><?= $label ?></option><?php endforeach; ?></select></div>
+<div class="col-md-2 d-flex align-items-end"><button class="btn btn-uai-primary">Filtrar</button></div>
+<div class="col-12"><a href="#nova">+ Nova recorrência</a></div></div></form>
 <div class="card">
 
     <div class="card-header bg-transparent">
@@ -252,8 +258,7 @@ foreach ($recorrencias as $item) {
             </h5>
 
             <p class="text-uai-muted mb-0">
-                Crie uma recorrência pela tela
-                de movimentações.
+                Use o formulário Nova recorrência abaixo.
             </p>
 
         </div>
@@ -722,3 +727,4 @@ foreach ($recorrencias as $item) {
     <?php endif; ?>
 
 </div>
+<?php require __DIR__ . '/create.php'; ?>

@@ -19,7 +19,6 @@ final class InstallmentService
         'pix',
         'dinheiro',
         'debito',
-        'credito',
         'boleto',
         'transferencia',
         'outro'

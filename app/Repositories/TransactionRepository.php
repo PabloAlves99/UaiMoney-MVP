@@ -21,6 +21,7 @@ final class TransactionRepository
         $sql = "
         SELECT
             t.id,
+            t.cartao_id, t.fatura_id, t.recorrencia_id,
             t.descricao,
             t.valor_centavos,
 
@@ -278,6 +279,7 @@ final class TransactionRepository
         $stmt = $this->pdo->prepare("
         SELECT
             id,
+            cartao_id, fatura_id, recorrencia_id, parcelamento_id,
             usuario_id,
             subgrupo_id,
             conta_id,
@@ -346,10 +348,7 @@ final class TransactionRepository
             atualizado_em = CURRENT_TIMESTAMP
         WHERE id = :id
           AND usuario_id = :usuario_id
-          AND status IN (
-              'pendente',
-              'efetivada'
-          )
+          AND status = 'pendente' AND cartao_id IS NULL
     ");
 
         $stmt->execute([

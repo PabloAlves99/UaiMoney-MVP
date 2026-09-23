@@ -153,75 +153,16 @@ final class TransactionController extends BaseController
     }
 
 
-    private function renderIndex(
-        array $usuario,
-        ?string $error = null,
-        array $filters = []
-    ): void {
-        $usuarioId =
-            (int) $usuario['id'];
-
-
-        $filters = $this
-            ->transactionService
-            ->normalizeFilters(
-                $filters
-            );
-
-
-        $transacoes = $this
-            ->transactionService
-            ->list(
-                $usuarioId,
-                $filters
-            );
-
-
-        $grupos = $this
-            ->categoryService
-            ->list(
-                $usuarioId
-            );
-
-
-        $contas = $this
-            ->accountService
-            ->list(
-                $usuarioId
-            );
-
-
-        View::render(
-            'transactions/index',
-            [
-                'usuario' => $usuario,
-
-                'transacoes' =>
-                    $transacoes,
-
-                'grupos' =>
-                    $grupos,
-
-                'contas' =>
-                    $contas,
-
-                'filters' =>
-                    $filters,
-
-                'error' =>
-                    $error,
-
-                'basePath' =>
-                    $this->basePath,
-
-                'csrfToken' =>
-                    $this->csrf->token(),
-
-                'pageTitle' =>
-                    'Movimentações - UaiMoney'
-            ],
-            'layouts/app'
-        );
+    private function renderIndex(array $usuario, ?string $error = null, array $filters = []): void
+    {
+        if ($error !== null) {
+            $_SESSION['flash'] = ['type' => 'danger', 'message' => $error];
+            $_SESSION['form_old'] = array_diff_key($_POST, array_flip(['_token', '_operation']));
+        }
+        $uri = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH) ?: '';
+        $target = str_ends_with($uri, '/parcelamentos') ? '/movimentacoes/avancado'
+            : (str_ends_with($uri, '/recorrencias') ? '/recorrencias#nova' : '/movimentacoes#novo');
+        $this->redirect($error ? $target : '/movimentacoes');
     }
 
     public function effect(
@@ -853,7 +794,7 @@ final class TransactionController extends BaseController
 
 
             $this->redirect(
-                '/movimentacoes'
+                '/recorrencias'
             );
 
 
@@ -868,48 +809,4 @@ final class TransactionController extends BaseController
         }
     }
 
-    public function processRecurrences(): void
-    {
-        $usuario = $this->requireUser();
-
-        $this->validateCsrf();
-
-
-        try {
-
-            $result = $this
-                ->recurrenceService
-                ->processDue(
-                    (int) $usuario['id']
-                );
-
-
-            $query = http_build_query([
-                'recorrencias_processadas' => 1,
-                'recorrencias_verificadas'
-                => $result['recorrencias'],
-                'ocorrencias_criadas'
-                => $result['ocorrencias_criadas'],
-                'recorrencias_encerradas'
-                => $result[
-                        'recorrencias_encerradas'
-                    ]
-            ]);
-
-
-            $this->redirect(
-                '/movimentacoes?' . $query
-            );
-
-
-        } catch (DomainException $e) {
-
-            http_response_code(422);
-
-            $this->renderIndex(
-                $usuario,
-                $e->getMessage()
-            );
-        }
-    }
 }
