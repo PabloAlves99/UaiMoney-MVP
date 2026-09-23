@@ -72,6 +72,13 @@ for path in paths:
     check('Fatal error' not in html and 'Warning:' not in html and 'Falha inesperada' not in html, f'Clean render {path}')
     check('no-store' in headers.get('Cache-Control', ''), f'No-cache {path}')
 
+for path in ['/analises?periodo=anterior', '/analises?periodo=semestre', '/analises?inicio=2025-03-02&fim=2025-03-02&conferir=1', '/analises?inicio=2025-03-20&fim=2025-03-10', '/analises?tipo=receita&conferir=1', '/analises?conta_id=99999&conferir=1', '/analises?inicio=1900-01-01&fim=1900-01-31', '/analises?inicio=2199-12-01&fim=2199-12-31']:
+    status, html, _ = ana.request(path)
+    check(status == 200 and 'Warning:' not in html and 'Falha inesperada' not in html, f'Analytics state {path}')
+status, html, _ = ana.request('/analises?inicio=2025-03-02&fim=2025-03-02&conferir=1')
+check('Estorno · Mercado' in html and '- R$ 5,00' in html, 'Audit renders dated refund')
+check('Distribuição do período' not in html and 'Maiores despesas' not in html, 'Analytics avoids duplicate breakdowns')
+
 status, _, _ = ana.request('/nao-existe')
 check(status == 404, '404')
 status, _, headers = ana.request('/planejamento', method='PUT')

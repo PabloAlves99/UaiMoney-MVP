@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace App\Repositories;
 
 final class ReportRepository extends FinanceRepository
@@ -37,7 +39,7 @@ final class ReportRepository extends FinanceRepository
     {
         $dimensions = [
             'categoria' => ['grupo_id', '(SELECT nome FROM grupos WHERE id=c.grupo_id AND usuario_id=c.usuario_id)'],
-            'subcategoria' => ['subgrupo_id', '(SELECT nome FROM subgrupos WHERE id=c.subgrupo_id)'],
+            'subcategoria' => ['subgrupo_id', "(SELECT g.nome || ' · ' || s.nome FROM subgrupos s JOIN grupos g ON g.id=s.grupo_id WHERE s.id=c.subgrupo_id AND g.usuario_id=c.usuario_id)"],
             'conta' => ['conta_id', "COALESCE((SELECT nome FROM contas WHERE id=c.conta_id AND usuario_id=c.usuario_id),'Sem conta / cartão')"],
             'cartao' => ['cartao_id', "COALESCE((SELECT nome FROM cartoes WHERE id=c.cartao_id AND usuario_id=c.usuario_id),'Fora do cartão')"],
             'meio' => ['meio_pagamento', "COALESCE(meio_pagamento,'Não informado')"],
@@ -45,16 +47,34 @@ final class ReportRepository extends FinanceRepository
             'mes' => ["substr(data,1,7)", "substr(data,1,7)"],
         ];
         [$column, $label] = $dimensions[$dimension] ?? $dimensions['categoria'];
+        $parent = $dimension === 'subcategoria' ? 'grupo_id,' : '';
         [$where, $params] = $this->scope($user, $start, $end, $filters);
-        return $this->rows("SELECT $label AS nome, SUM(CASE WHEN tipo='despesa' THEN valor_centavos ELSE 0 END) AS despesas,
+        return $this->rows("SELECT $parent $column AS id, $label AS nome, SUM(CASE WHEN tipo='despesa' THEN valor_centavos ELSE 0 END) AS despesas,
             SUM(CASE WHEN tipo='receita' THEN valor_centavos ELSE 0 END) AS receitas
             FROM consumo c WHERE $where AND status='efetivada' GROUP BY $column ORDER BY " . ($dimension === 'mes' ? 'nome' : 'despesas DESC'), $params);
     }
 
-    public function top(int $user, string $start, string $end, array $filters): array
+    public function monthly(int $user, string $start, string $end, array $filters = []): array
+    {
+        $map = array_column($this->breakdown($user, $start, $end, 'mes', $filters), null, 'nome');
+        $rows = [];
+        $last = substr($end, 0, 7);
+        for ($month = substr($start, 0, 7); $month <= $last; $month = \App\Core\FinancialDate::shift($month, 1)) {
+            $rows[] = $map[$month] ?? ['nome' => $month, 'receitas' => 0, 'despesas' => 0];
+        }
+        return $rows;
+    }
+
+    public function entries(int $user, string $start, string $end, array $filters, int $page = 1): array
     {
         [$where, $params] = $this->scope($user, $start, $end, $filters);
-        return $this->rows("SELECT transacao_id,descricao,SUM(valor_centavos) AS valor FROM consumo WHERE $where AND status='efetivada' AND tipo='despesa' GROUP BY transacao_id HAVING valor>0 ORDER BY valor DESC LIMIT 5", $params);
+        return $this->rows("SELECT c.*,
+            (SELECT nome FROM grupos WHERE id=c.grupo_id AND usuario_id=c.usuario_id) AS categoria,
+            (SELECT nome FROM subgrupos WHERE id=c.subgrupo_id) AS subcategoria,
+            (SELECT nome FROM contas WHERE id=c.conta_id AND usuario_id=c.usuario_id) AS conta,
+            (SELECT nome FROM cartoes WHERE id=c.cartao_id AND usuario_id=c.usuario_id) AS cartao
+            FROM consumo c WHERE $where AND status='efetivada'
+            ORDER BY data DESC,transacao_id DESC,valor_centavos DESC,descricao LIMIT 31 OFFSET " . ((max(1, $page) - 1) * 30), $params);
     }
 
     public function upcoming(int $user): array

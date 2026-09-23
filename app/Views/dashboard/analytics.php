@@ -1,13 +1,123 @@
-<?php use App\Core\Html as H; use App\Core\Money; ?>
-<div class="page-heading"><div><p class="eyebrow">ENTENDA SEUS HÁBITOS</p><h1>Análises</h1><p class="text-secondary">Explore seu consumo por período. Transferências e pagamentos de fatura ficam fora dos gastos.</p></div></div>
-<form method="get" class="card mb-4"><div class="card-body row g-3">
-<div class="col-md-3"><label for="analysis-start" class="form-label">Início (competência)</label><input id="analysis-start" type="date" name="inicio" class="form-control" value="<?= H::escape($start) ?>" required></div><div class="col-md-3"><label for="analysis-end" class="form-label">Fim</label><input id="analysis-end" type="date" name="fim" class="form-control" value="<?= H::escape($end) ?>" required></div>
-<div class="col-md-3"><label for="analysis-group" class="form-label">Agrupar por</label><select id="analysis-group" name="agrupar" class="form-select"><?php foreach(['categoria'=>'Categoria','subcategoria'=>'Subcategoria','conta'=>'Conta','cartao'=>'Cartão','meio'=>'Meio de pagamento','origem'=>'Recorrente / eventual','mes'=>'Mês'] as $key=>$name): ?><option value="<?= $key ?>" <?= $dimension===$key ? 'selected' : '' ?>><?= $name ?></option><?php endforeach; ?></select></div>
-<div class="col-md-3"><label for="analysis-account" class="form-label">Conta</label><select id="analysis-account" name="conta_id" class="form-select"><option value="">Todas</option><?php foreach($accounts as $a): ?><option value="<?= (int)$a['id'] ?>" <?= (int)($filters['conta_id'] ?? 0)===(int)$a['id'] ? 'selected' : '' ?>><?= H::escape($a['nome']) ?></option><?php endforeach; ?></select></div>
-<div class="col-md-3"><label for="analysis-card" class="form-label">Cartão</label><select id="analysis-card" name="cartao_id" class="form-select"><option value="">Todos</option><?php foreach($cards as $c): ?><option value="<?= (int)$c['id'] ?>" <?= (int)($filters['cartao_id'] ?? 0)===(int)$c['id'] ? 'selected' : '' ?>><?= H::escape($c['nome']) ?></option><?php endforeach; ?></select></div>
-<div class="col-md-3"><label for="analysis-category" class="form-label">Subcategoria</label><select id="analysis-category" name="subgrupo_id" class="form-select"><option value="">Todas</option><?php foreach($categories as $c): ?><option value="<?= (int)$c['id'] ?>" <?= (int)($filters['subgrupo_id'] ?? 0)===(int)$c['id'] ? 'selected' : '' ?>><?= H::escape($c['grupo_nome'].' · '.$c['nome']) ?></option><?php endforeach; ?></select></div>
-<div class="col-md-3"><label for="analysis-type" class="form-label">Tipo</label><select id="analysis-type" name="tipo" class="form-select"><option value="">Receitas e despesas</option><?php foreach(['receita'=>'Receitas','despesa'=>'Despesas'] as $k=>$n): ?><option value="<?= $k ?>" <?= ($filters['tipo'] ?? '')===$k ? 'selected' : '' ?>><?= $n ?></option><?php endforeach; ?></select></div>
-<div class="col-md-3 d-flex align-items-end"><button class="btn btn-uai-primary w-100">Aplicar filtros</button></div>
-</div></form>
-<div class="row g-3 mb-4"><?php foreach(['receitas'=>'Receitas realizadas','despesas'=>'Despesas realizadas','resultado'=>'Resultado do período'] as $k=>$n): ?><div class="col-md-4"><div class="card metric-card"><div class="card-body"><p><?= $n ?></p><strong class="metric-value"><?= Money::format($k==='resultado' ? (int)$totals['receitas']-(int)$totals['despesas'] : (int)$totals[$k]) ?></strong></div></div></div><?php endforeach; ?></div>
-<div class="row g-4"><div class="col-xl-8"><section class="card"><div class="card-body"><h2 class="h4">Distribuição do período</h2><div class="table-responsive"><table class="table align-middle"><thead><tr><th>Descrição</th><th class="text-end">Receitas</th><th class="text-end">Despesas</th><th>Participação nas despesas</th></tr></thead><tbody><?php foreach($rows as $row): $percent=(int)$totals['despesas']>0 ? max(0,round((int)$row['despesas']/(int)$totals['despesas']*100)) : 0; ?><tr><td><?= H::escape($row['nome']) ?></td><td class="text-end"><?= Money::format((int)$row['receitas']) ?></td><td class="text-end"><?= Money::format((int)$row['despesas']) ?></td><td><progress class="uai-progress" max="100" value="<?= min(100,$percent) ?>" aria-label="Participação de <?= H::escape($row['nome']) ?>"></progress><small><?= $percent ?>%</small></td></tr><?php endforeach; ?><?php if (!$rows): ?><tr><td colspan="4" class="text-secondary py-4">Nenhum lançamento realizado nesse período e filtro.</td></tr><?php endif; ?></tbody></table></div></div></section></div><div class="col-xl-4"><section class="card mb-4"><div class="card-body"><h2 class="h4">Maiores despesas</h2><?php foreach($top as $t): ?><a class="list-row text-decoration-none" href="<?= H::escape($basePath.'/movimentacoes/'.$t['transacao_id']) ?>"><span><?= H::escape($t['descricao']) ?></span><strong><?= Money::format((int)$t['valor']) ?></strong></a><?php endforeach; ?><?php if (!$top): ?><p class="text-secondary">Sem despesas no período.</p><?php endif; ?></div></section><section class="card"><div class="card-body"><h2 class="h4">Comparação mensal</h2><p class="small text-secondary"><?= H::escape($month) ?> em relação ao mês anterior, com os mesmos filtros de conta e categoria.</p><p>Diferença nas despesas: <strong><?= Money::format((int)$current['despesas']-(int)$previous['despesas']) ?></strong></p><p class="small text-secondary mb-0">Média mensal do período selecionado: <?= Money::format((int)round((int)$totals['despesas']/max(1,((int)substr($end,0,4)-(int)substr($start,0,4))*12+(int)substr($end,5,2)-(int)substr($start,5,2)+1))) ?></p></div></section></div></div>
+<?php
+
+use App\Core\Html as H;
+use App\Core\Money;
+
+$query = array_merge($filters, ['periodo' => 'personalizado', 'inicio' => $start, 'fim' => $end]);
+$url = fn(array $changes = [], string $anchor = '') => $basePath . '/analises?' . http_build_query(array_filter(array_replace($query, $changes), fn($value) => $value !== null && $value !== '')) . $anchor;
+$groups = [];
+foreach ($categories as $category) $groups[$category['grupo_id']] = $category['grupo_nome'];
+$filterOptions = [
+    'conta_id' => ['Conta', array_column($accounts, 'nome', 'id')],
+    'cartao_id' => ['Cartão', array_column($cards, 'nome', 'id')],
+    'grupo_id' => ['Categoria', $groups],
+    'subgrupo_id' => ['Subcategoria', array_column(array_map(fn($c) => ['id' => $c['id'], 'nome' => $c['grupo_nome'] . ' · ' . $c['nome']], $categories), 'nome', 'id')],
+    'tipo' => ['Tipo', ['receita' => 'Receitas', 'despesa' => 'Despesas']],
+    'meio_pagamento' => ['Meio de pagamento', ['pix' => 'Pix', 'dinheiro' => 'Dinheiro', 'debito' => 'Débito', 'credito' => 'Crédito', 'boleto' => 'Boleto', 'transferencia' => 'Transferência', 'outro' => 'Outro']],
+];
+$totals['resultado'] = (int)$totals['receitas'] - (int)$totals['despesas'];
+$previous['resultado'] = (int)$previous['receitas'] - (int)$previous['despesas'];
+?>
+<div class="page-heading">
+    <div>
+        <p class="eyebrow">SEU DINHEIRO, COM CLAREZA</p>
+        <h1>Análises</h1>
+        <p class="text-secondary">Entenda seus gastos e veja onde pode melhorar.</p>
+    </div>
+    <a class="btn btn-outline-secondary" href="<?= H::escape($url(['conferir' => 1], '#lancamentos')) ?>">Conferir lançamentos</a>
+</div>
+<form method="get" class="card mb-4 analysis-filters">
+    <div class="card-body">
+        <div class="analysis-toolbar">
+            <div class="analysis-presets" aria-label="Período da análise">
+                <?php foreach (['mes' => 'Este mês', 'anterior' => 'Mês passado', 'semestre' => 'Últimos 6 meses'] as $key => $name): ?>
+                    <a class="<?= $preset === $key ? 'active' : '' ?>" <?= $preset === $key ? 'aria-current="true"' : '' ?> href="<?= H::escape($url(['periodo' => $key, 'inicio' => null, 'fim' => null])) ?>"><?= $name ?></a>
+                <?php endforeach; ?>
+            </div>
+            <span class="small text-secondary"><?= H::date($start) ?> a <?= H::date($end) ?><?= $partial ? ' · Mês parcial' : '' ?></span>
+        </div>
+        <input type="hidden" name="periodo" value="<?= H::escape($preset) ?>" data-analysis-period>
+        <div class="analysis-filter-panels">
+            <details <?= $preset === 'personalizado' ? 'open' : '' ?>>
+                <summary>Personalizar período</summary>
+                <div class="row g-3 mt-1">
+                    <div class="col-sm-6"><label for="analysis-start" class="form-label">Início</label><input id="analysis-start" type="date" name="inicio" class="form-control" value="<?= H::escape($start) ?>" required data-analysis-date></div>
+                    <div class="col-sm-6"><label for="analysis-end" class="form-label">Fim</label><input id="analysis-end" type="date" name="fim" class="form-control" value="<?= H::escape($end) ?>" required data-analysis-date></div>
+                </div>
+            </details>
+            <details>
+                <summary>Mais filtros<?= $filters ? ' (' . count($filters) . ')' : '' ?></summary>
+                <div class="row g-3 mt-1">
+                    <?php foreach ($filterOptions as $key => [$label, $options]): ?>
+                        <div class="col-md-6">
+                            <label for="analysis-<?= $key ?>" class="form-label"><?= $label ?></label>
+                            <select id="analysis-<?= $key ?>" name="<?= $key ?>" class="form-select">
+                                <option value="">Todos</option>
+                                <?php if (!empty($filters[$key]) && !isset($options[$filters[$key]])): ?><option value="<?= H::escape($filters[$key]) ?>" selected>Filtro selecionado</option><?php endif; ?>
+                                <?php foreach ($options as $id => $name): ?><option value="<?= H::escape($id) ?>" <?= (string)($filters[$key] ?? '') === (string)$id ? 'selected' : '' ?>><?= H::escape($name) ?></option><?php endforeach; ?>
+                            </select>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </details>
+        </div>
+        <div class="analysis-filter-footer">
+            <div class="analysis-chips" aria-label="Filtros ativos">
+                <?php foreach ($filters as $key => $value): [$label, $options] = $filterOptions[$key]; ?>
+                    <a href="<?= H::escape($url([$key => null, ...($key === 'grupo_id' ? ['subgrupo_id' => null] : [])])) ?>" aria-label="Remover filtro <?= H::escape($label) ?>"><?= H::escape($label . ': ' . ($options[$value] ?? 'Selecionado')) ?><span aria-hidden="true"> ×</span></a>
+                <?php endforeach; ?>
+            </div>
+            <div class="analysis-filter-actions"><a class="btn btn-outline-secondary" href="<?= H::escape($basePath . '/analises') ?>">Limpar</a><button class="btn btn-uai-primary">Aplicar filtros</button></div>
+        </div>
+    </div>
+</form>
+<div class="row g-3 mb-3">
+    <?php foreach (['receitas' => 'Quanto entrou', 'despesas' => 'Quanto saiu', 'resultado' => 'Quanto sobrou'] as $key => $label): $difference = (int)$totals[$key] - (int)$previous[$key]; ?>
+        <div class="col-md-4">
+            <section class="card metric-card <?= $key === 'resultado' ? 'analysis-result' : '' ?>">
+                <div class="card-body">
+                    <p><?= $label ?></p>
+                    <strong class="metric-value"><?= Money::format((int)$totals[$key]) ?></strong>
+                    <small><?= $difference === 0 ? 'Sem variação em relação ao período anterior' : Money::format(abs($difference)) . ($difference > 0 ? ' a mais' : ' a menos') . ' que no período anterior' ?></small>
+                </div>
+            </section>
+        </div>
+    <?php endforeach; ?>
+</div>
+<p class="analysis-context">Por competência, líquido de estornos. Comparação com <?= H::date($previousStart) ?> a <?= H::date($previousEnd) ?>, com os mesmos filtros. Transferências e pagamentos de fatura não entram nos gastos.</p>
+<section class="card mb-4">
+    <div class="card-body">
+        <div class="section-heading">
+            <h2 class="h4">Evolução mensal</h2><span class="small text-secondary">Receitas e despesas</span>
+        </div>
+        <p class="small text-secondary"><?= H::date($seriesStart) ?> a <?= H::date($end) ?> · os meses nas extremidades podem estar incompletos.</p>
+        <?php require __DIR__ . '/analytics-plot.php'; ?>
+    </div>
+</section>
+<?php require __DIR__ . '/analytics-charts.php'; ?>
+<section class="card mt-4" id="lancamentos">
+    <div class="card-body">
+        <div class="section-heading">
+            <h2 class="h4">Conferir lançamentos</h2><span class="small text-secondary">Mesmo período e filtros dos totais</span>
+        </div>
+        <?php if (!$audit): ?>
+            <p class="text-secondary">Veja quais lançamentos e estornos compõem os valores desta análise.</p>
+            <a class="btn btn-outline-secondary" href="<?= H::escape($url(['conferir' => 1], '#lancamentos')) ?>">Ver lançamentos</a>
+        <?php else: ?>
+            <?php if (!$entries): ?><p class="empty-state">Nenhum lançamento realizado nesta seleção.</p><?php endif; ?>
+            <div class="analysis-entries">
+                <?php foreach (array_slice($entries, 0, 30) as $entry): ?>
+                    <a class="analysis-entry" href="<?= H::escape($basePath . '/movimentacoes/' . $entry['transacao_id']) ?>">
+                        <div><strong><?= H::escape($entry['descricao']) ?></strong><small><?= H::date($entry['data']) ?> · <?= H::escape($entry['categoria'] . ' · ' . $entry['subcategoria']) ?><br><?= H::escape($entry['cartao'] ?? $entry['conta'] ?? 'Sem conta') ?></small></div>
+                        <div class="text-end"><strong><?= Money::format((int)$entry['valor_centavos']) ?></strong><small><?= $entry['tipo'] === 'receita' ? 'Receita' : 'Despesa' ?><?= (int)$entry['valor_centavos'] < 0 ? ' · Estorno' : '' ?></small></div>
+                    </a>
+                <?php endforeach; ?>
+            </div>
+            <nav class="analysis-pagination" aria-label="Páginas de lançamentos">
+                <?php if ($auditPage > 1): ?><a href="<?= H::escape($url(['conferir' => 1, 'pagina' => $auditPage - 1], '#lancamentos')) ?>">← Anterior</a><?php endif; ?>
+                <span class="small text-secondary">Página <?= $auditPage ?></span>
+                <?php if (count($entries) > 30): ?><a href="<?= H::escape($url(['conferir' => 1, 'pagina' => $auditPage + 1], '#lancamentos')) ?>">Próxima →</a><?php endif; ?>
+            </nav>
+        <?php endif; ?>
+    </div>
+</section>

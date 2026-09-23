@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace App\Controllers;
 
 use App\Core\Csrf;
@@ -86,29 +88,28 @@ final class DashboardController extends FinancialController
     public function analytics(): void
     {
         $u = (int) $this->requireUser()['id'];
-        $month = $this->month();
-        try {
-            $start = Dates::date((string) ($_GET['inicio'] ?? $month . '-01'));
-            $end = Dates::date((string) ($_GET['fim'] ?? Dates::day($month, 31)));
-        } catch (DomainException) {
-            $start = $month . '-01';
-            $end = Dates::day($month, 31);
-        }
-        if ($start > $end)
-            [$start, $end] = [$end, $start];
-        $filters = array_intersect_key($_GET, array_flip(['conta_id', 'cartao_id', 'grupo_id', 'subgrupo_id', 'tipo', 'meio_pagamento']));
-        $dimension = (string) ($_GET['agrupar'] ?? 'categoria');
-        $this->page('dashboard/analytics', 'Análises', [
+        $input = array_filter($_GET, fn($value) => is_string($value));
+        $period = \App\Services\AnalyticsService::period($input, date('Y-m-d'));
+        extract($period);
+        $filters = array_filter(array_intersect_key($input, array_flip(['conta_id', 'cartao_id', 'grupo_id', 'subgrupo_id', 'tipo', 'meio_pagamento'])), fn($value) => $value !== '');
+        $month = substr($end, 0, 7);
+        $page = max(1, min(100000, (int)($input['pagina'] ?? 1)));
+        $audit = ($input['conferir'] ?? '') === '1';
+        $budgetAvailable = $singleMonth && substr($start, 8) === '01' && !array_intersect_key($filters, array_flip(['conta_id', 'cartao_id', 'subgrupo_id', 'meio_pagamento'])) && ($filters['tipo'] ?? '') !== 'receita';
+        $this->page('dashboard/analytics', 'Análises', $period + [
             'month' => $month,
-            'start' => $start,
-            'end' => $end,
             'filters' => $filters,
-            'dimension' => $dimension,
             'totals' => $this->reports->totals($u, $start, $end, $filters),
-            'previous' => $this->reports->totals($u, Dates::shift($month, -1) . '-01', Dates::day(Dates::shift($month, -1), 31), $filters),
-            'current' => $this->reports->totals($u, $month . '-01', Dates::day($month, 31), $filters),
-            'rows' => $this->reports->breakdown($u, $start, $end, $dimension, $filters),
-            'top' => $this->reports->top($u, $start, $end, $filters),
+            'previous' => $this->reports->totals($u, $previousStart, $previousEnd, $filters),
+            'categoryRows' => $this->reports->breakdown($u, $start, $end, 'categoria', $filters),
+            'previousCategories' => $this->reports->breakdown($u, $previousStart, $previousEnd, 'categoria', $filters),
+            'subcategoryRows' => $this->reports->breakdown($u, $start, $end, 'subcategoria', $filters),
+            'monthlyRows' => $this->reports->monthly($u, $seriesStart, $end, $filters),
+            'budgets' => $budgetAvailable ? $this->reports->budgets($u, $month) : [],
+            'budgetAvailable' => $budgetAvailable,
+            'audit' => $audit,
+            'auditPage' => $page,
+            'entries' => $audit ? $this->reports->entries($u, $start, $end, $filters, $page) : [],
             'accounts' => $this->accounts->listActive($u),
             'cards' => $this->cards->list($u),
             'categories' => $this->reports->categories($u),

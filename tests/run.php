@@ -106,4 +106,32 @@ $pageItems=$activity->list(1,[]); check(count($pageItems)<=51,'Pagination bounde
 check(Money::toSignedCents('-1.234,56')===-123456,'Negative account balances');
 rejects(fn()=> Money::toSignedCents('--10'),'Invalid signed amount');
 rejects(fn()=> $planning->save(2,['mes'=>'2025-01','grupo_id'=>$expense['grupo_id'],'valor'=>'100']),'Foreign budget category');
+$monthly=$reports->monthly(1,'2025-01-01','2025-06-30');
+check(count($monthly)===6 && $monthly[5]['nome']==='2025-06' && (int)$monthly[5]['despesas']===0,'Analytics fills months without activity');
+$total=$reports->totals(1,'2025-01-01','2025-06-30');
+check(array_sum(array_column($monthly,'despesas'))===(int)$total['despesas'],'Monthly chart reconciles net refunds');
+foreach(['categoria','subcategoria'] as $dimension) {
+    $breakdown=$reports->breakdown(1,'2025-01-01','2025-06-30',$dimension);
+    check(array_sum(array_column($breakdown,'despesas'))===(int)$total['despesas'],'Category charts reconcile totals');
+}
+$filtered=$reports->monthly(1,'2025-01-01','2025-06-30',['conta_id'=>$foreign]);
+check(array_sum(array_column($filtered,'despesas'))===0,'Analytics cannot expose foreign account activity');
+$partial=$reports->monthly(1,'2025-03-02','2025-03-02',['subgrupo_id'=>$expense['id']]);
+check((int)$partial[0]['despesas']===-500,'Partial month chart preserves negative net refunds and filters');
+$period=\App\Services\AnalyticsService::period([], '2026-09-23');
+check($period['start']==='2026-09-01' && $period['end']==='2026-09-23' && $period['partial'],'Current month stops today');
+check($period['previousStart']==='2026-08-01' && $period['previousEnd']==='2026-08-23','Partial month compares matching days');
+$period=\App\Services\AnalyticsService::period(['periodo'=>'anterior'], '2024-03-15');
+check($period['start']==='2024-02-01' && $period['end']==='2024-02-29' && $period['previousEnd']==='2024-01-31','Full calendar month comparison and leap year');
+$period=\App\Services\AnalyticsService::period(['periodo'=>'semestre'], '2026-02-10');
+check($period['start']==='2025-09-01' && $period['end']==='2026-02-10','Six month preset crosses year');
+$period=\App\Services\AnalyticsService::period(['inicio'=>'2025-03-20','fim'=>'2025-03-10'], '2026-09-23');
+check($period['start']==='2025-03-10' && $period['previousStart']==='2025-02-27' && $period['previousEnd']==='2025-03-09','Custom comparison uses preceding equal duration');
+$entries=$reports->entries(1,'2025-03-02','2025-03-02',['subgrupo_id'=>$expense['id']]);
+check(count($entries)===1 && (int)$entries[0]['valor_centavos']===-500 && (int)$entries[0]['transacao_id']===$cash,'Audit includes refund on its own date and links original transaction');
+check($reports->entries(2,'2025-03-01','2025-03-31',['conta_id'=>$a])===[],'Audit user isolation');
+check($reports->entries(1,'2025-03-01','2025-03-31',[],2)===[],'Audit respects page offset');
+foreach($reports->breakdown(1,'2025-03-01','2025-03-31','subcategoria') as $row) {
+    check((int)$row['grupo_id']===(int)$expense['grupo_id'],'Subcategory drilldown preserves parent category');
+}
 echo "OK: $count verificações financeiras e de isolamento.\n";
