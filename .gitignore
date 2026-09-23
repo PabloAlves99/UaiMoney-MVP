@@ -36,3 +36,7 @@ node_modules/
 # Backups
 *.bak
 *.backup
+/storage/backups/
+/storage/testing/
+/storage/sessions/
+/storage/presentation-build/
