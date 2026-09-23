@@ -213,7 +213,7 @@ final class Router
 
             http_response_code(405);
 
-            echo '405 - Método não permitido';
+            $this->errorPage(405, 'Método não permitido');
 
             return;
         }
@@ -225,9 +225,14 @@ final class Router
 
         http_response_code(404);
 
-        echo '404 - Página não encontrada';
+        $this->errorPage(404, 'Página não encontrada');
     }
 
+
+    private function errorPage(int $code,string $title): void
+    {
+        View::render('errors/http', ['code'=>$code, 'title'=>$title, 'basePath'=>$this->basePath, 'pageTitle'=>$title.' - UaiMoney'], 'layouts/auth');
+    }
 
     private function compileRoute(
         string $path

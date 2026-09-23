@@ -1,0 +1,1 @@
+<div class="empty-state"><p class="eyebrow">404</p><h1 class="h3">Não encontramos este registro</h1><p>Ele pode não estar disponível para sua conta.</p><a class="btn btn-uai-primary" href="<?= \App\Core\Html::escape($basePath.'/') ?>">Voltar ao início</a></div>

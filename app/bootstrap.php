@@ -7,6 +7,17 @@ use App\Core\Session;
 use App\Core\Csrf;
 
 require_once dirname(__DIR__) . '/vendor/autoload.php';
+\App\Core\ErrorHandler::register();
+ini_set('display_errors', '0');
+ini_set('log_errors', '1');
+ini_set('error_log', dirname(__DIR__).'/storage/logs/php.log');
+if (PHP_SAPI !== 'cli') {
+    header('X-Content-Type-Options: nosniff');
+    header('Referrer-Policy: same-origin');
+    header('X-Frame-Options: DENY');
+    header('Cache-Control: no-store');
+}
+
 
 
 /*

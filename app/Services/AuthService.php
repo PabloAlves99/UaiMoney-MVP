@@ -39,9 +39,9 @@ final class AuthService
          * Nome
          */
 
-        if ($nome === '') {
+        if ($nome === '' || mb_strlen($nome) > 100) {
             throw new DomainException(
-                'O nome é obrigatório.'
+                'Informe um nome de até 100 caracteres.'
             );
         }
 
@@ -82,6 +82,9 @@ final class AuthService
          * Senha
          */
 
+        if (strlen($senha) > 72) {
+            throw new DomainException('Esta senha é muito longa. Use uma senha mais curta.');
+        }
         if (strlen($senha) < 8) {
             throw new DomainException(
                 'A senha deve possuir pelo menos 8 caracteres.'

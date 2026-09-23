@@ -38,6 +38,10 @@ abstract class BaseController
             ?? null;
 
         if ($this->csrf->validate($token)) {
+            $key = (string) ($_POST['_operation'] ?? '');
+            if (isset($_SESSION['submitted_forms'][$key])) {
+                $this->redirect($_SESSION['submitted_forms'][$key]);
+            }
             return;
         }
 
@@ -82,6 +86,27 @@ abstract class BaseController
     protected function redirect(
         string $path
     ): never {
+        $key = (string) ($_POST['_operation'] ?? '');
+        if (
+            ($_SERVER['REQUEST_METHOD'] ?? '') === 'POST'
+            && preg_match('/^[a-f0-9]{32}$/', $key)
+            && http_response_code() < 400
+            && ($_SESSION['flash']['type'] ?? '') !== 'danger'
+        ) {
+            $_SESSION['submitted_forms'][$key] = $path;
+            $_SESSION['submitted_forms'] = array_slice($_SESSION['submitted_forms'], -200, null, true);
+        }
+        $query = parse_url($path, PHP_URL_QUERY);
+        if ($query) {
+            parse_str($query, $params);
+            if (isset($params['erro'])) {
+                $_SESSION['flash'] = ['type' => 'danger', 'message' => (string) $params['erro']];
+                $path = (string) parse_url($path, PHP_URL_PATH);
+            } elseif (isset($params['acao'])) {
+                $_SESSION['flash'] = ['type' => 'success', 'message' => 'Recorrência ' . (string) $params['acao'] . '.'];
+                $path = (string) parse_url($path, PHP_URL_PATH);
+            }
+        }
         header(
             'Location: '
             . $this->basePath

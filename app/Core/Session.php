@@ -18,6 +18,14 @@ final class Session
             return;
         }
 
+        $directory = $this->config['save_path'] ?? null;
+        if ($directory !== null) {
+            if (!is_dir($directory) && !mkdir($directory, 0700, true) && !is_dir($directory)) {
+                throw new \RuntimeException('Não foi possível criar o armazenamento de sessões.');
+            }
+            session_save_path($directory);
+        }
+
         ini_set(
             'session.use_strict_mode',
             '1'

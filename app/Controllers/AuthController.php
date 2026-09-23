@@ -14,7 +14,8 @@ final class AuthController
     public function __construct(
         private readonly AuthService $authService,
         private readonly Csrf $csrf,
-        private readonly string $basePath
+        private readonly string $basePath,
+        private readonly ?\App\Core\RateLimiter $limiter = null
     ) {
     }
 
@@ -50,14 +51,16 @@ final class AuthController
             ?? '';
 
         try {
-
+            $identity = mb_strtolower(trim($identifier));
+            $this->limiter?->hit('login-ip', $_SERVER['REMOTE_ADDR'] ?? 'local', 60);
+            $this->limiter?->hit('login-account', $identity, 10);
             $this->authService->login(
                 $identifier,
                 $senha
             );
 
+            $this->limiter?->clear('login-account', $identity);
             $this->csrf->regenerate();
-
             $this->redirect('/');
 
         } catch (DomainException $e) {
@@ -76,6 +79,36 @@ final class AuthController
                 'layouts/auth'
             );
         }
+    }
+
+    public function signup(): void
+    {
+        if ($this->authService->isAuthenticated())
+            $this->redirect('/');
+        $error = null;
+        if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
+            $this->validateCsrf();
+            try {
+                $this->limiter?->hit('signup', $_SERVER['REMOTE_ADDR'] ?? 'local', 10);
+                $this->authService->register($_POST['nome'] ?? '', $_POST['login'] ?? '', $_POST['email'] ?? '', $_POST['senha'] ?? '', $_POST['confirmacao_senha'] ?? '');
+                $this->authService->login($_POST['login'], $_POST['senha']);
+                $this->csrf->regenerate();
+                $this->redirect('/comecar');
+            } catch (DomainException $e) {
+                http_response_code(422);
+                $error = $e->getMessage();
+            }
+        }
+        View::render('auth/register', [
+            'basePath' => $this->basePath,
+            'pageTitle' => 'Criar conta - UaiMoney',
+            'registrationPath' => '/criar-conta',
+            'error' => $error,
+            'nome' => $_POST['nome'] ?? '',
+            'login' => $_POST['login'] ?? '',
+            'email' => $_POST['email'] ?? '',
+            'csrfToken' => $this->csrf->token(),
+        ], 'layouts/auth');
     }
 
     public function showRegister(): void

@@ -30,7 +30,7 @@
 
 
 <form method="POST" action="<?= htmlspecialchars(
-    $basePath . '/register',
+    $basePath . ($registrationPath ?? '/register'),
     ENT_QUOTES,
     'UTF-8'
 ) ?>">
@@ -93,7 +93,7 @@
             Senha
         </label>
 
-        <input type="password" class="form-control" id="senha" name="senha" minlength="8" required>
+        <input type="password" class="form-control" id="senha" name="senha" autocomplete="new-password" minlength="8" required>
 
         <div class="form-text">
             Mínimo de 8 caracteres.
@@ -108,7 +108,7 @@
             Confirmar senha
         </label>
 
-        <input type="password" class="form-control" id="confirmacao_senha" name="confirmacao_senha" minlength="8"
+        <input type="password" class="form-control" id="confirmacao_senha" name="confirmacao_senha" autocomplete="new-password" minlength="8"
             required>
 
     </div>

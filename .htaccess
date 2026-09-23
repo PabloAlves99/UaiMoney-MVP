@@ -1,0 +1,7 @@
+# Only public/ is web-accessible when this project is inside an Apache htdocs.
+Options -Indexes
+RewriteEngine On
+RewriteRule ^(?:app|bin|config|database|docs|storage|tests|vendor|\.git|\.codex|\.agents)(?:/|$) - [F,L,NC]
+<FilesMatch "^(?:\.env.*|composer\.(?:json|lock)|.*\.(?:sqlite|db|bak|backup|log|md))$">
+    Require all denied
+</FilesMatch>
