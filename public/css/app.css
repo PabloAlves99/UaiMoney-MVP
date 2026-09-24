@@ -1831,9 +1831,30 @@ details summary {
   gap: 5px;
 }
 
-.share-bar { width: min(24px, 38%); min-height: 2px; border-radius: 5px 5px 0 0; }
+.share-bar { position: relative; width: min(24px, 38%); min-height: 2px; border-radius: 5px 5px 0 0; cursor: help; outline: none; transition: filter .15s ease, transform .15s ease; }
 .share-bar-income, .share-chart-legend .income { background: #198754; }
 .share-bar-expense, .share-chart-legend .expense { background: #dc3545; }
+.share-bar:hover, .share-bar:focus-visible { filter: brightness(1.1); transform: scaleX(1.08); z-index: 3; }
+.share-chart-tooltip {
+  position: fixed;
+  z-index: 1080;
+  width: max-content;
+  max-width: 210px;
+  padding: .45rem .65rem;
+  border-radius: .45rem;
+  background: #172033;
+  color: #fff;
+  font-size: .75rem;
+  font-weight: 600;
+  line-height: 1.3;
+  white-space: normal;
+  text-align: center;
+  box-shadow: 0 5px 18px rgba(0, 0, 0, .18);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .15s ease, transform .15s ease;
+}
+.share-chart-tooltip.visible { opacity: 1; }
 .share-chart-group small { padding: .6rem 0; white-space: nowrap; }
 .share-chart-legend { display: flex; gap: 1.25rem; margin-top: 1rem; font-size: .875rem; }
 .share-chart-legend i { display: inline-block; width: .75rem; height: .75rem; border-radius: 2px; margin-right: .3rem; }

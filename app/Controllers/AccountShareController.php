@@ -141,9 +141,15 @@ final class AccountShareController extends BaseController
         }
         $filters = $this->filters($_GET);
         $page = max(1, min(100000, (int) ($_GET['pagina'] ?? 1)));
+        $account = $this->accounts->findById((int) $share['conta_id'], (int) $share['usuario_id']);
+        if (!$account) {
+            $this->publicNotFound();
+            return;
+        }
         $this->shares->touch((int) $share['id']);
         View::render('shares/public', [
             'share'=>$share,
+            'balance'=>(int) $account['saldo_atual_centavos'],
             'entries'=>$this->shares->entries($share, $filters, $page),
             'totals'=>$this->shares->totals($share, $filters),
             'monthly'=>$this->shares->monthly($share, $filters),
