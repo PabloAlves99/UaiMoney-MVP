@@ -8,7 +8,7 @@ $accountId = (int) ($account['id'] ?? 0);
 <a class="back-link" href="<?= H::escape($basePath . '/contas') ?>">← Todas as contas</a>
 <div class="page-heading">
     <div><p class="eyebrow">SEU DINHEIRO</p><h1><?= H::escape($account['nome'] ?? 'Contas') ?></h1><p class="text-secondary">Saldo, extrato e conferência no mesmo lugar.</p></div>
-    <?php if ($account): ?><a class="btn btn-outline-secondary" href="<?= H::escape($basePath . '/contas/' . $accountId . '/editar') ?>">Editar conta</a><?php endif; ?>
+    <?php if ($account): ?><div class="detail-actions"><a class="btn btn-outline-secondary" href="<?= H::escape($basePath . '/contas/' . $accountId . '/compartilhar') ?>">Compartilhar extrato</a><a class="btn btn-outline-secondary" href="<?= H::escape($basePath . '/contas/' . $accountId . '/editar') ?>">Editar conta</a></div><?php endif; ?>
 </div>
 <?php if ($account): ?>
     <div class="row g-3 mb-4">

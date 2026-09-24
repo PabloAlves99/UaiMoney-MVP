@@ -338,6 +338,8 @@ $tiposConta = [
 
                                 <ul class="dropdown-menu dropdown-menu-end">
 
+                                    <li><a class="dropdown-item" href="<?= htmlspecialchars($basePath . '/contas/' . (int) $conta['id'] . '/compartilhar', ENT_QUOTES, 'UTF-8') ?>">Compartilhar extrato</a></li>
+
                                     <li>
 
                                         <a class="dropdown-item" href="<?= htmlspecialchars(

@@ -4,6 +4,8 @@ Controle financeiro pessoal em PHP 8.1+, SQLite, Bootstrap e JavaScript. A vers�
 
 Contas, categorias, movimentações, parcelamentos, recorrências, cartões, faturas, orçamento, análises, transferências, conferência de saldo e estornos trabalham na mesma base. A interface usa temas claro/escuro e se adapta ao celular.
 
+O extrato de uma conta pode ser compartilhado em modo somente leitura por um link secreto revogável, com senha adicional opcional. A página pública mostra apenas datas, descrições, entradas, saídas e um gráfico mensal, sempre respeitando os filtros escolhidos.
+
 ## Executar
 
 1. Instale PHP 8.1+ com PDO SQLite e mbstring; gere o autoload com `composer install`.

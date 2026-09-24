@@ -8,6 +8,7 @@ use App\Controllers\UserPreferenceController;
 use App\Controllers\AccountController;
 use App\Controllers\TransactionController;
 use App\Controllers\RecurrenceController;
+use App\Controllers\AccountShareController;
 
 use App\Core\Router;
 
@@ -17,6 +18,7 @@ use App\Repositories\AccountRepository;
 use App\Repositories\TransactionRepository;
 use App\Repositories\InstallmentRepository;
 use App\Repositories\RecurrenceRepository;
+use App\Repositories\AccountShareRepository;
 
 use App\Services\AuthService;
 use App\Services\CategoryService;
@@ -190,6 +192,16 @@ $recurrenceController = new RecurrenceController(
     $basePath
 );
 
+$accountShareController = new AccountShareController(
+    $authService,
+    $csrf,
+    $basePath,
+    $accountRepository,
+    new AccountShareRepository($pdo),
+    new \App\Core\RateLimiter($pdo),
+    new \App\Services\PublicAccountExportService()
+);
+
 /*
 |--------------------------------------------------------------------------
 | Router
@@ -222,6 +234,13 @@ $registerRoutes(
     $csrf,
     $basePath
 );
+
+$router->get('/contas/{id}/compartilhar', [$accountShareController, 'manage']);
+$router->post('/contas/{id}/compartilhar', [$accountShareController, 'create']);
+$router->post('/contas/{id}/compartilhar/desativar', [$accountShareController, 'disable']);
+$router->get('/compartilhado/{token}', [$accountShareController, 'publicPage']);
+$router->post('/compartilhado/{token}', [$accountShareController, 'publicPage']);
+$router->get('/compartilhado/{token}/exportar/{format}', [$accountShareController, 'export']);
 
 
 require dirname(__DIR__) . '/routes/finance.php';
