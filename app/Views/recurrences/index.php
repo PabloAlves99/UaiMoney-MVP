@@ -71,7 +71,7 @@ foreach ($recorrencias as $item) {
             ) ?>">
 
             <button type="submit" class="btn btn-outline-secondary">
-                ↻ Atualizar recorrências
+                ↻ Atualizar previstas
             </button>
 
         </form>
@@ -79,7 +79,7 @@ foreach ($recorrencias as $item) {
 
         <a href="<?= htmlspecialchars(
             $basePath
-            . '/movimentacoes',
+            . '/movimentacoes/nova?modo=recorrente',
             ENT_QUOTES,
             'UTF-8'
         ) ?>" class="btn btn-uai-primary">
@@ -234,7 +234,7 @@ foreach ($recorrencias as $item) {
 <div class="col-md-3"><label for="recurrence-status-filter" class="form-label">Situação</label><select id="recurrence-status-filter" name="status" class="form-select"><option value="">Todas</option><?php foreach(['ativa'=>'Ativa','pausada'=>'Pausada','encerrada'=>'Encerrada'] as $key=>$label): ?><option value="<?= $key ?>" <?= ($_GET['status'] ?? '')===$key ? 'selected' : '' ?>><?= $label ?></option><?php endforeach; ?></select></div>
 <div class="col-md-3"><label for="recurrence-frequency-filter" class="form-label">Frequência</label><select id="recurrence-frequency-filter" name="frequencia" class="form-select"><option value="">Todas</option><?php foreach(['diaria'=>'Diária','semanal'=>'Semanal','mensal'=>'Mensal','anual'=>'Anual'] as $key=>$label): ?><option value="<?= $key ?>" <?= ($_GET['frequencia'] ?? '')===$key ? 'selected' : '' ?>><?= $label ?></option><?php endforeach; ?></select></div>
 <div class="col-md-2 d-flex align-items-end"><button class="btn btn-uai-primary">Filtrar</button></div>
-<div class="col-12"><a href="#nova">+ Nova recorrência</a></div></div></form>
+<div class="col-12"><a href="<?= htmlspecialchars($basePath . '/movimentacoes/nova?modo=recorrente', ENT_QUOTES, 'UTF-8') ?>">+ Nova recorrência</a></div></div></form>
 <div class="card">
 
     <div class="card-header bg-transparent">
@@ -258,7 +258,7 @@ foreach ($recorrencias as $item) {
             </h5>
 
             <p class="text-uai-muted mb-0">
-                Use o formulário Nova recorrência abaixo.
+                Use Nova recorrência para programar seu primeiro lançamento.
             </p>
 
         </div>
@@ -727,4 +727,3 @@ foreach ($recorrencias as $item) {
     <?php endif; ?>
 
 </div>
-<?php require __DIR__ . '/create.php'; ?>

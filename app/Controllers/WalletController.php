@@ -36,14 +36,31 @@ final class WalletController extends FinancialController
         $this->page('wallet/index', 'Conferir e transferir', ['accounts' => $accounts, 'account' => $account, 'entries' => $account ? $this->ledger->statement($u, $id, $page) : [], 'page' => $page]);
     }
 
+    public function account(string $id): void
+    {
+        $user = (int) $this->requireUser()['id'];
+        $account = $this->accounts->findById($this->parseId($id), $user);
+        if (!$account) {
+            http_response_code(404);
+            $this->page('errors/not-found', 'Conta não encontrada');
+            return;
+        }
+        $page = max(1, min(100000, (int) ($_GET['pagina'] ?? 1)));
+        $this->page('wallet/index', $account['nome'], [
+            'account' => $account,
+            'accounts' => $this->accounts->listActive($user),
+            'entries' => $this->ledger->statement($user, (int) $id, $page),
+            'page' => $page,
+        ]);
+    }
     public function transfer(): void
     {
-        $this->action('/carteira', fn($u) => $this->service->transfer($u, $_POST), 'Transferência registrada nas duas contas.');
+        $this->action('/contas/' . (int) ($_POST['origem_id'] ?? 0), fn($u) => $this->service->transfer($u, $_POST), 'Transferência registrada nas duas contas.');
     }
 
     public function reconcile(): void
     {
-        $this->action('/carteira?conta=' . (int) ($_POST['conta_id'] ?? 0), fn($u) => $this->service->reconcile($u, $_POST), 'Conferência registrada. O ajuste pode ser consultado no histórico.');
+        $this->action('/contas/' . (int) ($_POST['conta_id'] ?? 0), fn($u) => $this->service->reconcile($u, $_POST), 'Conferência registrada. O ajuste pode ser consultado no histórico.');
     }
 
     public function start(): void
@@ -66,7 +83,7 @@ final class WalletController extends FinancialController
             $this->page('errors/not-found', 'Movimentação não encontrada');
             return;
         }
-        $this->page('wallet/detail', 'Detalhe da movimentação', ['t' => $t, 'refunds' => $this->ledger->refunds($u, (int) $id)]);
+        $this->page('wallet/detail', 'Detalhe da movimentação', ['t' => $t, 'refunds' => $this->ledger->refunds($u, (int) $id), 'history' => $this->ledger->history($u, (int) $id)]);
     }
 
     public function refund(string $id): void

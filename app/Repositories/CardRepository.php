@@ -8,7 +8,7 @@ final class CardRepository extends FinanceRepository
     {
         return $this->rows("SELECT c.*,
             COALESCE((SELECT SUM(t.valor_centavos) FROM transacoes t WHERE t.usuario_id=c.usuario_id AND t.cartao_id=c.id AND t.status<>'cancelada'),0)
-            -COALESCE((SELECT SUM(e.valor_centavos) FROM estornos e JOIN transacoes t ON t.id=e.transacao_id WHERE e.usuario_id=c.usuario_id AND t.cartao_id=c.id),0)
+            -COALESCE((SELECT SUM(e.valor_centavos) FROM estornos e JOIN transacoes t ON t.id=e.transacao_id WHERE e.usuario_id=c.usuario_id AND t.cartao_id=c.id AND t.excluida_em IS NULL),0)
             -COALESCE((SELECT SUM(p.valor_centavos) FROM pagamentos_fatura p JOIN faturas f ON f.id=p.fatura_id WHERE p.usuario_id=c.usuario_id AND f.cartao_id=c.id),0) AS utilizado
             FROM cartoes c WHERE c.usuario_id=? ORDER BY c.ativo DESC,c.nome", [$user]);
     }
@@ -37,7 +37,7 @@ final class CardRepository extends FinanceRepository
     {
         return $this->rows("SELECT f.*,c.nome AS cartao_nome,c.conta_pagamento_id,
             COALESCE((SELECT SUM(t.valor_centavos) FROM transacoes t WHERE t.fatura_id=f.id AND t.usuario_id=f.usuario_id AND t.status<>'cancelada'),0)
-            -COALESCE((SELECT SUM(e.valor_centavos) FROM estornos e WHERE e.fatura_id=f.id AND e.usuario_id=f.usuario_id),0)
+            -COALESCE((SELECT SUM(e.valor_centavos) FROM estornos e JOIN transacoes et ON et.id=e.transacao_id AND et.usuario_id=e.usuario_id WHERE e.fatura_id=f.id AND e.usuario_id=f.usuario_id AND et.excluida_em IS NULL),0)
             +COALESCE((SELECT SUM(x.valor_centavos) FROM creditos_fatura x WHERE x.origem_id=f.id AND x.usuario_id=f.usuario_id),0)
             -COALESCE((SELECT SUM(x.valor_centavos) FROM creditos_fatura x WHERE x.destino_id=f.id AND x.usuario_id=f.usuario_id),0) AS total,
             COALESCE((SELECT SUM(p.valor_centavos) FROM pagamentos_fatura p WHERE p.fatura_id=f.id AND p.usuario_id=f.usuario_id),0) AS pago
@@ -66,10 +66,10 @@ final class CardRepository extends FinanceRepository
         return (int) $this->pdo->lastInsertId();
     }
 
-    public function purchase(int $user, int $category, int $card, array $invoice, string $description, int $amount, string $date, ?int $installment, int $number, string $purchaseDate): int
+    public function purchase(int $user, int $category, int $card, array $invoice, string $description, int $amount, string $date, ?int $installment, int $number, string $purchaseDate, ?string $notes = null): int
     {
-        $this->run("INSERT INTO transacoes(usuario_id,subgrupo_id,cartao_id,fatura_id,descricao,valor_centavos,data_competencia,data_vencimento,data_efetivacao,status,meio_pagamento,parcelamento_id,numero_parcela,data_compra)
-            VALUES(?,?,?,?,?,?,?,?,?,'efetivada','credito',?,?,?)", [$user, $category, $card, $invoice['id'], $description, $amount, $date, $invoice['data_vencimento'], $purchaseDate, $installment, $installment ? $number : null, $purchaseDate]);
+        $this->run("INSERT INTO transacoes(usuario_id,subgrupo_id,cartao_id,fatura_id,descricao,valor_centavos,data_competencia,data_vencimento,data_efetivacao,status,meio_pagamento,parcelamento_id,numero_parcela,data_compra,observacao)
+            VALUES(?,?,?,?,?,?,?,?,?,'efetivada','credito',?,?,?,?)", [$user, $category, $card, $invoice['id'], $description, $amount, $date, $invoice['data_vencimento'], $purchaseDate, $installment, $installment ? $number : null, $purchaseDate, $notes]);
         return (int) $this->pdo->lastInsertId();
     }
 
@@ -85,7 +85,7 @@ final class CardRepository extends FinanceRepository
 
     public function items(int $user, int $invoice): array
     {
-        return $this->rows('SELECT t.*,s.nome AS categoria,COALESCE((SELECT SUM(e.valor_centavos) FROM estornos e WHERE e.usuario_id=t.usuario_id AND e.transacao_id=t.id),0) AS estornado FROM transacoes t JOIN subgrupos s ON s.id=t.subgrupo_id WHERE t.usuario_id=? AND t.fatura_id=? ORDER BY t.data_competencia,t.id', [$user, $invoice]);
+        return $this->rows('SELECT t.*,s.nome AS categoria,COALESCE((SELECT SUM(e.valor_centavos) FROM estornos e WHERE e.usuario_id=t.usuario_id AND e.transacao_id=t.id),0) AS estornado FROM transacoes t JOIN subgrupos s ON s.id=t.subgrupo_id WHERE t.usuario_id=? AND t.fatura_id=? AND t.excluida_em IS NULL ORDER BY t.data_competencia,t.id', [$user, $invoice]);
     }
 
     public function payments(int $user, int $invoice): array
@@ -95,7 +95,7 @@ final class CardRepository extends FinanceRepository
 
     public function move(int $user, int $transaction, array $invoice): void
     {
-        $this->run('UPDATE transacoes SET fatura_id=?,data_vencimento=?,atualizado_em=CURRENT_TIMESTAMP WHERE usuario_id=? AND id=?', [$invoice['id'], $invoice['data_vencimento'], $user, $transaction]);
+        $this->run('UPDATE transacoes SET fatura_id=?,data_vencimento=?,versao=versao+1,atualizado_em=CURRENT_TIMESTAMP WHERE usuario_id=? AND id=?', [$invoice['id'], $invoice['data_vencimento'], $user, $transaction]);
     }
 
     public function credit(int $user, int $source, int $target, int $amount): void

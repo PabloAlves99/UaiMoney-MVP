@@ -738,7 +738,7 @@ final class AccountExportService
 
         /*
          * Mesma regra usada atualmente
-         * em accounts/show.php.
+         * na apresentação dos lançamentos da conta.
          */
 
         foreach (

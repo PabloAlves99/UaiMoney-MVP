@@ -6,7 +6,7 @@ final class ActivityRepository extends FinanceRepository
 {
     private function query(int $user, array $filters): array
     {
-        $where = 't.usuario_id=? AND g.usuario_id=t.usuario_id';
+        $where = 't.usuario_id=? AND g.usuario_id=t.usuario_id AND t.excluida_em IS ' . (($filters['lixeira'] ?? '') === '1' ? 'NOT NULL' : 'NULL');
         $params = [$user];
         foreach (['status' => 't.status', 'tipo' => 'g.tipo', 'conta_id' => 't.conta_id', 'cartao_id' => 't.cartao_id', 'grupo_id' => 'g.id', 'subgrupo_id' => 's.id', 'meio_pagamento' => 't.meio_pagamento'] as $key => $column) {
             if (!empty($filters[$key])) {

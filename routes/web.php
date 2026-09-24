@@ -107,10 +107,7 @@ return function (Router $router, AuthController $authController, UserPreferenceC
     );
 
 
-    $router->get(
-        '/contas/{id}',
-        [$accountController, 'show']
-    );
+
 
     $router->get(
         '/contas/{id}/exportar/pdf',
@@ -150,20 +147,11 @@ return function (Router $router, AuthController $authController, UserPreferenceC
 
 
 
-    $router->post(
-        '/movimentacoes',
-        [$transactionController, 'store']
-    );
 
-    $router->get(
-        '/movimentacoes/{id}/editar',
-        [$transactionController, 'edit']
-    );
 
-    $router->post(
-        '/movimentacoes/{id}/editar',
-        [$transactionController, 'update']
-    );
+
+
+
 
     $router->post(
         '/movimentacoes/{id}/efetivar',

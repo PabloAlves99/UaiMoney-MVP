@@ -81,7 +81,7 @@ final class CardService
                 if ($invoice['status'] !== 'aberta' || (int)$existing['pago'] > 0) throw new DomainException('A fatura selecionada já foi fechada ou recebeu pagamentos. Escolha outra primeira fatura.');
                 // Budget consumption follows each installment's cycle; a single purchase uses its purchase date.
                 $competence = $count === 1 ? $date : Dates::day(Dates::shift($month,$i),(int)substr($date,8,2));
-                $this->cards->purchase($user,(int)$category['id'],(int)$card['id'],$invoice,$description,intdiv($amount,$count)+($i < $amount % $count ? 1 : 0),$competence,$installment,$i+1,$date);
+                $this->cards->purchase($user,(int)$category['id'],(int)$card['id'],$invoice,$description,intdiv($amount,$count)+($i < $amount % $count ? 1 : 0),$competence,$installment,$i+1,$date,trim((string)($input['observacao'] ?? '')) ?: null);
             }
         });
     }

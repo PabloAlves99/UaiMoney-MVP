@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 return [
-    'save_path' => dirname(__DIR__) . '/storage/sessions',
+    'save_path' => getenv('UAIMONEY_SESSION_PATH') ?: dirname(__DIR__) . '/storage/sessions',
 
     'name' => 'uaimoney_session',
 

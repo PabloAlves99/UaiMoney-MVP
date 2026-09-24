@@ -20,4 +20,4 @@ $account=(new App\Repositories\AccountRepository($pdo))->findById(1,1);
 if((int)$account['saldo_atual_centavos']!==97500) throw new RuntimeException('Saldo legado alterado.');
 if($pdo->query('PRAGMA foreign_key_check')->fetchAll()!==[]) throw new RuntimeException('Relacionamento inválido após atualização.');
 if($pdo->query('PRAGMA integrity_check')->fetchColumn()!=='ok') throw new RuntimeException('Banco inválido.');
-echo "OK: atualização 017 → 019 preserva registros, saldo e integridade.\n";
+echo "OK: atualização 017 → 020 preserva registros, saldo e integridade.\n";

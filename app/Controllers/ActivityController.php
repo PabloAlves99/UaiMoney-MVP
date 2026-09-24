@@ -25,14 +25,14 @@ final class ActivityController extends FinancialController
 
     private function filters(): array
     {
-        return array_filter(array_intersect_key($_GET, array_flip(['q', 'status', 'tipo', 'conta_id', 'cartao_id', 'grupo_id', 'subgrupo_id', 'meio_pagamento', 'data_inicio', 'data_fim'])), fn($v) => is_string($v) && $v !== '');
+        return array_filter(array_intersect_key($_GET, array_flip(['q', 'status', 'tipo', 'conta_id', 'cartao_id', 'grupo_id', 'subgrupo_id', 'meio_pagamento', 'data_inicio', 'data_fim', 'lixeira'])), fn($v) => is_string($v) && $v !== '');
     }
 
     public function index(): void
     {
         $u = (int) $this->requireUser()['id'];
         $filters = $this->filters();
-        $page = max(1, (int) ($_GET['pagina'] ?? 1));
+        $page = max(1, min(100000, (int) ($_GET['pagina'] ?? 1)));
         $this->page('activity/index', 'Movimentações', ['entries' => $this->activity->list($u, $filters, $page), 'total' => $this->activity->count($u, $filters), 'filters' => $filters, 'page' => $page, 'accounts' => $this->accounts->listActive($u), 'cards' => $this->cards->list($u), 'categories' => $this->reports->categories($u)]);
     }
 
@@ -57,7 +57,7 @@ final class ActivityController extends FinancialController
 
     public function installment(): void
     {
-        $u = (int) $this->requireUser()['id'];
-        $this->page('activity/installment', 'Novo parcelamento', ['accounts' => $this->accounts->listActive($u), 'categories' => $this->reports->categories($u)]);
+        $this->requireUser();
+        $this->redirect('/movimentacoes/nova?modo=parcelado');
     }
 }

@@ -50,6 +50,9 @@ final class CardController extends FinancialController
             $this->page('errors/not-found', 'Cartão não encontrado');
             return;
         }
+        foreach ($this->cards->list($u) as $item) {
+            if ((int) $item['id'] === (int) $id) $card = $item;
+        }
         $this->page('cards/show', $card['nome'], ['card' => $card, 'invoices' => $this->cards->invoices($u, (int) $id), 'categories' => $this->reports->categories($u)]);
     }
 

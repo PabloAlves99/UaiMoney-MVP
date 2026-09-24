@@ -63,7 +63,7 @@ final class TransactionRepository
         LEFT JOIN parcelamentos p
             ON p.id = t.parcelamento_id
 
-        WHERE t.usuario_id = :usuario_id
+        WHERE t.usuario_id = :usuario_id AND t.excluida_em IS NULL
     ";
 
 
@@ -292,7 +292,7 @@ final class TransactionRepository
             meio_pagamento,
             observacao
         FROM transacoes
-        WHERE id = :id
+        WHERE excluida_em IS NULL AND id = :id
           AND usuario_id = :usuario_id
         LIMIT 1
     ");
@@ -320,8 +320,9 @@ final class TransactionRepository
             conta_id = :conta_id,
             data_efetivacao = :data_efetivacao,
             status = 'efetivada',
+            versao = versao + 1,
             atualizado_em = CURRENT_TIMESTAMP
-        WHERE id = :id
+        WHERE excluida_em IS NULL AND id = :id
           AND usuario_id = :usuario_id
           AND status = 'pendente'
     ");
@@ -345,8 +346,9 @@ final class TransactionRepository
         UPDATE transacoes
         SET
             status = 'cancelada',
+            versao = versao + 1,
             atualizado_em = CURRENT_TIMESTAMP
-        WHERE id = :id
+        WHERE excluida_em IS NULL AND id = :id
           AND usuario_id = :usuario_id
           AND status = 'pendente' AND cartao_id IS NULL
     ");
@@ -382,8 +384,9 @@ final class TransactionRepository
             data_vencimento = :data_vencimento,
             meio_pagamento = :meio_pagamento,
             observacao = :observacao,
+            versao = versao + 1,
             atualizado_em = CURRENT_TIMESTAMP
-        WHERE id = :id
+        WHERE excluida_em IS NULL AND id = :id
           AND usuario_id = :usuario_id
           AND status = 'pendente'
     ");

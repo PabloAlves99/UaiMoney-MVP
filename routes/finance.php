@@ -24,6 +24,22 @@ $dashboardController = new DashboardController($authService, $csrf, $basePath, $
 $walletController = new WalletController($authService, $csrf, $basePath, $ledger, $ledgerService, $accountRepository, $reports, $transactionService);
 $activityController = new ActivityController($authService, $csrf, $basePath, new ActivityRepository($pdo), $accountRepository, $cards, $reports);
 
+$movementRepository = new \App\Repositories\MovementRepository($pdo);
+$movementService = new \App\Services\MovementService(
+    $movementRepository, $categoryRepository, $accountRepository,
+    $transactionService, $cardService, $installmentService, $recurrenceService
+);
+$movementController = new \App\Controllers\MovementController(
+    $authService, $csrf, $basePath, $movementService, $movementRepository,
+    $accountRepository, $cards, $reports
+);
+
+$router->get('/movimentacoes/nova', [$movementController, 'form']);
+$router->post('/movimentacoes', [$movementController, 'save']);
+$router->get('/movimentacoes/{id}/editar', [$movementController, 'form']);
+$router->post('/movimentacoes/{id}/editar', [$movementController, 'save']);
+$router->post('/movimentacoes/{id}/excluir', [$movementController, 'delete']);
+$router->post('/movimentacoes/{id}/restaurar', [$movementController, 'restore']);
 $router->get('/', [$dashboardController, 'index']);
 $router->get('/movimentacoes', [$activityController, 'index']);
 $router->get('/movimentacoes/exportar', [$activityController, 'export']);
@@ -46,6 +62,7 @@ $router->post('/planejamento', [$dashboardController, 'saveBudget']);
 $router->post('/planejamento/copiar', [$dashboardController, 'copyBudget']);
 $router->post('/planejamento/{id}/remover', [$dashboardController, 'deleteBudget']);
 $router->get('/analises', [$dashboardController, 'analytics']);
+$router->get('/contas/{id}', [$walletController, 'account']);
 $router->get('/carteira', [$walletController, 'index']);
 $router->post('/carteira/transferir', [$walletController, 'transfer']);
 $router->post('/carteira/conferir', [$walletController, 'reconcile']);

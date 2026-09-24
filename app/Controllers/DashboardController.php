@@ -58,7 +58,6 @@ final class DashboardController extends FinancialController
             'upcoming' => $this->reports->upcoming($u),
             'budgets' => $this->reports->budgets($u, $month),
             'categories' => $this->reports->categories($u),
-            'series' => $this->reports->breakdown($u, Dates::shift($month, -5) . '-01', Dates::day($month, 31), 'mes'),
         ]);
     }
 
