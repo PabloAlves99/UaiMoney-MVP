@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Controllers\AuthController;
+use App\Controllers\AdminUserController;
 use App\Controllers\UserPreferenceController;
 use App\Controllers\CategoryController;
 use App\Controllers\AccountController;
@@ -13,7 +14,7 @@ use App\Core\Router;
 use App\Core\View;
 use App\Services\AuthService;
 
-return function (Router $router, AuthController $authController, UserPreferenceController $userPreferenceController, CategoryController $categoryController, AccountController $accountController, TransactionController $transactionController, RecurrenceController $recurrenceController, AuthService $authService, Csrf $csrf, string $basePath): void {
+return function (Router $router, AuthController $authController, UserPreferenceController $userPreferenceController, CategoryController $categoryController, AccountController $accountController, TransactionController $transactionController, RecurrenceController $recurrenceController, AdminUserController $adminUserController, AuthService $authService, Csrf $csrf, string $basePath): void {
     /*
      * Autenticação
      */
@@ -29,18 +30,10 @@ return function (Router $router, AuthController $authController, UserPreferenceC
     );
 
 
-    $router->get('/criar-conta', [$authController, 'signup']);
-    $router->post('/criar-conta', [$authController, 'signup']);
-
-    $router->get(
-        '/register',
-        [$authController, 'showRegister']
-    );
-
-    $router->post(
-        '/register',
-        [$authController, 'register']
-    );
+    $router->get('/admin/usuarios', [$adminUserController, 'index']);
+    $router->post('/admin/usuarios', [$adminUserController, 'save']);
+    $router->get('/admin/usuarios/{id}/editar', [$adminUserController, 'index']);
+    $router->post('/admin/usuarios/{id}/editar', [$adminUserController, 'save']);
 
 
     $router->post(

@@ -3,7 +3,7 @@ declare(strict_types=1);
 use App\Core\FinancialDate;
 // A disposable preview database. Never opens or alters the user's database.
 require __DIR__.'/run.php';
-$db->prepare('UPDATE usuarios SET senha_hash=?')->execute([password_hash('UaiTeste!2026',PASSWORD_DEFAULT)]);
+$db->prepare("UPDATE usuarios SET senha_hash=?,tipo=CASE WHEN login='ana' THEN 'admin' ELSE 'usuario' END")->execute([password_hash('UaiTeste!2026',PASSWORD_DEFAULT)]);
 $income=array_values(array_filter($reports->categories(1),fn($c)=>$c['tipo']==='receita'))[0];
 for($i=-5;$i<=0;$i++) {
     $m=FinancialDate::shift(date('Y-m'),$i);

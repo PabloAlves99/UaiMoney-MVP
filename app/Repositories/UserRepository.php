@@ -42,6 +42,25 @@ final class UserRepository
         return $usuario ?: null;
     }
 
+    public function list(): array
+    {
+        return $this->pdo->query("SELECT id,nome,login,email,tipo,ativo,tema,criado_em,atualizado_em
+            FROM usuarios ORDER BY ativo DESC,nome COLLATE NOCASE,id")->fetchAll();
+    }
+
+    public function update(int $id, string $nome, string $login, string $email, string $tipo, int $ativo, string $tema, ?string $senhaHash): void
+    {
+        $sql = 'UPDATE usuarios SET nome=:nome,login=:login,email=:email,tipo=:tipo,ativo=:ativo,tema=:tema,atualizado_em=CURRENT_TIMESTAMP';
+        $params = [':id' => $id, ':nome' => $nome, ':login' => $login, ':email' => $email, ':tipo' => $tipo, ':ativo' => $ativo, ':tema' => $tema];
+        if ($senhaHash !== null) {
+            $sql .= ',senha_hash=:senha_hash';
+            $params[':senha_hash'] = $senhaHash;
+        }
+        $sql .= ' WHERE id=:id';
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+    }
+
 
     public function findByEmail(string $email): ?array
     {
@@ -135,7 +154,8 @@ final class UserRepository
         string $login,
         string $email,
         string $senhaHash,
-        string $tipo = 'usuario'
+        string $tipo = 'usuario',
+        string $tema = 'light'
     ): int {
         $stmt = $this->pdo->prepare("
             INSERT INTO usuarios (
@@ -143,14 +163,16 @@ final class UserRepository
                 login,
                 email,
                 senha_hash,
-                tipo
+                tipo,
+                tema
             )
             VALUES (
                 :nome,
                 :login,
                 :email,
                 :senha_hash,
-                :tipo
+                :tipo,
+                :tema
             )
         ");
 
@@ -159,7 +181,8 @@ final class UserRepository
             ':login' => $login,
             ':email' => $email,
             ':senha_hash' => $senhaHash,
-            ':tipo' => $tipo
+            ':tipo' => $tipo,
+            ':tema' => $tema
         ]);
 
         return (int) $this->pdo->lastInsertId();

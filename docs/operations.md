@@ -41,7 +41,7 @@ Configure `UAIMONEY_ENV=production`, HTTPS e o prefixo em `UAIMONEY_BASE_PATH`. 
 
 SQLite usa foreign keys, WAL e busy timeout. Valide com a concorrência esperada e considere PostgreSQL conforme a utilização crescer. Nunca exponha o servidor embutido de testes do PHP à internet.
 
-O cadastro público está em `/criar-conta`; o cadastro administrativo original continua protegido. Limites de tentativas estão implementados. Verificação de e-mail e recuperação de senha ainda precisam de uma etapa própria antes do lançamento comercial.
+Não há cadastro público. Somente administradores podem cadastrar usuários em `/admin/usuarios`. Limites de tentativas estão implementados. Verificação de e-mail e recuperação de senha ainda precisam de uma etapa própria antes do lançamento comercial.
 
 ## Recorrências
 

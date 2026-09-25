@@ -9,6 +9,7 @@ use App\Controllers\AccountController;
 use App\Controllers\TransactionController;
 use App\Controllers\RecurrenceController;
 use App\Controllers\AccountShareController;
+use App\Controllers\AdminUserController;
 
 use App\Core\Router;
 
@@ -28,6 +29,7 @@ use App\Services\TransactionService;
 use App\Services\InstallmentService;
 use App\Services\RecurrenceService;
 use App\Services\AccountExportService;
+use App\Services\UserManagementService;
 
 /*
 |--------------------------------------------------------------------------
@@ -202,6 +204,13 @@ $accountShareController = new AccountShareController(
     new \App\Services\PublicAccountExportService()
 );
 
+$adminUserController = new AdminUserController(
+    $authService,
+    $csrf,
+    $basePath,
+    new UserManagementService($userRepository)
+);
+
 /*
 |--------------------------------------------------------------------------
 | Router
@@ -230,6 +239,7 @@ $registerRoutes(
     $accountController,
     $transactionController,
     $recurrenceController,
+    $adminUserController,
     $authService,
     $csrf,
     $basePath

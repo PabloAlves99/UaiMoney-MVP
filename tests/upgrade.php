@@ -18,6 +18,7 @@ $after=$pdo->query('SELECT * FROM transacoes')->fetchAll();
 foreach($before as $index=>$row) foreach($row as $key=>$value) if($after[$index][$key]!==$value) throw new RuntimeException('Registro legado alterado: '.$key);
 $account=(new App\Repositories\AccountRepository($pdo))->findById(1,1);
 if((int)$account['saldo_atual_centavos']!==97500) throw new RuntimeException('Saldo legado alterado.');
+if($pdo->query("SELECT tipo FROM usuarios WHERE id=1")->fetchColumn()!=='admin') throw new RuntimeException('Nenhum administrador foi definido após atualização.');
 if($pdo->query('PRAGMA foreign_key_check')->fetchAll()!==[]) throw new RuntimeException('Relacionamento inválido após atualização.');
 if($pdo->query('PRAGMA integrity_check')->fetchColumn()!=='ok') throw new RuntimeException('Banco inválido.');
-echo "OK: atualização 017 → 020 preserva registros, saldo e integridade.\n";
+echo "OK: atualização 017 → 022 preserva registros, saldo e integridade.\n";
