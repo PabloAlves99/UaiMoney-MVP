@@ -1798,6 +1798,15 @@ details summary {
   padding: 1.25rem 1.5rem;
 }
 
+.brand-identity { display: inline-block; width: 200px; max-width: 100%; flex-shrink: 1; }
+.brand-logo { display: block; width: 100%; height: auto; border-radius: 8px; }
+.brand-logo-dark { display: none; }
+[data-bs-theme="dark"] .brand-logo-light { display: none; }
+[data-bs-theme="dark"] .brand-logo-dark { display: block; }
+.auth-brand { text-align: center; }
+.auth-brand .brand-identity { width: 250px; }
+.public-share-header .brand-identity { width: 190px; }
+
 .public-share-header {
   padding: 1rem 0;
   border-bottom: 1px solid var(--uai-border);

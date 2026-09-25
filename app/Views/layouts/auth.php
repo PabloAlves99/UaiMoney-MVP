@@ -7,6 +7,7 @@
     <meta charset="UTF-8">
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/svg+xml" sizes="any" href="<?= \App\Core\Html::escape($basePath.'/images/brand/favicon.svg?v=3') ?>">
 
     <title>
         <?= htmlspecialchars(
@@ -41,7 +42,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <link rel="stylesheet" href="<?= htmlspecialchars(
-        $basePath . '/css/app.css',
+        $basePath . '/css/app.css?v=20260925-brand',
         ENT_QUOTES,
         'UTF-8'
     ) ?>">
@@ -65,6 +66,8 @@
         <div class="card auth-card">
 
             <div class="card-body p-4 p-md-5">
+
+                <div class="auth-brand mb-4"><?php require __DIR__.'/brand.php'; ?></div>
 
                 <?= $content ?>
 

@@ -150,6 +150,8 @@ final class AccountShareController extends BaseController
         View::render('shares/public', [
             'share'=>$share,
             'balance'=>(int) $account['saldo_atual_centavos'],
+            'initialBalance'=>(int) $account['saldo_inicial_centavos'],
+            'balanceStartedAt'=>(string) $account['saldo_inicial_em'],
             'entries'=>$this->shares->entries($share, $filters, $page),
             'totals'=>$this->shares->totals($share, $filters),
             'monthly'=>$this->shares->monthly($share, $filters),
@@ -202,7 +204,18 @@ final class AccountShareController extends BaseController
 
     private function filters(array $input): array
     {
-        $filters = ['inicio'=>'', 'fim'=>'', 'tipo'=>'', 'q'=>''];
+        $hasExplicitFilter = array_key_exists('inicio', $input)
+            || array_key_exists('fim', $input)
+            || array_key_exists('tipo', $input)
+            || array_key_exists('q', $input)
+            || (($input['periodo'] ?? '') === 'tudo');
+        $filters = [
+            'inicio'=>$hasExplicitFilter ? '' : date('Y-m-01'),
+            'fim'=>$hasExplicitFilter ? '' : date('Y-m-t'),
+            'tipo'=>'',
+            'q'=>'',
+            'periodo'=>$hasExplicitFilter ? 'tudo' : 'mes',
+        ];
         foreach (['inicio', 'fim'] as $key) {
             $value = (string) ($input[$key] ?? '');
             if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) $filters[$key] = $value;
@@ -210,6 +223,9 @@ final class AccountShareController extends BaseController
         $type = (string) ($input['tipo'] ?? '');
         if (in_array($type, ['entrada', 'saida'], true)) $filters['tipo'] = $type;
         $filters['q'] = mb_substr(trim((string) ($input['q'] ?? '')), 0, 100);
+        if ($hasExplicitFilter && ($filters['inicio'] !== '' || $filters['fim'] !== '' || $filters['tipo'] !== '' || $filters['q'] !== '')) {
+            $filters['periodo'] = 'personalizado';
+        }
         return $filters;
     }
 

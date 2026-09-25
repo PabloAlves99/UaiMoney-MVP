@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title id="title">UaiMoney</title>
+  <desc id="desc">Moeda com degraus ascendentes, símbolo da evolução financeira do UaiMoney.</desc>
+  <rect width="64" height="64" rx="16" fill="#0d4947"/>
+  <circle cx="32" cy="32" r="27" fill="#f4c76b"/>
+  <path d="M16 40h12V28h12V16h8v20H36v12H16Z" fill="#0d4947"/>
+</svg>

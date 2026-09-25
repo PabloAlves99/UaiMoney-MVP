@@ -3,6 +3,7 @@ use App\Core\Html as H;
 use App\Core\Money;
 $query = array_filter($filters, fn($value) => $value !== '');
 $max = max([1, ...array_map(fn($row) => max((int) $row['entradas'], (int) $row['saidas']), $monthly)]);
+$periodResult = (int) $totals['entradas'] - (int) $totals['saidas'];
 ?>
 <div class="public-share-title mb-4"><p class="eyebrow">EXTRATO COMPARTILHADO</p><h1><?= H::escape($share['conta_nome']) ?></h1><p class="text-secondary mb-0">Visualização somente de leitura · atualizado em <?= date('d/m/Y H:i') ?></p></div>
 <section class="card mb-4"><div class="card-body">
@@ -11,13 +12,15 @@ $max = max([1, ...array_map(fn($row) => max((int) $row['entradas'], (int) $row['
         <div class="col-6 col-md-2"><label class="form-label" for="inicio">De</label><input class="form-control" id="inicio" name="inicio" type="date" value="<?= H::escape($filters['inicio']) ?>"></div>
         <div class="col-6 col-md-2"><label class="form-label" for="fim">Até</label><input class="form-control" id="fim" name="fim" type="date" value="<?= H::escape($filters['fim']) ?>"></div>
         <div class="col-md-2"><label class="form-label" for="tipo">Tipo</label><select class="form-select" id="tipo" name="tipo"><option value="">Todos</option><option value="entrada" <?= $filters['tipo']==='entrada'?'selected':'' ?>>Entradas</option><option value="saida" <?= $filters['tipo']==='saida'?'selected':'' ?>>Saídas</option></select></div>
-        <div class="col-md-2 d-flex gap-2"><button class="btn btn-uai-primary flex-fill">Filtrar</button><a class="btn btn-outline-secondary" href="<?= H::escape($basePath . '/compartilhado/' . $token) ?>">Limpar</a></div>
+        <div class="col-md-2 d-flex gap-2"><button class="btn btn-uai-primary flex-fill">Filtrar</button><a class="btn btn-outline-secondary" href="<?= H::escape($basePath . '/compartilhado/' . $token) ?>">Mês atual</a></div>
     </form>
+    <div class="mt-3"><a class="small" href="<?= H::escape($basePath . '/compartilhado/' . $token . '?periodo=tudo') ?>">Ver todo o período</a></div>
 </div></section>
 <div class="row g-3 mb-4">
-    <div class="col-md-4"><section class="card metric-card h-100"><div class="card-body"><p>Saldo disponível hoje</p><strong class="metric-value <?= $balance < 0 ? 'text-danger' : '' ?>"><?= Money::format($balance) ?></strong><small>Saldo atual da conta, independente do filtro</small></div></section></div>
-    <div class="col-md-4"><section class="card metric-card h-100"><div class="card-body"><p>Entradas no período</p><strong class="metric-value text-success"><?= Money::format((int) $totals['entradas']) ?></strong><small>Respeita os filtros selecionados</small></div></section></div>
-    <div class="col-md-4"><section class="card metric-card h-100"><div class="card-body"><p>Saídas no período</p><strong class="metric-value text-danger"><?= Money::format((int) $totals['saidas']) ?></strong><small>Respeita os filtros selecionados</small></div></section></div>
+    <div class="col-sm-6 col-xl-3"><section class="card metric-card h-100"><div class="card-body"><p>Saldo disponível hoje</p><strong class="metric-value <?= $balance < 0 ? 'text-danger' : '' ?>"><?= Money::format($balance) ?></strong><small>Inicial: <?= Money::format($initialBalance) ?> em <?= H::date($balanceStartedAt) ?><br>Não depende do filtro</small></div></section></div>
+    <div class="col-sm-6 col-xl-3"><section class="card metric-card h-100"><div class="card-body"><p>Entradas no período</p><strong class="metric-value text-success"><?= Money::format((int) $totals['entradas']) ?></strong><small>Respeita os filtros selecionados</small></div></section></div>
+    <div class="col-sm-6 col-xl-3"><section class="card metric-card h-100"><div class="card-body"><p>Saídas no período</p><strong class="metric-value text-danger"><?= Money::format((int) $totals['saidas']) ?></strong><small>Respeita os filtros selecionados</small></div></section></div>
+    <div class="col-sm-6 col-xl-3"><section class="card metric-card h-100"><div class="card-body"><p>Resultado do período</p><strong class="metric-value <?= $periodResult < 0 ? 'text-danger' : 'text-success' ?>"><?= Money::format($periodResult) ?></strong><small>Entradas menos saídas no filtro</small></div></section></div>
 </div>
 <section class="card mb-4"><div class="card-body"><h2 class="h5 mb-4">Evolução de entradas e saídas</h2>
     <?php if (!$monthly): ?><p class="empty-state">Não há dados para o filtro selecionado.</p><?php else: ?><div class="share-chart" role="img" aria-label="Gráfico de entradas e saídas por mês">

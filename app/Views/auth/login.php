@@ -1,21 +1,5 @@
 <div class="text-center mb-4">
 
-    <div class="text-center mb-4">
-
-        <div class="d-flex justify-content-center mb-3">
-
-            <span class="uai-brand-mark">
-                U
-            </span>
-
-        </div>
-
-        <div class="auth-logo">
-            UaiMoney
-        </div>
-
-    </div>
-
     <div class="auth-subtitle mt-2">
         Controle suas finanças de forma simples.
     </div>

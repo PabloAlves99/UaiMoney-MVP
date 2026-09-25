@@ -1,9 +1,5 @@
 <div class="text-center mb-4">
 
-    <div class="auth-logo">
-        UaiMoney
-    </div>
-
     <div class="auth-subtitle mt-2">
         Comece a organizar sua vida financeira.
     </div>
