@@ -15,6 +15,16 @@ O extrato de uma conta pode ser compartilhado em modo somente leitura por um lin
 
 Em uma instalação existente, execute `php bin/backup.php` antes das migrations. Não exclua nem recrie o banco para atualizar.
 
+## Dados de demonstração
+
+Para criar um demonstrador com dados dos últimos seis meses, execute:
+
+```text
+php bin/seed_demo.php
+```
+
+O comando cria o usuário `demonstracao` (senha `UaiMoneyDemo2026!`) com contas, categorias, orçamentos, lançamentos, cartão e faturas. Para recriar somente esse usuário e renovar os dados, use `php bin/seed_demo.php --reset`; os dados dos demais usuários não são alterados.
+
 As variáveis opcionais `UAIMONEY_DATABASE`, `UAIMONEY_BASE_PATH` e `UAIMONEY_ENV` configuram banco, prefixo da URL e ambiente. Em produção, use `UAIMONEY_ENV=production` e HTTPS. As variáveis são lidas do ambiente do processo; não há carregador de `.env`.
 
 ## Verificar
