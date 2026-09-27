@@ -9,13 +9,45 @@ document.addEventListener("DOMContentLoaded", () => {
     sidebarToggle.querySelector(".visually-hidden").textContent = collapsed ? "Abrir menu" : "Recolher menu";
   };
   if (sidebarToggle) {
-    setSidebar(localStorage.getItem(sidebarStorageKey) === "true");
+    setSidebar(!window.matchMedia("(max-width: 767.98px)").matches && localStorage.getItem(sidebarStorageKey) === "true");
     sidebarToggle.addEventListener("click", () => {
+      if (window.matchMedia("(max-width: 767.98px)").matches) {
+        setMobileMenu(false);
+        return;
+      }
       const collapsed = !document.body.classList.contains("sidebar-collapsed");
       localStorage.setItem(sidebarStorageKey, String(collapsed));
       setSidebar(collapsed);
     });
   }
+  const mobileMenuToggle = document.querySelector(".mobile-menu-toggle");
+  const mobileMenuBackdrop = document.querySelector(".mobile-menu-backdrop");
+  const mobileBreakpoint = window.matchMedia("(max-width: 767.98px)");
+  const setMobileMenu = (open) => {
+    if (!mobileMenuToggle || !mobileMenuBackdrop) return;
+    document.body.classList.toggle("mobile-menu-open", open);
+    mobileMenuToggle.setAttribute("aria-expanded", String(open));
+    mobileMenuToggle.setAttribute("aria-label", open ? "Fechar menu" : "Abrir menu");
+    mobileMenuBackdrop.hidden = !open;
+  };
+  mobileMenuToggle?.addEventListener("click", () => {
+    setMobileMenu(!document.body.classList.contains("mobile-menu-open"));
+  });
+  mobileMenuBackdrop?.addEventListener("click", () => setMobileMenu(false));
+  document.querySelectorAll(".app-sidebar a").forEach((link) => {
+    link.addEventListener("click", () => setMobileMenu(false));
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && document.body.classList.contains("mobile-menu-open")) setMobileMenu(false);
+  });
+  mobileBreakpoint.addEventListener("change", (event) => {
+    if (event.matches) {
+      setSidebar(false);
+    } else {
+      setMobileMenu(false);
+      setSidebar(localStorage.getItem(sidebarStorageKey) === "true");
+    }
+  });
   document.querySelectorAll("form[data-confirm]").forEach((form) => {
     form.addEventListener("submit", (event) => {
       if (!window.confirm(form.dataset.confirm)) event.preventDefault();

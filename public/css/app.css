@@ -848,6 +848,8 @@ a {
 .sidebar-toggle { display: grid; place-items: center; width: 32px; height: 32px; padding: 0; border: 1px solid var(--uai-border); border-radius: 9px; color: var(--uai-muted); background: transparent; }
 .sidebar-toggle-icon { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
 .sidebar-toggle:hover { color: var(--uai-primary); background: var(--uai-surface-secondary); }
+.mobile-menu-toggle { display: none; }
+.mobile-menu-backdrop { display: none; }
 .app-sidebar .uai-brand {
   justify-content: flex-start;
   gap: 10px;
@@ -1255,59 +1257,67 @@ details summary {
 }
 @media (max-width: 767px) {
   .app-sidebar {
-    position: static;
-    width: auto;
-    padding: 16px;
-    border-right: 0;
-    border-bottom: 1px solid var(--uai-border);
+    position: fixed;
+    inset: 0 auto 0 0;
+    width: min(84vw, 320px);
+    padding: calc(18px + env(safe-area-inset-top)) 16px calc(18px + env(safe-area-inset-bottom));
+    border-right: 1px solid var(--uai-border);
+    border-bottom: 0;
+    box-shadow: 12px 0 28px rgba(0, 0, 0, .16);
+    transform: translateX(-105%);
+    transition: transform .2s ease;
+    z-index: 1050;
   }
-  .app-sidebar .uai-brand {
-    margin-bottom: 16px;
-  }
-  .sidebar-brand-row { justify-content: flex-start; }
-  .sidebar-toggle { display: none; }
-  .sidebar-label,
-  .sidebar-footer {
-    display: none;
-  }
+  body.mobile-menu-open { overflow: hidden; }
+  body.mobile-menu-open .app-sidebar { transform: translateX(0); }
+  body.sidebar-collapsed .app-sidebar { width: min(84vw, 320px); padding: calc(18px + env(safe-area-inset-top)) 16px calc(18px + env(safe-area-inset-bottom)); }
+  body.sidebar-collapsed .app-sidebar .uai-brand,
+  body.sidebar-collapsed .brand-caption,
+  body.sidebar-collapsed .sidebar-scroll,
+  body.sidebar-collapsed .sidebar-footer { display: initial; }
+  body.sidebar-collapsed .sidebar-brand-row { justify-content: space-between; }
+  .mobile-menu-backdrop { position: fixed; inset: 0; z-index: 1040; display: block; background: rgba(19, 31, 27, .46); -webkit-tap-highlight-color: transparent; }
+  .app-sidebar .uai-brand { margin-bottom: 0; }
+  .sidebar-brand-row { justify-content: space-between; }
+  .sidebar-toggle { display: grid; }
+  .sidebar-label { display: block; }
+  .sidebar-footer { display: block; }
   .sidebar-nav {
-    flex-direction: row;
-    overflow-x: auto;
-    padding-bottom: 6px;
+    flex-direction: column;
+    overflow: visible;
+    padding-bottom: 0;
   }
-  .sidebar-scroll { display: flex; overflow-x: auto; overflow-y: hidden; gap: 10px; padding: 0; }
-  .sidebar-section { display: contents; }
-  .sidebar-section:first-child .sidebar-label { margin-top: 0; }
+  .sidebar-scroll { display: block; overflow-y: auto; overflow-x: hidden; gap: 0; padding: 0 5px 0 0; }
+  .sidebar-section { display: block; }
+  .sidebar-section:first-child .sidebar-label { margin-top: 28px; }
   .sidebar-nav a {
-    padding: 9px 12px;
-    font-size: 0.8rem;
+    min-height: 44px;
+    padding: 11px 12px;
+    font-size: .88rem;
   }
-  .nav-dot {
-    display: none;
-  }
+  .nav-dot { display: inline-block; }
   .app-workspace {
     margin-left: 0;
   }
   body.sidebar-collapsed .app-workspace { margin-left: 0; }
   .app-topbar {
-    padding: 12px 16px;
-    min-height: 60px;
+    padding: calc(12px + env(safe-area-inset-top)) 16px 12px;
+    min-height: calc(60px + env(safe-area-inset-top));
   }
-  .app-topbar .user-avatar {
-    display: none;
-  }
-  .app-topbar > div:first-child {
-    display: none !important;
-  }
+  .mobile-menu-toggle { display: grid; place-items: center; flex: 0 0 auto; width: 44px; height: 44px; margin-left: -6px; padding: 0; color: var(--uai-text); border: 1px solid var(--uai-border); border-radius: 12px; background: var(--uai-surface); }
+  .mobile-menu-toggle svg { width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+  .app-topbar .user-avatar { display: none; }
+  .app-topbar > div:first-child { display: flex !important; }
   .app-topbar > div:last-child {
-    width: 100%;
-    justify-content: space-between;
+    flex: 1 1 auto;
+    min-width: 0;
+    justify-content: flex-end;
   }
   .app-main {
-    padding: 24px 16px;
+    padding: 24px max(16px, env(safe-area-inset-right)) 24px max(16px, env(safe-area-inset-left));
   }
   .app-footer {
-    padding: 18px 16px;
+    padding: 18px max(16px, env(safe-area-inset-right)) 18px max(16px, env(safe-area-inset-left));
   }
   .page-heading {
     align-items: flex-start;
@@ -1827,6 +1837,7 @@ details summary {
 @media (max-width: 767.98px) {
   .has-mobile-nav {
     padding-bottom: calc(74px + env(safe-area-inset-bottom));
+    overflow-x: clip;
   }
 
   .mobile-nav {
@@ -1835,13 +1846,16 @@ details summary {
     z-index: 1030;
     display: grid;
     grid-template-columns: repeat(5, minmax(0, 1fr));
-    padding: .6rem .35rem calc(.6rem + env(safe-area-inset-bottom));
+    padding: .6rem max(.35rem, env(safe-area-inset-right)) calc(.6rem + env(safe-area-inset-bottom)) max(.35rem, env(safe-area-inset-left));
     border-top: 1px solid var(--uai-border);
     background: var(--uai-surface);
     box-shadow: 0 -4px 20px rgba(0, 0, 0, .05);
   }
 
   .mobile-nav a {
+    display: grid;
+    place-items: center;
+    min-height: 44px;
     padding: .7rem .15rem;
     text-align: center;
     color: var(--uai-muted);
@@ -1851,10 +1865,14 @@ details summary {
     text-decoration: none;
   }
 
-  .mobile-nav a.active,
-  .mobile-nav a:nth-child(3) {
+  .mobile-nav a.active {
     color: var(--uai-primary);
     background: var(--uai-surface-secondary);
+  }
+
+  .mobile-nav a.mobile-nav-action {
+    color: var(--uai-primary);
+    background: color-mix(in srgb, var(--uai-primary) 11%, transparent);
   }
 
   .movement-row {
@@ -1871,6 +1889,30 @@ details summary {
 
   .form-actions > .btn {
     flex: 1;
+  }
+}
+
+@media (max-width: 420px) {
+  .app-topbar { gap: 6px; }
+  .app-topbar > div:first-child { gap: 0 !important; }
+  .app-topbar > div:last-child { gap: 4px !important; }
+  .app-topbar .btn { white-space: nowrap; }
+  .app-topbar .btn-uai-primary { padding-right: .55rem; padding-left: .55rem; font-size: .78rem; }
+  #themeToggle {
+    position: relative;
+    width: 44px;
+    padding: 0;
+    overflow: hidden;
+    color: transparent;
+  }
+  #themeToggle::after {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    content: "◐";
+    color: var(--uai-text);
+    font-size: 1rem;
   }
 }
 
