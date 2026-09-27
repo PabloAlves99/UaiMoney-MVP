@@ -75,6 +75,7 @@ final class ReportRepository extends FinanceRepository
     public function spendingProfile(int $user, string $start, string $end, array $filters = []): array
     {
         [$where, $params] = $this->scope($user, $start, $end, $filters);
+        $where = str_replace(['usuario_id=?', 'tipo=?'], ['c.usuario_id=?', 'c.tipo=?'], $where);
         return $this->rows("SELECT COALESCE(g.classificacao, 'nao_classificada') AS classificacao,
             COALESCE(SUM(c.valor_centavos), 0) AS despesas
             FROM consumo c JOIN grupos g ON g.id=c.grupo_id AND g.usuario_id=c.usuario_id
