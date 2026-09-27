@@ -25,6 +25,8 @@ php bin/seed_demo.php
 
 O comando cria o usuário `demonstracao` (senha `UaiMoneyDemo2026!`) com contas, categorias, orçamentos, lançamentos, cartão e faturas. Para recriar somente esse usuário e renovar os dados, use `php bin/seed_demo.php --reset`; os dados dos demais usuários não são alterados.
 
+O menu **Investimentos** permite registrar a posição atual de aplicações, sem alterar o saldo das contas. Em **Estratégias**, há métodos de organização financeira como 50·30·20, orçamento base zero, pague-se primeiro e envelopes.
+
 As variáveis opcionais `UAIMONEY_DATABASE`, `UAIMONEY_BASE_PATH` e `UAIMONEY_ENV` configuram banco, prefixo da URL e ambiente. Em produção, use `UAIMONEY_ENV=production` e HTTPS. As variáveis são lidas do ambiente do processo; não há carregador de `.env`.
 
 ## Verificar

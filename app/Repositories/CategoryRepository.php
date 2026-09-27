@@ -21,6 +21,7 @@ final class CategoryRepository
                 id,
                 nome,
                 tipo,
+                classificacao,
                 ativo,
                 criado_em,
                 atualizado_em
@@ -86,6 +87,7 @@ final class CategoryRepository
                 usuario_id,
                 nome,
                 tipo,
+                classificacao,
                 ativo
             FROM grupos
             WHERE id = :id
@@ -152,28 +154,38 @@ final class CategoryRepository
     public function createGroup(
         int $usuarioId,
         string $nome,
-        string $tipo
+        string $tipo,
+        string $classificacao
     ): int {
         $stmt = $this->pdo->prepare("
             INSERT INTO grupos (
                 usuario_id,
                 nome,
-                tipo
+                tipo,
+                classificacao
             )
             VALUES (
                 :usuario_id,
                 :nome,
-                :tipo
+                :tipo,
+                :classificacao
             )
         ");
 
         $stmt->execute([
             ':usuario_id' => $usuarioId,
             ':nome' => $nome,
-            ':tipo' => $tipo
+            ':tipo' => $tipo,
+            ':classificacao' => $classificacao
         ]);
 
         return (int) $this->pdo->lastInsertId();
+    }
+
+    public function updateClassification(int $grupoId, int $usuarioId, string $classificacao): void
+    {
+        $stmt = $this->pdo->prepare('UPDATE grupos SET classificacao=:classificacao, atualizado_em=CURRENT_TIMESTAMP WHERE id=:id AND usuario_id=:usuario_id AND tipo=\'despesa\'');
+        $stmt->execute([':classificacao' => $classificacao, ':id' => $grupoId, ':usuario_id' => $usuarioId]);
     }
 
 

@@ -9,6 +9,7 @@ use App\Core\FinancialDate as Dates;
 use App\Repositories\AccountRepository;
 use App\Repositories\CardRepository;
 use App\Repositories\ReportRepository;
+use App\Repositories\InvestmentRepository;
 use App\Services\AuthService;
 use App\Services\PlanningService;
 use DomainException;
@@ -22,7 +23,8 @@ final class DashboardController extends FinancialController
         private readonly ReportRepository $reports,
         private readonly AccountRepository $accounts,
         private readonly CardRepository $cards,
-        private readonly PlanningService $planning
+        private readonly PlanningService $planning,
+        private readonly InvestmentRepository $investments
     ) {
         parent::__construct($auth, $csrf, $basePath);
     }
@@ -58,6 +60,7 @@ final class DashboardController extends FinancialController
             'upcoming' => $this->reports->upcoming($u),
             'budgets' => $this->reports->budgets($u, $month),
             'categories' => $this->reports->categories($u),
+            'investmentSummary' => $this->investments->summary($u),
         ]);
     }
 
@@ -104,6 +107,8 @@ final class DashboardController extends FinancialController
             'previousCategories' => $this->reports->breakdown($u, $previousStart, $previousEnd, 'categoria', $filters),
             'subcategoryRows' => $this->reports->breakdown($u, $start, $end, 'subcategoria', $filters),
             'monthlyRows' => $this->reports->monthly($u, $seriesStart, $end, $filters),
+            'monthlyExpenseAverage' => $this->reports->monthlyExpenseAverage($u, $end, $filters),
+            'spendingProfile' => $this->reports->spendingProfile($u, $start, $end, $filters),
             'budgets' => $budgetAvailable ? $this->reports->budgets($u, $month) : [],
             'budgetAvailable' => $budgetAvailable,
             'audit' => $audit,
@@ -113,5 +118,10 @@ final class DashboardController extends FinancialController
             'cards' => $this->cards->list($u),
             'categories' => $this->reports->categories($u),
         ]);
+    }
+
+    public function strategies(): void
+    {
+        $this->page('planning/strategies', 'Estratégias financeiras');
     }
 }

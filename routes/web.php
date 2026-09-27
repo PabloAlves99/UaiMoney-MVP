@@ -63,6 +63,7 @@ return function (Router $router, AuthController $authController, UserPreferenceC
         '/categorias/grupos',
         [$categoryController, 'storeGroup']
     );
+    $router->post('/categorias/grupos/{id}/classificacao', [$categoryController, 'updateClassification']);
 
 
     $router->post(

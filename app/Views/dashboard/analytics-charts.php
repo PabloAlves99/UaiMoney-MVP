@@ -18,6 +18,12 @@ foreach ($spending as $row) {
 }
 $positive = array_values(array_filter($spending, fn($row) => (int)$row['despesas'] > 0));
 $positiveTotal = array_sum(array_column($positive, 'despesas'));
+$topSubcategories = array_values(array_filter($subcategoryRows, fn($row) => (int)$row['despesas'] > 0));
+$profile = array_column($spendingProfile, 'despesas', 'classificacao');
+$essential = (int)($profile['essencial'] ?? 0);
+$variable = (int)($profile['variavel'] ?? 0);
+$unclassified = (int)($profile['nao_classificada'] ?? 0);
+$budgetAlerts = array_values(array_filter($budgets, fn($budget) => (int)$budget['valor_limite_centavos'] > 0 && (int)$budget['realizado'] / (int)$budget['valor_limite_centavos'] >= .8));
 ?>
 <div class="row g-4">
     <div class="col-xl-8">
@@ -72,12 +78,36 @@ $positiveTotal = array_sum(array_column($positive, 'despesas'));
                         <p><?= number_format((int)$largest['despesas'] / $positiveTotal * 100, 1, ',', '.') ?>% dos gastos nas categorias com saldo positivo.</p>
                     </div>
                 <?php endif; ?>
+                <?php if ($topSubcategories): $top = $topSubcategories[0]; $cut = (int) round((int)$top['despesas'] * .10); ?>
+                    <div class="analysis-insight">
+                        <p class="eyebrow">OPORTUNIDADE DE AJUSTE</p><strong><?= H::escape($top['nome']) ?></strong>
+                        <p>É a maior subcategoria do período. Uma redução de 10% representaria <?= Money::format($cut) ?> neste mesmo período.</p>
+                        <a href="<?= H::escape($url(['grupo_id' => $top['grupo_id'], 'subgrupo_id' => $top['id'], 'tipo' => 'despesa', 'conferir' => 1], '#lancamentos')) ?>">Ver o que compõe esse gasto →</a>
+                    </div>
+                <?php endif; ?>
                 <?php if ((int)$totals['receitas'] > 0): ?>
                     <div class="analysis-insight">
                         <p class="eyebrow">DA RECEITA PARA OS GASTOS</p><strong><?= number_format((int)$totals['despesas'] / (int)$totals['receitas'] * 100, 1, ',', '.') ?>%</strong>
                         <p><?= (int)$totals['despesas'] > (int)$totals['receitas'] ? 'Os gastos passaram do que entrou neste período.' : 'Da receita realizada foi usada para cobrir as despesas.' ?></p>
                     </div>
                 <?php endif; ?>
+                <div class="analysis-insight">
+                    <p class="eyebrow">MÉDIA DOS ÚLTIMOS 3 MESES</p><strong><?= Money::format((int)$monthlyExpenseAverage) ?></strong>
+                    <p><?= (int)$totals['despesas'] > (int)$monthlyExpenseAverage ? 'O período atual está acima da média mensal recente.' : 'O período atual está dentro ou abaixo da média mensal recente.' ?></p>
+                </div>
+                <?php if ($variable > 0 || $essential > 0): ?>
+                    <div class="analysis-insight">
+                        <p class="eyebrow">PERFIL DOS GASTOS</p><strong><?= Money::format($variable) ?> ajustáveis</strong>
+                        <p><?= $essential > 0 ? Money::format($essential) . ' estão em grupos essenciais. ' : '' ?><?= $unclassified > 0 ? Money::format($unclassified) . ' ainda não foram classificados.' : 'Classifique grupos em Categorias para melhorar esta leitura.' ?></p>
+                    </div>
+                <?php endif; ?>
+                <?php if ($budgetAlerts): foreach ($budgetAlerts as $alert): $used=(int)$alert['realizado']; $limit=(int)$alert['valor_limite_centavos']; ?>
+                    <div class="analysis-insight <?= $used >= $limit ? 'analysis-alert-danger' : 'analysis-alert-warning' ?>">
+                        <p class="eyebrow"><?= $used >= $limit ? 'LIMITE EXCEDIDO' : 'ALERTA DE LIMITE' ?></p><strong><?= H::escape($alert['nome']) ?></strong>
+                        <p><?= number_format($used / $limit * 100, 0, ',', '.') ?>% do limite mensal usado (<?= Money::format($used) ?> de <?= Money::format($limit) ?>).</p>
+                        <a href="<?= H::escape($basePath . '/planejamento?mes=' . $month) ?>">Ajustar planejamento →</a>
+                    </div>
+                <?php endforeach; endif; ?>
                 <div class="analysis-insight">
                     <p class="eyebrow">GASTO MÉDIO POR DIA</p><strong><?= Money::format((int)round((int)$totals['despesas'] / $days)) ?></strong>
                     <p>Considera os <?= $days ?> dias do período, incluindo os dias sem gastos.</p>

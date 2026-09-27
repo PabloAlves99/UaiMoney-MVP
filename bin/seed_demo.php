@@ -141,6 +141,9 @@ try {
         }
         $categories[$name] = insert($pdo, 'INSERT INTO subgrupos (grupo_id, nome, descricao) VALUES (?, ?, ?)', [$groups[$groupKey], $name, 'Categoria da conta de demonstração']);
     }
+    foreach (['Moradia' => 'essencial', 'Alimentação' => 'essencial', 'Transporte' => 'essencial', 'Saúde' => 'essencial', 'Assinaturas' => 'variavel', 'Lazer' => 'variavel', 'Educação' => 'variavel'] as $groupName => $classification) {
+        execute($pdo, 'UPDATE grupos SET classificacao=? WHERE id=?', [$classification, $groups['despesa:' . $groupName]]);
+    }
 
     foreach ($months as $position => $currentMonth) {
         $monthKey = $currentMonth->format('Y-m');
@@ -180,6 +183,21 @@ try {
             $total = (int) $pdo->query('SELECT SUM(valor_centavos) FROM transacoes WHERE fatura_id = ' . $invoiceId)->fetchColumn();
             insert($pdo, 'INSERT INTO pagamentos_fatura (usuario_id, fatura_id, conta_id, valor_centavos, data_pagamento, observacao) VALUES (?, ?, ?, ?, ?, ?)', [$userId, $invoiceId, $checking, $total, day($dueMonth, 5), 'Pagamento integral da fatura']);
         }
+    }
+
+    foreach ([
+        ['Tesouro Selic 2029', 'renda_fixa', 'Tesouro Direto', 'Reserva de emergência', 145000, 151820, $firstMonth->modify('-8 months')->format('Y-m-d')],
+        ['ETF de ações globais', 'renda_variavel', 'Corretora Uai', 'Crescimento de longo prazo', 56000, 59840, $firstMonth->modify('-5 months')->format('Y-m-d')],
+        ['Fundo de renda fixa', 'fundo', 'Banco Uai', 'Viagem planejada', 18000, 18720, $firstMonth->modify('-3 months')->format('Y-m-d')],
+    ] as $investment) {
+        insert($pdo, 'INSERT INTO investimentos (usuario_id, nome, tipo, instituicao, objetivo, valor_aplicado_centavos, valor_atual_centavos, data_inicio) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', [$userId, ...$investment]);
+    }
+
+    foreach ([
+        ['Reserva de emergência', 'reserva', 300000, 151820, $today->modify('+6 months')->format('Y-m-d')],
+        ['Viagem de férias', 'viagem', 120000, 18720, $today->modify('+9 months')->format('Y-m-d')],
+    ] as $goal) {
+        insert($pdo, 'INSERT INTO metas_financeiras (usuario_id, nome, tipo, valor_meta_centavos, valor_atual_centavos, data_alvo) VALUES (?, ?, ?, ?, ?, ?)', [$userId, ...$goal]);
     }
 
     $pdo->commit();

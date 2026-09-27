@@ -49,7 +49,8 @@ final class CategoryController extends BaseController
                 ->createGroup(
                     (int) $usuario['id'],
                     $_POST['nome'] ?? '',
-                    $_POST['tipo'] ?? ''
+                    $_POST['tipo'] ?? '',
+                    $_POST['classificacao'] ?? 'nao_classificada'
                 );
 
 
@@ -66,6 +67,19 @@ final class CategoryController extends BaseController
                 $usuario,
                 $e->getMessage()
             );
+        }
+    }
+
+    public function updateClassification(string $id): void
+    {
+        $usuario = $this->requireUser();
+        $this->validateCsrf();
+        try {
+            $this->categoryService->updateClassification((int) $usuario['id'], $this->parseId($id), (string) ($_POST['classificacao'] ?? ''));
+            $this->redirect('/categorias');
+        } catch (DomainException $e) {
+            http_response_code(422);
+            $this->renderIndex($usuario, $e->getMessage());
         }
     }
 

@@ -82,7 +82,8 @@ final class CategoryService
     public function createGroup(
         int $usuarioId,
         string $nome,
-        string $tipo
+        string $tipo,
+        string $classificacao = 'nao_classificada'
     ): int {
         $nome = trim($nome);
         $tipo = strtolower(
@@ -116,6 +117,11 @@ final class CategoryService
             );
         }
 
+        if (!in_array($classificacao, ['essencial', 'variavel', 'nao_classificada'], true)) {
+            throw new DomainException('Classificação de gasto inválida.');
+        }
+        if ($tipo === 'receita') $classificacao = 'nao_classificada';
+
 
         if (
             $this->categoryRepository
@@ -136,8 +142,17 @@ final class CategoryService
             ->createGroup(
                 $usuarioId,
                 $nome,
-                $tipo
+                $tipo,
+                $classificacao
             );
+    }
+
+    public function updateClassification(int $usuarioId, int $grupoId, string $classificacao): void
+    {
+        if (!in_array($classificacao, ['essencial', 'variavel', 'nao_classificada'], true)) throw new DomainException('Classificação inválida.');
+        $group = $this->categoryRepository->findGroupById($grupoId, $usuarioId);
+        if ($group === null || $group['tipo'] !== 'despesa') throw new DomainException('Categoria de despesa não encontrada.');
+        $this->categoryRepository->updateClassification($grupoId, $usuarioId, $classificacao);
     }
 
 

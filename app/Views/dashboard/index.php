@@ -16,8 +16,9 @@ usort($unpaid, fn($a, $b) => strcmp($a['data_vencimento'], $b['data_vencimento']
 <section aria-labelledby="today-title" class="mb-4">
     <h2 class="h5 mb-3" id="today-title">Hoje · <?= date('d/m') ?></h2>
     <div class="row g-3">
-        <div class="col-md-6"><article class="card metric-card featured"><div class="card-body"><p>Saldo disponível nas contas</p><strong class="metric-value"><?= Money::format((int) $balance) ?></strong><small>Contas ativas · valores confirmados</small></div></article></div>
-        <div class="col-md-6"><article class="card metric-card"><div class="card-body"><p>Previsão até <?= date('t/m') ?></p><strong class="metric-value"><?= Money::format((int) $projection) ?></strong><small>Saldo + valores a receber − valores e faturas a pagar</small></div></article></div>
+        <div class="col-md-4"><article class="card metric-card featured"><div class="card-body"><p>Saldo disponível nas contas</p><strong class="metric-value"><?= Money::format((int) $balance) ?></strong><small>Contas ativas · valores confirmados</small></div></article></div>
+        <div class="col-md-4"><article class="card metric-card"><div class="card-body"><p>Previsão até <?= date('t/m') ?></p><strong class="metric-value"><?= Money::format((int) $projection) ?></strong><small>Saldo + valores a receber − valores e faturas a pagar</small></div></article></div>
+        <div class="col-md-4"><article class="card metric-card"><div class="card-body"><p>Investimentos cadastrados</p><strong class="metric-value"><?= Money::format((int) $investmentSummary['atual']) ?></strong><small><a href="<?= H::escape($basePath . '/investimentos') ?>">Acompanhar patrimônio →</a></small></div></article></div>
     </div>
     <p class="small text-secondary mt-3">A previsão considera os compromissos cadastrados até o fim deste mês, incluindo atrasados. Recorrências ainda não geradas ficam de fora.</p>
 </section>

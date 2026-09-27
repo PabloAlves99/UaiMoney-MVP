@@ -8,7 +8,7 @@ final class ReportRepository extends FinanceRepository
 {
     public function categories(int $user): array
     {
-        return $this->rows('SELECT s.id,s.nome,g.nome AS grupo_nome,g.id AS grupo_id,g.tipo FROM subgrupos s JOIN grupos g ON g.id=s.grupo_id WHERE g.usuario_id=? AND g.ativo=1 AND s.ativo=1 ORDER BY g.tipo,g.nome,s.nome', [$user]);
+        return $this->rows('SELECT s.id,s.nome,g.nome AS grupo_nome,g.id AS grupo_id,g.tipo,g.classificacao FROM subgrupos s JOIN grupos g ON g.id=s.grupo_id WHERE g.usuario_id=? AND g.ativo=1 AND s.ativo=1 ORDER BY g.tipo,g.nome,s.nome', [$user]);
     }
 
     public function totals(int $user, string $start, string $end, array $filters = []): array
@@ -63,6 +63,23 @@ final class ReportRepository extends FinanceRepository
             $rows[] = $map[$month] ?? ['nome' => $month, 'receitas' => 0, 'despesas' => 0];
         }
         return $rows;
+    }
+
+    public function monthlyExpenseAverage(int $user, string $end, array $filters = []): int
+    {
+        $start = \App\Core\FinancialDate::shift(substr($end, 0, 7), -2) . '-01';
+        $rows = $this->monthly($user, $start, $end, $filters);
+        return (int) round(array_sum(array_map(fn(array $row): int => (int) $row['despesas'], $rows)) / max(1, count($rows)));
+    }
+
+    public function spendingProfile(int $user, string $start, string $end, array $filters = []): array
+    {
+        [$where, $params] = $this->scope($user, $start, $end, $filters);
+        return $this->rows("SELECT COALESCE(g.classificacao, 'nao_classificada') AS classificacao,
+            COALESCE(SUM(c.valor_centavos), 0) AS despesas
+            FROM consumo c JOIN grupos g ON g.id=c.grupo_id AND g.usuario_id=c.usuario_id
+            WHERE $where AND c.status='efetivada' AND c.tipo='despesa'
+            GROUP BY g.classificacao", $params);
     }
 
     public function entries(int $user, string $start, string $end, array $filters, int $page = 1): array

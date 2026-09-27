@@ -2,7 +2,7 @@
 use App\Core\Html as H;
 $path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
 $relative = $basePath !== '' && str_starts_with($path, $basePath) ? substr($path, strlen($basePath)) : $path;
-$navigation = ['/' => 'Visão geral', '/movimentacoes' => 'Movimentações', '/contas' => 'Contas', '/cartoes' => 'Cartões', '/recorrencias' => 'Recorrências', '/planejamento' => 'Planejamento', '/analises' => 'Análises', '/categorias' => 'Categorias'];
+$navigation = ['/' => 'Visão geral', '/movimentacoes' => 'Movimentações', '/contas' => 'Contas', '/cartoes' => 'Cartões', '/investimentos' => 'Investimentos', '/objetivos' => 'Objetivos', '/planejamento' => 'Planejamento', '/analises' => 'Análises', '/estrategias' => 'Estratégias', '/recorrencias' => 'Recorrências', '/categorias' => 'Categorias'];
 if (($usuario['tipo'] ?? '') === 'admin') $navigation['/admin/usuarios'] = 'Usuários';
 $flash = $_SESSION['flash'] ?? null;
 unset($_SESSION['flash']);

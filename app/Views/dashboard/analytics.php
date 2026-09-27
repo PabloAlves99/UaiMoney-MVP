@@ -94,6 +94,7 @@ $previous['resultado'] = (int)$previous['receitas'] - (int)$previous['despesas']
         <?php require __DIR__ . '/analytics-plot.php'; ?>
     </div>
 </section>
+<?php require __DIR__ . '/analytics-bars.php'; ?>
 <?php require __DIR__ . '/analytics-charts.php'; ?>
 <section class="card mt-4" id="lancamentos">
     <div class="card-body">
