@@ -28,7 +28,7 @@ unset($_SESSION['flash']);
 <body class="has-mobile-nav">
     <a class="skip-link" href="#main-content">Pular para o conteúdo</a>
     <aside class="app-sidebar" id="app-sidebar">
-        <div class="sidebar-brand-row"><a class="uai-brand" href="<?= H::escape($basePath . '/') ?>"><?php require __DIR__ . '/brand.php'; ?></a><button class="sidebar-toggle" type="button" aria-controls="app-sidebar" aria-expanded="true" title="Recolher menu"><span aria-hidden="true">‹</span><span class="visually-hidden">Recolher menu</span></button></div>
+        <div class="sidebar-brand-row"><a class="uai-brand" href="<?= H::escape($basePath . '/') ?>"><?php require __DIR__ . '/brand.php'; ?></a><button class="sidebar-toggle" type="button" aria-controls="app-sidebar" aria-expanded="true" title="Recolher menu"><svg class="sidebar-toggle-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg><span class="visually-hidden">Recolher menu</span></button></div>
         <span class="brand-caption">Seu dinheiro, bem cuidado.</span>
         <div class="sidebar-scroll">
             <?php foreach ($navigation as $section => $items): ?>

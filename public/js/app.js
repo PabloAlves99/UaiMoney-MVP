@@ -6,7 +6,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!sidebarToggle) return;
     sidebarToggle.setAttribute("aria-expanded", String(!collapsed));
     sidebarToggle.title = collapsed ? "Abrir menu" : "Recolher menu";
-    sidebarToggle.querySelector("span[aria-hidden=true]").textContent = collapsed ? "›" : "‹";
     sidebarToggle.querySelector(".visually-hidden").textContent = collapsed ? "Abrir menu" : "Recolher menu";
   };
   if (sidebarToggle) {
