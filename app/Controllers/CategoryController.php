@@ -50,7 +50,7 @@ final class CategoryController extends BaseController
                     (int) $usuario['id'],
                     $_POST['nome'] ?? '',
                     $_POST['tipo'] ?? '',
-                    $_POST['classificacao'] ?? 'nao_classificada'
+                    isset($_POST['essencial']) ? 'essencial' : 'variavel'
                 );
 
 
@@ -75,7 +75,7 @@ final class CategoryController extends BaseController
         $usuario = $this->requireUser();
         $this->validateCsrf();
         try {
-            $this->categoryService->updateClassification((int) $usuario['id'], $this->parseId($id), (string) ($_POST['classificacao'] ?? ''));
+            $this->categoryService->updateClassification((int) $usuario['id'], $this->parseId($id), isset($_POST['essencial']) ? 'essencial' : 'variavel');
             $this->redirect('/categorias');
         } catch (DomainException $e) {
             http_response_code(422);

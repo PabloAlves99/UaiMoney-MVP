@@ -633,6 +633,15 @@ a:hover {
   box-shadow: 0 8px 22px rgba(15, 23, 42, 0.05);
 }
 
+.uai-category-card .card-body > .d-flex > :first-child {
+  min-width: 0;
+}
+
+.uai-category-card .dropdown,
+.uai-subcategory-item .dropdown {
+  flex: 0 0 auto;
+}
+
 .uai-category-icon {
   display: flex;
 
@@ -735,6 +744,26 @@ a:hover {
   color: var(--uai-text);
 }
 
+.category-classification-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  min-width: 0;
+}
+
+.category-classification-controls .form-check {
+  min-width: 0;
+}
+
+.category-classification-controls .form-check-label {
+  overflow-wrap: anywhere;
+}
+
+.category-classification-controls .btn {
+  flex: 0 0 auto;
+}
+
 @media (max-width: 575.98px) {
   .uai-category-icon {
     width: 38px;
@@ -745,6 +774,32 @@ a:hover {
 
   .uai-category-type-badge {
     font-size: 0.68rem;
+  }
+
+  .category-page-actions {
+    width: 100%;
+  }
+
+  .category-page-actions .btn {
+    flex: 1 1 150px;
+  }
+
+  .category-classification-controls {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .category-classification-controls .form-check,
+  .category-classification-controls .btn {
+    flex: 1 1 100%;
+  }
+
+  .uai-category-card .card-body > .d-flex {
+    gap: .75rem !important;
+  }
+
+  .uai-subcategory-item {
+    gap: .75rem;
   }
 }
 
@@ -986,6 +1041,8 @@ body.sidebar-collapsed .nav-dot { margin: 0; }
 .btn {
   border-radius: 8px;
   font-weight: 500;
+  white-space: nowrap;
+  max-width: 100%;
 }
 .btn-uai-primary {
   background: var(--uai-primary);

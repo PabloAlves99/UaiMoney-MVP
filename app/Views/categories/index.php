@@ -78,7 +78,7 @@ foreach ($grupos as $grupo) {
     </div>
 
 
-    <div class="d-flex gap-2 flex-wrap">
+    <div class="category-page-actions d-flex gap-2 flex-wrap">
 
         <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal"
             data-bs-target="#novaSubcategoriaModal" <?= $grupos === []
@@ -116,13 +116,12 @@ foreach ($grupos as $grupo) {
 <?php if ($gruposDespesa !== []): ?>
 <section class="card mt-4 mb-4">
     <div class="card-body">
-        <div class="section-heading"><div><h2 class="h5">Essenciais ou variáveis?</h2><p class="small text-secondary mb-0">Isso ajuda as análises a separar o que é fixo do que pode ser ajustado.</p></div></div>
+        <div class="section-heading"><div><h2 class="h5">Gastos essenciais</h2><p class="small text-secondary mb-0">O que não estiver marcado será tratado como ajustável nas análises.</p></div></div>
         <div class="row g-3">
             <?php foreach ($gruposDespesa as $grupo): ?>
-                <form class="col-md-6" method="post" action="<?= htmlspecialchars($basePath . '/categorias/grupos/' . (int)$grupo['id'] . '/classificacao', ENT_QUOTES, 'UTF-8') ?>">
+                <form class="col-md-6 category-classification-form" method="post" action="<?= htmlspecialchars($basePath . '/categorias/grupos/' . (int)$grupo['id'] . '/classificacao', ENT_QUOTES, 'UTF-8') ?>">
                     <input type="hidden" name="_token" value="<?= htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8') ?>">
-                    <label class="form-label small" for="classificacao-<?= (int)$grupo['id'] ?>"><?= htmlspecialchars($grupo['nome'], ENT_QUOTES, 'UTF-8') ?></label>
-                    <div class="d-flex gap-2"><select id="classificacao-<?= (int)$grupo['id'] ?>" class="form-select form-select-sm" name="classificacao"><option value="nao_classificada" <?= ($grupo['classificacao'] ?? '') === 'nao_classificada' ? 'selected' : '' ?>>Não classificada</option><option value="essencial" <?= ($grupo['classificacao'] ?? '') === 'essencial' ? 'selected' : '' ?>>Essencial</option><option value="variavel" <?= ($grupo['classificacao'] ?? '') === 'variavel' ? 'selected' : '' ?>>Variável / ajustável</option></select><button class="btn btn-sm btn-outline-secondary">Salvar</button></div>
+                    <div class="category-classification-controls"><div class="form-check"><input class="form-check-input" type="checkbox" name="essencial" value="1" id="classificacao-<?= (int)$grupo['id'] ?>" <?= ($grupo['classificacao'] ?? '') === 'essencial' ? 'checked' : '' ?>><label class="form-check-label" for="classificacao-<?= (int)$grupo['id'] ?>"><?= htmlspecialchars($grupo['nome'], ENT_QUOTES, 'UTF-8') ?> é essencial</label></div><button class="btn btn-sm btn-outline-secondary">Salvar</button></div>
                 </form>
             <?php endforeach; ?>
         </div>
@@ -988,20 +987,10 @@ foreach ($grupos as $grupo) {
 
                     </div>
 
-                    <div class="mt-3">
-
-                        <label for="novaCategoriaClassificacao" class="form-label">
-                            Classificação do gasto
-                        </label>
-
-                        <select class="form-select" id="novaCategoriaClassificacao" name="classificacao">
-                            <option value="nao_classificada">Não classificar agora</option>
-                            <option value="essencial">Essencial</option>
-                            <option value="variavel">Variável / ajustável</option>
-                        </select>
-
-                        <div class="form-text">Usada apenas para despesas.</div>
-
+                    <div class="form-check mt-3">
+                        <input class="form-check-input" type="checkbox" id="novaCategoriaEssencial" name="essencial" value="1">
+                        <label class="form-check-label" for="novaCategoriaEssencial">Esta é uma despesa essencial</label>
+                        <div class="form-text">Se não marcar, ela será considerada ajustável.</div>
                     </div>
 
 

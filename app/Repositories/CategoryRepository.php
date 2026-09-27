@@ -155,7 +155,7 @@ final class CategoryRepository
         int $usuarioId,
         string $nome,
         string $tipo,
-        string $classificacao = 'nao_classificada'
+        string $classificacao = 'variavel'
     ): int {
         $stmt = $this->pdo->prepare("
             INSERT INTO grupos (
