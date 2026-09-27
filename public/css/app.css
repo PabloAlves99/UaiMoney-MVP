@@ -787,7 +787,11 @@ a {
   display: flex;
   flex-direction: column;
   z-index: 20;
+  overflow: hidden;
 }
+.sidebar-brand-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.sidebar-toggle { display: grid; place-items: center; width: 30px; height: 30px; padding: 0; border: 1px solid var(--uai-border); border-radius: 8px; color: var(--uai-muted); background: transparent; font-size: 1.45rem; line-height: 1; }
+.sidebar-toggle:hover { color: var(--uai-primary); background: var(--uai-surface-secondary); }
 .app-sidebar .uai-brand {
   justify-content: flex-start;
   gap: 10px;
@@ -804,8 +808,10 @@ a {
   color: var(--uai-muted);
   font-size: 0.65rem;
   letter-spacing: 0.12em;
-  margin: 40px 12px 14px;
+  margin: 24px 12px 10px;
 }
+.sidebar-section:first-child .sidebar-label { margin-top: 28px; }
+.sidebar-scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding-right: 2px; scrollbar-width: thin; }
 .sidebar-nav {
   display: flex;
   flex-direction: column;
@@ -849,7 +855,16 @@ a {
 }
 .app-workspace {
   margin-left: 238px;
+  transition: margin-left .18s ease;
 }
+body.sidebar-collapsed .app-sidebar { width: 68px; padding-left: 14px; padding-right: 14px; }
+body.sidebar-collapsed .app-workspace { margin-left: 68px; }
+body.sidebar-collapsed .brand-caption, body.sidebar-collapsed .sidebar-label, body.sidebar-collapsed .nav-label, body.sidebar-collapsed .sidebar-footer { display: none; }
+body.sidebar-collapsed .app-sidebar .uai-brand { min-width: 0; overflow: hidden; }
+body.sidebar-collapsed .sidebar-brand-row { justify-content: center; }
+body.sidebar-collapsed .sidebar-toggle { position: absolute; top: 68px; right: 8px; }
+body.sidebar-collapsed .sidebar-nav a { justify-content: center; padding: 12px 6px; }
+body.sidebar-collapsed .nav-dot { margin: 0; }
 .app-topbar {
   display: flex;
   justify-content: space-between;
@@ -1166,6 +1181,7 @@ details summary {
   .app-workspace {
     margin-left: 210px;
   }
+  body.sidebar-collapsed .app-workspace { margin-left: 68px; }
   .app-main {
     padding: 28px;
   }
@@ -1184,6 +1200,8 @@ details summary {
   .app-sidebar .uai-brand {
     margin-bottom: 16px;
   }
+  .sidebar-brand-row { justify-content: flex-start; }
+  .sidebar-toggle { display: none; }
   .sidebar-label,
   .sidebar-footer {
     display: none;
@@ -1193,6 +1211,9 @@ details summary {
     overflow-x: auto;
     padding-bottom: 6px;
   }
+  .sidebar-scroll { display: flex; overflow-x: auto; overflow-y: hidden; gap: 10px; padding: 0; }
+  .sidebar-section { display: contents; }
+  .sidebar-section:first-child .sidebar-label { margin-top: 0; }
   .sidebar-nav a {
     padding: 9px 12px;
     font-size: 0.8rem;
@@ -1203,6 +1224,7 @@ details summary {
   .app-workspace {
     margin-left: 0;
   }
+  body.sidebar-collapsed .app-workspace { margin-left: 0; }
   .app-topbar {
     padding: 12px 16px;
     min-height: 60px;

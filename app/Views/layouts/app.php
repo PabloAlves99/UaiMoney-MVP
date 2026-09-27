@@ -2,7 +2,12 @@
 use App\Core\Html as H;
 $path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
 $relative = $basePath !== '' && str_starts_with($path, $basePath) ? substr($path, strlen($basePath)) : $path;
-$navigation = ['/' => 'Visão geral', '/movimentacoes' => 'Movimentações', '/contas' => 'Contas', '/cartoes' => 'Cartões', '/investimentos' => 'Investimentos', '/objetivos' => 'Objetivos', '/planejamento' => 'Planejamento', '/analises' => 'Análises', '/estrategias' => 'Estratégias', '/recorrencias' => 'Recorrências', '/categorias' => 'Categorias'];
+$navigation = [
+    'Cadastrar e editar' => ['/' => 'Visão geral', '/movimentacoes' => 'Movimentações', '/contas' => 'Contas', '/cartoes' => 'Cartões', '/categorias' => 'Categorias', '/recorrencias' => 'Recorrências'],
+    'Planejar' => ['/planejamento' => 'Planejamento', '/investimentos' => 'Investimentos', '/objetivos' => 'Objetivos'],
+    'Analisar' => ['/analises' => 'Análises'],
+    'Dicas' => ['/estrategias' => 'Estratégias'],
+];
 if (($usuario['tipo'] ?? '') === 'admin') $navigation['/admin/usuarios'] = 'Usuários';
 $flash = $_SESSION['flash'] ?? null;
 unset($_SESSION['flash']);
@@ -22,18 +27,18 @@ unset($_SESSION['flash']);
 
 <body class="has-mobile-nav">
     <a class="skip-link" href="#main-content">Pular para o conteúdo</a>
-    <aside class="app-sidebar">
-        <a class="uai-brand" href="<?= H::escape($basePath . '/') ?>"><?php require __DIR__ . '/brand.php'; ?></a>
+    <aside class="app-sidebar" id="app-sidebar">
+        <div class="sidebar-brand-row"><a class="uai-brand" href="<?= H::escape($basePath . '/') ?>"><?php require __DIR__ . '/brand.php'; ?></a><button class="sidebar-toggle" type="button" aria-controls="app-sidebar" aria-expanded="true" title="Recolher menu"><span aria-hidden="true">‹</span><span class="visually-hidden">Recolher menu</span></button></div>
         <span class="brand-caption">Seu dinheiro, bem cuidado.</span>
-        <p class="sidebar-label">MEU ESPAÇO</p>
-        <nav class="sidebar-nav" aria-label="Navegação principal">
-            <?php foreach ($navigation as $url => $label):
-                $active = $url === '/' ? ($relative === '' || $relative === '/') : ($relative === $url || str_starts_with($relative, $url . '/')); ?>
-                <a class="<?= $active ? 'active' : '' ?>" <?= $active ? 'aria-current="page"' : '' ?>
-                    href="<?= H::escape($basePath . $url) ?>"><span class="nav-dot"
-                        aria-hidden="true"></span><?= $label ?></a>
+        <div class="sidebar-scroll">
+            <?php foreach ($navigation as $section => $items): ?>
+                <section class="sidebar-section"><p class="sidebar-label"><?= H::escape($section) ?></p><nav class="sidebar-nav" aria-label="<?= H::escape($section) ?>">
+                    <?php foreach ($items as $url => $label): $active = $url === '/' ? ($relative === '' || $relative === '/') : ($relative === $url || str_starts_with($relative, $url . '/')); ?>
+                        <a class="<?= $active ? 'active' : '' ?>" <?= $active ? 'aria-current="page"' : '' ?> href="<?= H::escape($basePath . $url) ?>"><span class="nav-dot" aria-hidden="true"></span><span class="nav-label"><?= H::escape($label) ?></span></a>
+                    <?php endforeach; ?>
+                </nav></section>
             <?php endforeach; ?>
-        </nav>
+        </div>
         <div class="sidebar-footer"><a href="<?= H::escape($basePath . '/comecar') ?>">Primeiros passos →</a>
             <p class="small text-secondary mt-2 mb-0">Um passo de cada vez.<br>Mais clareza todos os dias.</p>
         </div>
@@ -61,7 +66,7 @@ unset($_SESSION['flash']);
         <footer class="app-footer">UaiMoney · Organize hoje. Planeje o amanhã.</footer>
     </div>
     <nav class="mobile-nav" aria-label="Navegação rápida">
-        <?php foreach (['/' => 'Início', '/movimentacoes' => 'Movimentos', '/movimentacoes/nova' => '+ Novo', '/analises' => 'Análises', '/contas' => 'Contas'] as $url => $label): ?>
+        <?php foreach (['/' => 'Início', '/movimentacoes' => 'Movimentos', '/movimentacoes/nova' => '+ Novo', '/analises' => 'Análises', '/categorias' => 'Categorias'] as $url => $label): ?>
             <a href="<?= H::escape($basePath . $url) ?>" class="<?= $relative === $url ? 'active' : '' ?>"
                 <?= $relative === $url ? 'aria-current="page"' : '' ?>><?= $label ?></a>
         <?php endforeach; ?>

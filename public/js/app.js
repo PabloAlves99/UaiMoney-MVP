@@ -1,4 +1,22 @@
 document.addEventListener("DOMContentLoaded", () => {
+  const sidebarToggle = document.querySelector(".sidebar-toggle");
+  const sidebarStorageKey = "uaimoney_sidebar_collapsed";
+  const setSidebar = (collapsed) => {
+    document.body.classList.toggle("sidebar-collapsed", collapsed);
+    if (!sidebarToggle) return;
+    sidebarToggle.setAttribute("aria-expanded", String(!collapsed));
+    sidebarToggle.title = collapsed ? "Abrir menu" : "Recolher menu";
+    sidebarToggle.querySelector("span[aria-hidden=true]").textContent = collapsed ? "›" : "‹";
+    sidebarToggle.querySelector(".visually-hidden").textContent = collapsed ? "Abrir menu" : "Recolher menu";
+  };
+  if (sidebarToggle) {
+    setSidebar(localStorage.getItem(sidebarStorageKey) === "true");
+    sidebarToggle.addEventListener("click", () => {
+      const collapsed = !document.body.classList.contains("sidebar-collapsed");
+      localStorage.setItem(sidebarStorageKey, String(collapsed));
+      setSidebar(collapsed);
+    });
+  }
   document.querySelectorAll("form[data-confirm]").forEach((form) => {
     form.addEventListener("submit", (event) => {
       if (!window.confirm(form.dataset.confirm)) event.preventDefault();
