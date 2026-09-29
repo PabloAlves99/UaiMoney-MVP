@@ -2,7 +2,9 @@
 
 O link **Esqueci minha senha** no login abre `/esqueci-senha`. O código enviado ao e-mail cadastrado tem seis dígitos, expira em 600 segundos, permite cinco tentativas e é consumido na troca da senha. Um reenvio substitui o código anterior. Há limites adicionais por e-mail e IP. Códigos são armazenados somente como hash.
 
-Depois da solicitação, o site mostra apenas “Confira seu e-mail”. A mensagem HTML inclui a logo incorporada, o código e um botão para `https://uaimoney.cloud/UaiMoney-MVP/public/redefinir-senha`. O link não contém o código; o usuário informa e-mail, código e nova senha na página aberta. Configure o endereço público em `site_url` no `config/mail.php` ou em `UAIMONEY_SITE_URL`.
+Depois da solicitação, o site mostra apenas “Confira seu e-mail”. A mensagem HTML inclui a logo incorporada, o código e um botão para `https://uaimoney.cloud/UaiMoney-MVP/public/redefinir-senha?token=...`. O link contém um identificador aleatório de 256 bits, armazenado apenas como hash e vinculado à conta solicitante. A tela pede somente código e nova senha; nenhum e-mail ou ID enviado pelo formulário determina a conta. Configure o endereço público em `site_url` no `config/mail.php` ou em `UAIMONEY_SITE_URL`.
+
+A migration `027_bind_password_reset_links.php` é obrigatória. Links anteriores à atualização deixam de funcionar e exigem uma nova solicitação. Reenvio, expiração e consumo invalidam o link; abrir o link não o consome. Não compartilhe links nem registre a query string de recuperação em ferramentas de analytics ou logs de acesso.
 
 Para atualizar a hospedagem, consulte `docs/hostinger-update.md`, com a lista completa de arquivos e a ordem de implantação.
 

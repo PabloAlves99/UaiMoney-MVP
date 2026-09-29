@@ -3,6 +3,22 @@
 URL pública: https://uaimoney.cloud/UaiMoney-MVP/public/
 Botão do e-mail: https://uaimoney.cloud/UaiMoney-MVP/public/redefinir-senha
 
+## Atualização adicional: link vinculado à conta
+
+O botão agora inclui `?token=...`, um identificador aleatório exclusivo da solicitação. A página não pede e-mail e o servidor só altera a conta vinculada ao link. O código de seis dígitos continua obrigatório, válido por 10 minutos.
+
+Se a versão anterior já está instalada, envie estes arquivos:
+
+- `app/Controllers/AuthController.php`
+- `app/Services/PasswordResetService.php`
+- `app/Services/PasswordResetMailer.php`
+- `app/Views/auth/password-reset.php`
+- `app/Views/emails/password-reset.php`
+- `bin/check_config.php`
+- `database/migrations/027_bind_password_reset_links.php`
+
+Execute `php database/migrate.php` na hospedagem e solicite um novo e-mail. Links antigos não servem para o novo fluxo. Não altere a configuração privada nem substitua o banco. Testes atualizados: `tests/password_reset.php` e `tests/password_reset_email.php`.
+
 ## Configuração de produção (substitui a orientação anterior de mail.local.php na hospedagem)
 
 Use esta estrutura, preservando os diretórios existentes do domínio:
@@ -53,6 +69,7 @@ Os caminhos são relativos à raiz do projeto na hospedagem. Envie mantendo a es
 - `app/Core/DeploymentConfig.php`
 - `config/.htaccess`
 - `database/migrations/026_password_resets.php`
+- `database/migrations/027_bind_password_reset_links.php`
 - `composer.json`
 - `composer.lock`
 

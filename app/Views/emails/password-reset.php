@@ -20,7 +20,7 @@
 <p style="margin:0;font-family:Consolas,monospace;font-size:34px;letter-spacing:7px;font-weight:bold;color:#123e63;"><?= H::escape($code) ?></p>
 <p style="margin:10px 0 0;font-size:12px;color:#627286;">Válido por 10 minutos · Uso único</p>
 </td></tr></table>
-<p style="margin:24px 0;font-size:15px;line-height:1.7;">Clique no botão e informe seu e-mail, este código e a nova senha. A validade começa no momento da solicitação.</p>
+<p style="margin:24px 0;font-size:15px;line-height:1.7;">Clique no botão e informe este código e a nova senha. O link já identifica a conta que solicitou a recuperação. A validade começa no momento da solicitação.</p>
 <table role="presentation" cellspacing="0" cellpadding="0"><tr><td bgcolor="#123e63" style="border-radius:6px;text-align:center;">
 <a href="<?= H::escape($resetUrl) ?>" style="display:inline-block;padding:15px 24px;background:#123e63;border:1px solid #123e63;border-radius:6px;color:#ffffff;font-size:15px;font-weight:bold;text-decoration:none;">Redefinir minha senha</a>
 </td></tr></table>

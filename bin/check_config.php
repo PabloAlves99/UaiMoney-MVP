@@ -41,7 +41,7 @@ try {
     $mailer = new \App\Services\PasswordResetMailer($mail);
     $mailer->configuredMailer();
     $stage = 'montagem do e-mail: confira site_url e app/Views/emails/password-reset.php';
-    $mailer->content('123456');
+    $mailer->content('123456', str_repeat('a', 64));
     echo "OK: configuração de e-mail, URL, rotas e extensões. Nenhuma mensagem enviada.\n";
 } catch (Throwable $e) {
     fwrite(STDERR, "[FALHA] Etapa: {$stage}. Nenhuma credencial foi exibida.\n");

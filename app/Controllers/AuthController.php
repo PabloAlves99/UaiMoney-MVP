@@ -89,7 +89,14 @@ final class AuthController
 
     public function showResetPassword(): void
     {
-        $this->resetView('reset');
+        header('Referrer-Policy: no-referrer');
+        $token = is_string($_GET['token'] ?? null) ? $_GET['token'] : '';
+        if (!$this->passwordReset->validLink($token)) {
+            http_response_code(422);
+            $this->resetView('invalid', 'Link inválido ou expirado. Solicite um novo e-mail.');
+            return;
+        }
+        $this->resetView('reset', resetToken: $token);
     }
 
     public function sendResetCode(): void
@@ -107,24 +114,27 @@ final class AuthController
 
     public function resetPassword(): void
     {
+        header('Referrer-Policy: no-referrer');
         $this->validateCsrf();
         $input = static fn(string $key): string => is_string($_POST[$key] ?? null) ? $_POST[$key] : '';
         try {
-            $this->passwordReset->reset($input('email'), trim($input('code')), $input('senha'), $input('confirmacao'), $_SERVER['REMOTE_ADDR'] ?? 'local');
+            $this->passwordReset->reset($input('reset_token'), trim($input('code')), $input('senha'), $input('confirmacao'), $_SERVER['REMOTE_ADDR'] ?? 'local');
             $this->csrf->regenerate();
             $this->resetView('done', null, '', 'Senha atualizada. Entre usando sua nova senha.');
         } catch (DomainException $e) {
             http_response_code(422);
-            $this->resetView('reset', $e->getMessage(), $input('email'));
+            $valid = $this->passwordReset->validLink($input('reset_token'));
+            $this->resetView($valid ? 'reset' : 'invalid', $e->getMessage(), resetToken: $valid ? $input('reset_token') : '');
         }
     }
 
-    private function resetView(string $step, ?string $error = null, string $email = '', ?string $message = null): void
+    private function resetView(string $step, ?string $error = null, string $email = '', ?string $message = null, string $resetToken = ''): void
     {
         View::render('auth/password-reset', [
             'basePath' => $this->basePath, 'pageTitle' => 'Redefinir senha - UaiMoney',
             'csrfToken' => $this->csrf->token(), 'step' => $step,
             'error' => $error, 'email' => $email, 'message' => $message,
+            'resetToken' => $resetToken,
         ], 'layouts/auth');
     }
 

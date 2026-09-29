@@ -2,6 +2,7 @@
 <h1 class="h4 mb-3"><?= $step === 'done' ? 'Senha redefinida' : ($step === 'sent' ? 'Confira seu e-mail' : 'Redefinir senha') ?></h1>
 <?php if ($error !== null): ?><div class="alert alert-danger" role="alert"><?= H::escape($error) ?></div><?php endif; ?>
 <?php if ($message !== null): ?><div class="alert alert-info" role="status"><?= H::escape($message) ?></div><?php endif; ?>
+<?php if ($step === 'invalid'): ?><p><a href="<?= H::escape($basePath . '/esqueci-senha') ?>">Solicitar novo e-mail</a></p><?php endif; ?>
 <?php if ($step === 'sent'): ?>
 <p class="text-secondary small">Abra a mensagem do UaiMoney e clique em <strong>Redefinir minha senha</strong>. Na página aberta, informe o código recebido e escolha sua nova senha.</p>
 <p class="text-secondary small">O código expira em 10 minutos a partir da solicitação. Se não encontrar a mensagem, confira a pasta de spam.</p>
@@ -11,11 +12,15 @@
 <p class="text-secondary small"><?= $step === 'request' ? 'Informe seu e-mail cadastrado para receber o código de recuperação.' : 'Digite o código recebido por e-mail e escolha sua nova senha. O código vale por 10 minutos e pode ser usado uma única vez.' ?></p>
 <form method="post" action="<?= H::escape($basePath . ($step === 'request' ? '/esqueci-senha' : '/redefinir-senha')) ?>">
     <input type="hidden" name="_token" value="<?= H::escape($csrfToken) ?>">
+    <?php if ($step === 'request'): ?>
     <div class="mb-3">
         <label class="form-label" for="email">E-mail cadastrado</label>
         <input class="form-control" type="email" id="email" name="email" autocomplete="email" maxlength="254" value="<?= H::escape($email) ?>" required>
     </div>
+    <?php endif; ?>
     <?php if ($step === 'reset'): ?>
+    <input type="hidden" name="reset_token" value="<?= H::escape($resetToken) ?>">
+    <p class="text-secondary small">Este link está vinculado à conta que solicitou a recuperação.</p>
     <div class="mb-3">
         <label class="form-label" for="code">Código de 6 dígitos</label>
         <input class="form-control" id="code" name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" minlength="6" maxlength="6" required aria-describedby="code-help">

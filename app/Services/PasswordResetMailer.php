@@ -9,11 +9,11 @@ final class PasswordResetMailer
 {
     public function __construct(private readonly array $config) {}
 
-    public function send(string $recipient, string $code): void
+    public function send(string $recipient, string $code, string $token): void
     {
         $mail = $this->configuredMailer();
         $mail->addAddress($recipient);
-        $content = $this->content($code);
+        $content = $this->content($code, $token);
         $mail->Subject = 'UaiMoney - Código para redefinir sua senha';
         $mail->isHTML(true);
         $mail->addEmbeddedImage(dirname(__DIR__, 2) . '/public/images/brand/logo-horizontal.png', 'uaimoney-logo', 'uaimoney.png');
@@ -22,9 +22,10 @@ final class PasswordResetMailer
         $mail->send();
     }
 
-    public function content(string $code): array
+    public function content(string $code, string $token): array
     {
         if (!preg_match('/^[0-9]{6}$/D', $code)) throw new RuntimeException('Invalid reset code.');
+        if (!preg_match('/^[a-f0-9]{64}$/D', $token)) throw new RuntimeException('Invalid reset token.');
         $siteUrl = rtrim((string) ($this->config['site_url'] ?? ''), '/');
         $parts = parse_url($siteUrl);
         if (!$parts || !filter_var($siteUrl, FILTER_VALIDATE_URL)
@@ -34,7 +35,7 @@ final class PasswordResetMailer
             throw new RuntimeException('Configure a valid HTTPS site_url for password reset emails.');
         }
         // No code or personal data in the URL; opening a link does not consume the code.
-        $resetUrl = $siteUrl . '/redefinir-senha';
+        $resetUrl = $siteUrl . '/redefinir-senha?token=' . rawurlencode($token);
         ob_start();
         try {
             require dirname(__DIR__) . '/Views/emails/password-reset.php';
@@ -44,7 +45,7 @@ final class PasswordResetMailer
         }
         return [
             'html' => $html,
-            'text' => "UaiMoney | Redefinição de senha\r\n\r\nRecebemos uma solicitação para redefinir a senha da sua conta.\r\n\r\nSeu código: {$code}\r\nVálido por 10 minutos a partir da solicitação. Uso único.\r\n\r\nAbra {$resetUrl} e informe seu e-mail, o código acima e sua nova senha.\r\n\r\nSe você não solicitou esta alteração, ignore esta mensagem. Sua senha permanece a mesma. Não compartilhe este código.\r\n\r\nUaiMoney — Controle financeiro",
+            'text' => "UaiMoney | Redefinição de senha\r\n\r\nRecebemos uma solicitação para redefinir a senha da sua conta.\r\n\r\nSeu código: {$code}\r\nVálido por 10 minutos a partir da solicitação. Uso único.\r\n\r\nAbra {$resetUrl} e informe o código acima e sua nova senha. O link já identifica a conta que solicitou a recuperação.\r\n\r\nSe você não solicitou esta alteração, ignore esta mensagem. Sua senha permanece a mesma. Não compartilhe este código ou link.\r\n\r\nUaiMoney — Controle financeiro",
         ];
     }
 
