@@ -212,6 +212,7 @@ final class AuthService
             'usuario_id',
             (int) $usuario['id']
         );
+        $this->session->set('credential_version', hash('sha256', $usuario['senha_hash']));
 
 
         /*
@@ -248,6 +249,10 @@ final class AuthService
             $usuario === null ||
             (int) $usuario['ativo'] !== 1
         ) {
+            return null;
+        }
+
+        if (!hash_equals(hash('sha256', $usuario['senha_hash']), (string) $this->session->get('credential_version'))) {
             return null;
         }
 

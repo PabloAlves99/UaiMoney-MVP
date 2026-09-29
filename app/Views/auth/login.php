@@ -64,8 +64,10 @@
     </div>
 
 
-    <button type="submit" class="btn btn-success btn-lg w-100">
+    <button type="submit" class="btn btn-uai-primary btn-lg w-100">
         Entrar
     </button>
 
 </form>
+
+<p class="text-center mt-4 mb-0"><a href="<?= \App\Core\Html::escape($basePath . '/esqueci-senha') ?>">Esqueci minha senha</a></p>

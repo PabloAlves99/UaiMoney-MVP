@@ -147,7 +147,12 @@ $authController = new AuthController(
     $authService,
     $csrf,
     $basePath,
-    new \App\Core\RateLimiter($pdo)
+    new \App\Core\RateLimiter($pdo),
+    new \App\Services\PasswordResetService(
+        $pdo,
+        new \App\Core\RateLimiter($pdo),
+        (new \App\Services\PasswordResetMailer(require dirname(__DIR__) . '/config/mail.php'))->send(...)
+    )
 );
 
 $userPreferenceController = new UserPreferenceController(

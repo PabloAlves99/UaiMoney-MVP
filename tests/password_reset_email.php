@@ -1,0 +1,27 @@
+<?php
+declare(strict_types=1);
+require dirname(__DIR__) . '/vendor/autoload.php';
+use App\Services\PasswordResetMailer;
+$config = ['site_url' => 'https://uaimoney.cloud/UaiMoney-MVP/public'];
+$content = (new PasswordResetMailer($config))->content('123456');
+$assert = static function (bool $value, string $message): void { if (!$value) throw new RuntimeException($message); };
+$assert(str_contains($content['html'], 'cid:uaimoney-logo'), 'Missing embedded logo');
+$assert(str_contains($content['html'], 'https://uaimoney.cloud/UaiMoney-MVP/public/redefinir-senha'), 'Wrong link');
+$assert(str_contains($content['html'], '123456') && str_contains($content['text'], '123456'), 'Missing code');
+$assert(!str_contains($content['html'], '?code='), 'Code in URL');
+$mail = (new PasswordResetMailer($config + ['password' => 'test-only', 'host' => 'smtp.gmail.com', 'port' => 587, 'username' => 'sender@example.test', 'from' => 'sender@example.test', 'from_name' => 'UaiMoney']))->configuredMailer();
+$mail->addAddress('recipient@example.test');
+$mail->isHTML(true);
+$mail->Subject = 'Teste';
+$mail->Body = $content['html'];
+$mail->AltBody = $content['text'];
+$mail->addEmbeddedImage(dirname(__DIR__) . '/public/images/brand/logo-horizontal.png', 'uaimoney-logo', 'uaimoney.png');
+$assert($mail->preSend(), 'MIME generation failed');
+$mime = $mail->getSentMIMEMessage();
+$assert(str_contains($mime, 'Content-ID: <uaimoney-logo>') && str_contains($mime, 'multipart/alternative'), 'Missing logo attachment or plain text fallback');
+try { (new PasswordResetMailer(['site_url' => 'http://example.com']))->content('123456'); throw new LogicException('Unsafe URL accepted'); } catch (RuntimeException $e) {}
+$basePath = '/UaiMoney-MVP/public'; $csrfToken = 'test'; $step = 'sent'; $error = null; $email = ''; $message = 'Confira seu e-mail';
+ob_start(); require dirname(__DIR__) . '/app/Views/auth/password-reset.php'; $view = ob_get_clean();
+$assert(!str_contains($view, '<form') && !str_contains($view, '/redefinir-senha'), 'Confirmation exposes reset form');
+$assert(str_contains($view, 'Confira seu e-mail'), 'Missing confirmation');
+echo "OK: e-mail HTML/texto, logo, URL e confirmação sem formulário.\n";

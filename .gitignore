@@ -16,6 +16,7 @@
 # Variáveis de ambiente
 .env
 .env.*
+/config/mail.local.php
 
 # Arquivos do sistema
 .DS_Store

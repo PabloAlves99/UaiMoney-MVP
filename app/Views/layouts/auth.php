@@ -7,7 +7,7 @@
     <meta charset="UTF-8">
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="icon" type="image/svg+xml" sizes="any" href="<?= \App\Core\Html::escape($basePath.'/images/brand/favicon.svg?v=3') ?>">
+    <link rel="icon" type="image/png" sizes="any" href="<?= \App\Core\Html::escape($basePath.'/images/brand/favicon.png?v=10') ?>">
 
     <title>
         <?= htmlspecialchars(
@@ -42,7 +42,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <link rel="stylesheet" href="<?= htmlspecialchars(
-        $basePath . '/css/app.css?v=20260925-brand',
+        $basePath . '/css/app.css?v=20260929-refined',
         ENT_QUOTES,
         'UTF-8'
     ) ?>">

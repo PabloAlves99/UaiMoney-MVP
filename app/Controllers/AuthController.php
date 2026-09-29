@@ -15,7 +15,8 @@ final class AuthController
         private readonly AuthService $authService,
         private readonly Csrf $csrf,
         private readonly string $basePath,
-        private readonly ?\App\Core\RateLimiter $limiter = null
+        private readonly ?\App\Core\RateLimiter $limiter = null,
+        private readonly ?\App\Services\PasswordResetService $passwordReset = null
     ) {
     }
 
@@ -79,6 +80,52 @@ final class AuthController
                 'layouts/auth'
             );
         }
+    }
+
+    public function showForgotPassword(): void
+    {
+        $this->resetView('request');
+    }
+
+    public function showResetPassword(): void
+    {
+        $this->resetView('reset');
+    }
+
+    public function sendResetCode(): void
+    {
+        $this->validateCsrf();
+        $email = is_string($_POST['email'] ?? null) ? $_POST['email'] : '';
+        try {
+            $this->passwordReset->request($email, $_SERVER['REMOTE_ADDR'] ?? 'local');
+            $this->resetView('sent', null, '', 'Se o e-mail estiver cadastrado e ativo, você receberá uma mensagem com o código e o botão para redefinir sua senha.');
+        } catch (DomainException $e) {
+            http_response_code(422);
+            $this->resetView('request', $e->getMessage(), $email);
+        }
+    }
+
+    public function resetPassword(): void
+    {
+        $this->validateCsrf();
+        $input = static fn(string $key): string => is_string($_POST[$key] ?? null) ? $_POST[$key] : '';
+        try {
+            $this->passwordReset->reset($input('email'), trim($input('code')), $input('senha'), $input('confirmacao'), $_SERVER['REMOTE_ADDR'] ?? 'local');
+            $this->csrf->regenerate();
+            $this->resetView('done', null, '', 'Senha atualizada. Entre usando sua nova senha.');
+        } catch (DomainException $e) {
+            http_response_code(422);
+            $this->resetView('reset', $e->getMessage(), $input('email'));
+        }
+    }
+
+    private function resetView(string $step, ?string $error = null, string $email = '', ?string $message = null): void
+    {
+        View::render('auth/password-reset', [
+            'basePath' => $this->basePath, 'pageTitle' => 'Redefinir senha - UaiMoney',
+            'csrfToken' => $this->csrf->token(), 'step' => $step,
+            'error' => $error, 'email' => $email, 'message' => $message,
+        ], 'layouts/auth');
     }
 
     public function logout(): void

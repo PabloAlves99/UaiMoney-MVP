@@ -31,6 +31,10 @@ return function (Router $router, AuthController $authController, UserPreferenceC
 
 
     $router->get('/admin/usuarios', [$adminUserController, 'index']);
+    $router->get('/esqueci-senha', [$authController, 'showForgotPassword']);
+    $router->post('/esqueci-senha', [$authController, 'sendResetCode']);
+    $router->get('/redefinir-senha', [$authController, 'showResetPassword']);
+    $router->post('/redefinir-senha', [$authController, 'resetPassword']);
     $router->post('/admin/usuarios', [$adminUserController, 'save']);
     $router->get('/admin/usuarios/{id}/editar', [$adminUserController, 'index']);
     $router->post('/admin/usuarios/{id}/editar', [$adminUserController, 'save']);
