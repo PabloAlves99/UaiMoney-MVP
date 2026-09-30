@@ -1,5 +1,6 @@
 """HTTP smoke tests against the isolated preview started with tests/fixture.php."""
 import http.cookiejar
+import os
 import re
 import secrets
 import urllib.error
@@ -8,7 +9,7 @@ import urllib.request
 from datetime import date
 from html.parser import HTMLParser
 
-BASE = 'http://127.0.0.1:8787'
+BASE = os.environ.get('UAIMONEY_TEST_BASE', 'http://127.0.0.1:8787')
 checks = 0
 
 
@@ -65,7 +66,7 @@ class Client:
 ana = Client()
 status, html, _ = ana.submit('/login', '/login', {'identifier': 'ana', 'senha': 'UaiTeste!2026'})
 check(status == 200 and 'Visão geral' in html, 'Login')
-paths = ['/', '/cartoes', '/cartoes/1', '/faturas/1', '/planejamento', '/analises', '/analises?agrupar=mes', '/carteira', '/comecar', '/movimentacoes', '/movimentacoes/1', '/movimentacoes/avancado', '/recorrencias', '/categorias', '/contas', '/contas/1', '/movimentacoes/5/editar']
+paths = ['/', '/cartoes', '/cartoes/1', '/faturas/1', '/planejamento', '/investimentos', '/objetivos', '/projecoes', '/projecoes/nova', '/estrategias', '/analises', '/analises?agrupar=mes', '/carteira', '/comecar', '/movimentacoes', '/movimentacoes/1', '/movimentacoes/avancado', '/recorrencias', '/categorias', '/contas', '/contas/1', '/movimentacoes/5/editar']
 for path in paths:
     status, html, headers = ana.request(path)
     check(status == 200, f'Route {path}: {status}')
@@ -78,6 +79,26 @@ for path in ['/analises?periodo=anterior', '/analises?periodo=semestre', '/anali
 status, html, _ = ana.request('/analises?inicio=2025-03-02&fim=2025-03-02&conferir=1')
 check('Estorno · Mercado' in html and '- R$ 5,00' in html, 'Audit renders dated refund')
 check('Distribuição do período' not in html and 'Maiores despesas' not in html, 'Analytics avoids duplicate breakdowns')
+
+status, projection_form, _ = ana.request('/projecoes/nova')
+source_id = re.search(r'value="investimento:(\d+)"', projection_form).group(1)
+status, html, _ = ana.submit('/projecoes/nova', '/projecoes', {
+    'nome': 'Cenário HTTP', 'origem': 'investimento:' + source_id,
+    'aporte_mensal': '1.000,00', 'valor_meta': '1.000.000,00',
+    'taxa': '1', 'periodicidade_taxa': 'mensal',
+})
+check(status == 200 and 'Cenário HTTP' in html and 'Evolução do patrimônio' in html, 'Create and render projection')
+projection_id = re.search(r'/projecoes/(\d+)/excluir', html).group(1)
+status, journey, _ = ana.request('/projecoes/' + projection_id + '?visao=completa')
+check(status == 200 and 'Jornada completa do patrimônio' in journey and 'Você está aqui' in journey, 'Projection complete journey')
+status, html, _ = ana.submit('/projecoes/' + projection_id + '/editar', '/projecoes/' + projection_id + '/editar', {
+    'nome': 'Cenário HTTP atualizado', 'origem': 'investimento:' + source_id,
+    'aporte_mensal': '1.500,00', 'valor_meta': '1.000.000,00',
+    'taxa': '12', 'periodicidade_taxa': 'anual',
+})
+check(status == 200 and 'Cenário HTTP atualizado' in html and '12,0000% ao ano' in html, 'Update projection')
+status, html, _ = ana.submit('/projecoes/' + projection_id, '/projecoes/' + projection_id + '/excluir', {})
+check(status == 200 and 'Projeção excluída.' in html and 'Cenário HTTP atualizado' not in html, 'Delete projection')
 
 status, _, _ = ana.request('/nao-existe')
 check(status == 404, '404')

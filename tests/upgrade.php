@@ -21,4 +21,4 @@ if((int)$account['saldo_atual_centavos']!==97500) throw new RuntimeException('Sa
 if($pdo->query("SELECT tipo FROM usuarios WHERE id=1")->fetchColumn()!=='admin') throw new RuntimeException('Nenhum administrador foi definido após atualização.');
 if($pdo->query('PRAGMA foreign_key_check')->fetchAll()!==[]) throw new RuntimeException('Relacionamento inválido após atualização.');
 if($pdo->query('PRAGMA integrity_check')->fetchColumn()!=='ok') throw new RuntimeException('Banco inválido.');
-echo "OK: atualização 017 → 022 preserva registros, saldo e integridade.\n";
+echo "OK: atualização 017 → 029 preserva registros, saldo e integridade.\n";

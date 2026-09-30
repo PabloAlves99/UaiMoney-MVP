@@ -11,7 +11,13 @@ use App\Services\InvestmentService;
 
 final class InvestmentController extends FinancialController
 {
-    public function __construct(AuthService $auth, Csrf $csrf, string $basePath, private readonly InvestmentRepository $investments, private readonly InvestmentService $service)
+    public function __construct(
+        AuthService $auth,
+        Csrf $csrf,
+        string $basePath,
+        private readonly InvestmentRepository $investments,
+        private readonly InvestmentService $service
+    )
     {
         parent::__construct($auth, $csrf, $basePath);
     }
@@ -19,7 +25,10 @@ final class InvestmentController extends FinancialController
     public function index(): void
     {
         $user = (int) $this->requireUser()['id'];
-        $this->page('investments/index', 'Investimentos', ['investments' => $this->investments->list($user), 'summary' => $this->investments->summary($user)]);
+        $this->page('investments/index', 'Investimentos', [
+            'investments' => $this->investments->list($user),
+            'summary' => $this->investments->summary($user),
+        ]);
     }
 
     public function store(): void

@@ -4,11 +4,11 @@ $path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
 $relative = $basePath !== '' && str_starts_with($path, $basePath) ? substr($path, strlen($basePath)) : $path;
 $navigation = [
     'Cadastrar e editar' => ['/' => 'Visão geral', '/movimentacoes' => 'Movimentações', '/contas' => 'Contas', '/cartoes' => 'Cartões', '/categorias' => 'Categorias', '/recorrencias' => 'Recorrências'],
-    'Planejar' => ['/planejamento' => 'Planejamento', '/investimentos' => 'Investimentos', '/objetivos' => 'Objetivos'],
+    'Planejar' => ['/planejamento' => 'Planejamento', '/investimentos' => 'Investimentos', '/objetivos' => 'Objetivos', '/projecoes' => 'Projeções'],
     'Analisar' => ['/analises' => 'Análises'],
     'Dicas' => ['/estrategias' => 'Estratégias'],
 ];
-if (($usuario['tipo'] ?? '') === 'admin') $navigation['/admin/usuarios'] = 'Usuários';
+if (($usuario['tipo'] ?? '') === 'admin') $navigation['Administrar'] = ['/admin/usuarios' => 'Usuários'];
 $flash = $_SESSION['flash'] ?? null;
 unset($_SESSION['flash']);
 ?>
@@ -22,7 +22,7 @@ unset($_SESSION['flash']);
     <title><?= H::escape($pageTitle ?? 'UaiMoney') ?></title>
     <link rel="icon" type="image/png" sizes="any" href="<?= H::escape($basePath . '/images/brand/favicon.png?v=10') ?>">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="<?= H::escape($basePath . '/css/app.css?v=20260929-refined') ?>" rel="stylesheet">
+    <link href="<?= H::escape($basePath . '/css/app.css?v=20260930-projection-journey') ?>" rel="stylesheet">
 </head>
 
 <body class="has-mobile-nav">
