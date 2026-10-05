@@ -1712,6 +1712,71 @@ details summary {
 .movement-form {
   max-width: 960px;
   margin-inline: auto;
+  border-width: 1px 1px 1px 5px;
+  transition: border-color .2s ease, box-shadow .2s ease;
+}
+
+.movement-form[data-movement-variant="despesa"] {
+  border-color: color-mix(in srgb, var(--uai-danger) 60%, var(--uai-border));
+  box-shadow: 0 10px 30px color-mix(in srgb, var(--uai-danger) 10%, transparent);
+}
+
+.movement-form[data-movement-variant="receita"] {
+  border-color: color-mix(in srgb, var(--uai-success) 60%, var(--uai-border));
+  box-shadow: 0 10px 30px color-mix(in srgb, var(--uai-success) 10%, transparent);
+}
+
+.movement-type-picker {
+  display: flex;
+  gap: .5rem;
+}
+
+.movement-type-picker input {
+  position: absolute;
+  opacity: 0;
+}
+
+.movement-type-picker label {
+  flex: 1;
+  margin: 0;
+  padding: .55rem .75rem;
+  border: 1px solid var(--uai-border);
+  border-radius: .5rem;
+  color: var(--uai-muted);
+  cursor: pointer;
+  text-align: center;
+}
+
+.movement-type-picker input[value="despesa"] + label {
+  border-color: var(--uai-danger);
+  color: var(--uai-danger);
+}
+
+.movement-type-picker input[value="receita"] + label {
+  border-color: var(--uai-success);
+  color: var(--uai-success);
+}
+
+.movement-type-picker input:checked + label {
+  color: var(--uai-surface);
+}
+
+.movement-type-picker input[value="despesa"]:checked + label {
+  background: var(--uai-danger);
+}
+
+.movement-type-picker input[value="receita"]:checked + label {
+  background: var(--uai-success);
+}
+
+.movement-type-picker input:focus-visible + label {
+  outline: 3px solid color-mix(in srgb, var(--uai-primary) 35%, transparent);
+  outline-offset: 2px;
+}
+
+.movement-advanced {
+  border-top: 1px solid var(--uai-border);
+  padding-top: 1rem;
 }
 
 .quick-filters {
