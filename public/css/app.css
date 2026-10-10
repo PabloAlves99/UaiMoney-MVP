@@ -1137,6 +1137,17 @@ body.sidebar-collapsed .sidebar-toggle-icon { width: 20px; height: 20px; }
 .uai-progress.warning::-webkit-progress-value {
   background: var(--uai-warning);
 }
+
+/* Resumo mensal: vermelho representa o já gasto; amarelo, o limite disponível. */
+.budget-progress {
+  background: color-mix(in srgb, var(--uai-warning) 24%, var(--uai-surface));
+  accent-color: var(--uai-danger);
+}
+.budget-progress::-webkit-progress-bar {
+  background: color-mix(in srgb, var(--uai-warning) 24%, var(--uai-surface));
+}
+.budget-progress::-webkit-progress-value { background: var(--uai-danger); }
+.budget-progress::-moz-progress-bar { background: var(--uai-danger); }
 .back-link {
   display: inline-block;
   margin-bottom: 22px;
@@ -1611,14 +1622,14 @@ details summary {
   height: 8px;
   margin: 10px 0;
   border-radius: 5px;
-  background: var(--uai-surface-secondary);
+  background: color-mix(in srgb, var(--uai-warning) 24%, var(--uai-surface));
   overflow: hidden;
 }
 .analysis-track > span {
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: #8193a7;
+  background: var(--uai-danger);
 }
 .analysis-category-meta {
   font-size: 0.72rem;
@@ -1652,8 +1663,9 @@ details summary {
   color: var(--uai-muted);
 }
 .analysis-budget-line strong {
-  color: var(--uai-text);
+  color: var(--uai-warning);
 }
+.analysis-budget-line.is-over-budget strong { color: var(--uai-danger); }
 .analysis-planning {
   margin-top: 24px;
 }
@@ -2183,6 +2195,12 @@ h1 { font-size: clamp(1.75rem, 2.4vw, 2.25rem); letter-spacing: -.035em; font-we
 .btn-uai-primary:active { color: var(--uai-surface) !important; }
 .btn-outline-secondary { color: var(--uai-muted); }
 .form-control, .form-select { border-radius: 7px; font-size: .9rem; }
+[data-bs-theme="light"] input[type="date"]::-webkit-calendar-picker-indicator,
+[data-bs-theme="light"] input[type="month"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: .82;
+  filter: invert(21%) sepia(28%) saturate(1240%) hue-rotate(163deg) brightness(88%) contrast(91%);
+}
 .form-check-input:checked { background-color: var(--uai-primary); border-color: var(--uai-primary); }
 .form-check-input:focus { border-color: var(--uai-primary); box-shadow: 0 0 0 .2rem color-mix(in srgb, var(--uai-primary) 15%, transparent); }
 .table { --bs-table-color: var(--uai-text); --bs-table-border-color: var(--uai-border); }

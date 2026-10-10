@@ -22,7 +22,7 @@ unset($_SESSION['flash']);
     <title><?= H::escape($pageTitle ?? 'UaiMoney') ?></title>
     <link rel="icon" type="image/png" sizes="any" href="<?= H::escape($basePath . '/images/brand/favicon.png?v=10') ?>">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="<?= H::escape($basePath . '/css/app.css?v=20261009-surfaces') ?>" rel="stylesheet">
+    <link href="<?= H::escape($basePath . '/css/app.css?v=20261009-budget-icons') ?>" rel="stylesheet">
 </head>
 
 <body class="has-mobile-nav">
@@ -74,7 +74,7 @@ unset($_SESSION['flash']);
     </nav>
     <script>window.UaiMoney = { themeUrl: <?= json_encode($basePath . '/preferencias/tema', JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?> };</script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="<?= H::escape($basePath . '/js/theme.js') ?>"></script>
+    <script src="<?= H::escape($basePath . '/js/theme.js?v=20261009-icons') ?>"></script>
     <script src="<?= H::escape($basePath . '/js/app.js?v=20260926-mobile-menu') ?>"></script>
 </body>
 

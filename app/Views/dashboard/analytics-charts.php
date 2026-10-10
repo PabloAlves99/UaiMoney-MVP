@@ -51,7 +51,7 @@ $budgetAlerts = array_values(array_filter($budgets, fn($budget) => (int)$budget[
                         </div>
                     </details>
                     <?php if ($budget): $remaining = (int)$budget['valor_limite_centavos'] - (int)$row['despesas']; ?>
-                        <div class="analysis-budget-line"><span>Limite do mês: <?= Money::format((int)$budget['valor_limite_centavos']) ?></span><strong><?= $remaining < 0 ? 'Acima do limite: ' : 'Ainda disponível: ' ?><?= Money::format(abs($remaining)) ?></strong></div>
+                        <div class="analysis-budget-line <?= $remaining < 0 ? 'is-over-budget' : 'is-within-budget' ?>"><span>Limite do mês: <?= Money::format((int)$budget['valor_limite_centavos']) ?></span><strong><?= $remaining < 0 ? 'Acima do limite: ' : 'Ainda disponível: ' ?><?= Money::format(abs($remaining)) ?></strong></div>
                     <?php endif; ?>
                 <?php endforeach; ?>
                 <div class="analysis-planning">

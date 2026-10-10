@@ -50,7 +50,7 @@ usort($unpaid, fn($a, $b) => strcmp($a['data_vencimento'], $b['data_vencimento']
     </div>
     <p class="small text-secondary">Neste mês: <?= Money::format((int) $totals['receber']) ?> a receber e <?= Money::format((int) $totals['pagar']) ?> a pagar. Esses valores ainda não entram no resultado acima.</p>
     <?php foreach (array_slice($budgets, 0, 4) as $budget): ?>
-        <div class="py-2"><div class="d-flex justify-content-between small mb-2"><strong><?= H::escape($budget['nome']) ?></strong><span><?= Money::format((int) $budget['realizado']) ?> de <?= Money::format((int) $budget['valor_limite_centavos']) ?></span></div><progress class="uai-progress" max="<?= (int) $budget['valor_limite_centavos'] ?>" value="<?= min(max(0, (int) $budget['realizado']), (int) $budget['valor_limite_centavos']) ?>" aria-label="Consumo de <?= H::escape($budget['nome']) ?>"></progress></div>
+        <div class="py-2"><div class="d-flex justify-content-between small mb-2"><strong><?= H::escape($budget['nome']) ?></strong><span><?= Money::format((int) $budget['realizado']) ?> de <?= Money::format((int) $budget['valor_limite_centavos']) ?></span></div><progress class="uai-progress budget-progress" max="<?= (int) $budget['valor_limite_centavos'] ?>" value="<?= min(max(0, (int) $budget['realizado']), (int) $budget['valor_limite_centavos']) ?>" aria-label="Consumo de <?= H::escape($budget['nome']) ?>"></progress></div>
     <?php endforeach; ?>
     <div class="detail-actions mt-3"><a class="btn btn-outline-secondary" href="<?= H::escape($basePath . '/analises?mes=' . $month) ?>">Explorar análises</a><a class="btn btn-outline-secondary" href="<?= H::escape($basePath . '/planejamento?mes=' . $month) ?>">Ajustar planejamento</a></div>
 </div></section>
