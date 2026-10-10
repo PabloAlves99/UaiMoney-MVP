@@ -37,12 +37,22 @@ $amount = $old['valor'] ?? ($editing ? number_format((int) $movement['valor_cent
         <?php endif; ?>
         <?php if ($isCard): ?><p class="small text-secondary">Compra em <?= H::escape($movement['cartao_nome']) ?>. Correções atualizam o total da fatura; pagamentos já registrados são preservados. Para trocar a fatura, use o detalhe do lançamento.</p><?php endif; ?>
         <div class="row g-3">
+<<<<<<< HEAD
             <input id="movement-type" type="hidden" name="tipo" value="<?= H::escape($type) ?>" data-movement-type>
+=======
+            <div class="col-sm-4">
+                <span class="form-label d-block">O que você vai registrar?</span>
+                <div class="movement-type-picker" role="radiogroup" aria-label="Tipo de movimentação">
+                    <input id="movement-type-expense" type="radio" name="tipo" value="despesa" data-movement-type <?= $type === 'despesa' ? 'checked' : '' ?>><label for="movement-type-expense">Despesa</label>
+                    <?php if (!$isCard): ?><input id="movement-type-income" type="radio" name="tipo" value="receita" data-movement-type <?= $type === 'receita' ? 'checked' : '' ?>><label for="movement-type-income">Receita</label><?php endif; ?>
+                </div>
+            </div>
+>>>>>>> e8901278f92df2140c5dae33545eb4f1955a0134
             <div class="col-sm-4">
                 <label for="movement-value" class="form-label">Valor<?= !$editing && $mode === 'parcelado' ? ' total' : '' ?> (R$)</label>
                 <input id="movement-value" name="valor" class="form-control movement-amount" inputmode="decimal" required value="<?= H::escape($amount) ?>" placeholder="0,00" autofocus>
             </div>
-            <?php if (!$editing): ?>
+            <?php if ($editing): ?>
                 <div class="col-sm-4">
                     <label for="movement-mode" class="form-label">Como lançar?</label>
                     <select id="movement-mode" name="modo" class="form-select" data-movement-mode>
@@ -90,31 +100,68 @@ $amount = $old['valor'] ?? ($editing ? number_format((int) $movement['valor_cent
                 <?php if (!$editing): ?><div class="col-md-4"><label for="movement-date" class="form-label" data-movement-date-label>Data</label><input id="movement-date" name="data" type="date" class="form-control" required value="<?= H::escape($value('data', date('Y-m-d'))) ?>"></div><?php endif; ?>
             <?php endif; ?>
             <?php if (!$editing): ?>
-                <div class="col-md-6" data-movement-section="card">
-                    <label for="movement-card" class="form-label">Cartão</label>
-                    <select id="movement-card" name="cartao_id" class="form-select"><option value="">Selecione</option><?php foreach ($cards as $card): ?><option value="<?= (int) $card['id'] ?>" <?= (int) $value('cartao_id', $_GET['cartao_id'] ?? 0) === (int) $card['id'] ? 'selected' : '' ?>><?= H::escape($card['nome']) ?></option><?php endforeach; ?></select>
+                <div class="col-12">
+                    <details class="movement-advanced" <?= $old ? 'open' : '' ?> data-movement-advanced>
+                        <summary>Preencher todos os campos</summary>
+                        <p class="small text-secondary mt-2 mb-3">Por padrão: compra única, situação paga e data de pagamento hoje.</p>
+                        <div class="row g-3">
+                            <div class="col-sm-6">
+                                <label for="movement-mode" class="form-label">Como lançar?</label>
+                                <select id="movement-mode" name="modo" class="form-select" data-movement-mode>
+                                    <?php foreach (['simples' => 'Compra única', 'parcelado' => 'Parcelado', 'recorrente' => 'Repetir'] as $key => $label): ?><option value="<?= $key ?>" <?= $mode === $key ? 'selected' : '' ?>><?= $label ?></option><?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="col-md-6"><label for="movement-date" class="form-label" data-movement-date-label>Data do pagamento</label><input id="movement-date" name="data" type="date" class="form-control" required value="<?= H::escape($value('data', date('Y-m-d'))) ?>"></div>
+                            <div class="col-md-6" data-movement-section="status">
+                                <label for="movement-status" class="form-label">Situação</label>
+                                <select id="movement-status" name="status" class="form-select" data-movement-status>
+                                    <option value="efetivada" <?= $status === 'efetivada' ? 'selected' : '' ?>><?= $type === 'receita' ? 'Recebido' : 'Pago' ?></option>
+                                    <option value="pendente" <?= $status === 'pendente' ? 'selected' : '' ?>><?= $type === 'receita' ? 'Ainda vou receber' : 'Ainda vou pagar' ?></option>
+                                </select>
+                            </div>
+                            <div class="col-md-6" data-movement-section="card">
+                                <label for="movement-card" class="form-label">Cartão</label>
+                                <select id="movement-card" name="cartao_id" class="form-select">
+                                    <option value="">Selecione</option><?php foreach ($cards as $card): ?><option value="<?= (int) $card['id'] ?>" <?= (int) $value('cartao_id', $_GET['cartao_id'] ?? 0) === (int) $card['id'] ? 'selected' : '' ?>><?= H::escape($card['nome']) ?></option><?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="col-sm-6" data-movement-section="installment"><label for="movement-count" class="form-label">Número de parcelas</label><input id="movement-count" name="parcelas" type="number" min="2" max="120" class="form-control" value="<?= H::escape($value('parcelas', 2)) ?>"><small class="form-text">Informe o valor total da compra acima.</small></div>
+                            <div class="col-sm-6" data-movement-section="recurring"><label for="movement-frequency" class="form-label">Repetir a cada</label><select id="movement-frequency" name="frequencia" class="form-select"><?php foreach (['mensal' => 'Mês', 'semanal' => 'Semana', 'anual' => 'Ano'] as $key => $label): ?><option value="<?= $key ?>" <?= $value('frequencia', 'mensal') === $key ? 'selected' : '' ?>><?= $label ?></option><?php endforeach; ?></select></div>
+                            <div class="col-sm-6" data-movement-section="recurring"><label for="movement-occurrences" class="form-label">Quantidade de ocorrências (opcional)</label><input id="movement-occurrences" name="ocorrencias" type="number" min="1" class="form-control" value="<?= H::escape($value('ocorrencias')) ?>" placeholder="Sem data para terminar"></div>
+                            <div class="col-md-6" data-movement-section="competence"><label for="movement-competence" class="form-label">Data usada nas análises (opcional)</label><input id="movement-competence" name="data_competencia" type="date" class="form-control" value="<?= H::escape($value('data_competencia')) ?>"><small class="form-text">Deixe em branco para usar a data do lançamento.</small></div>
+                            <div class="col-12"><label for="movement-notes" class="form-label">Observações</label><textarea id="movement-notes" name="observacao" maxlength="500" class="form-control" rows="2"><?= H::escape($value('observacao')) ?></textarea></div>
+                        </div>
+                    </details>
                 </div>
+            <?php else: ?>
+                <div class="col-md-6" data-movement-section="status">
+                    <label for="movement-status" class="form-label">Situação</label>
+                    <select id="movement-status" name="status" class="form-select" data-movement-status>
+                        <option value="efetivada" <?= $status === 'efetivada' ? 'selected' : '' ?>><?= $isCard ? 'Compra registrada' : ($type === 'receita' ? 'Recebido' : 'Pago') ?></option>
+                        <?php if (!$isCard): ?><option value="pendente" <?= $status === 'pendente' ? 'selected' : '' ?>><?= $type === 'receita' ? 'Ainda vou receber' : 'Ainda vou pagar' ?></option><?php endif; ?>
+                        <option value="cancelada" <?= $status === 'cancelada' ? 'selected' : '' ?>>Cancelada</option>
+                    </select>
+                </div>
+<<<<<<< HEAD
                 <div class="col-sm-6" data-movement-section="installment"><label for="movement-count" class="form-label">Número de parcelas</label><input id="movement-count" name="parcelas" type="number" min="2" max="120" class="form-control" value="<?= H::escape($value('parcelas', 2)) ?>"><small class="form-text">Informe o valor total da compra acima.</small></div>
                 <div class="col-sm-6" data-movement-section="recurring"><label for="movement-frequency" class="form-label">Repetir a cada</label><select id="movement-frequency" name="frequencia" class="form-select"><?php foreach (['mensal' => 'Mês', 'semanal' => 'Semana', 'anual' => 'Ano'] as $key => $label): ?><option value="<?= $key ?>" <?= $value('frequencia', 'mensal') === $key ? 'selected' : '' ?>><?= $label ?></option><?php endforeach; ?></select></div>
                 <div class="col-sm-6" data-movement-section="recurring"><label for="movement-occurrences" class="form-label">Quantidade de ocorrências (opcional)</label><input id="movement-occurrences" name="ocorrencias" type="number" min="1" class="form-control" value="<?= H::escape($value('ocorrencias')) ?>" placeholder="Sem data para terminar"></div>
             <?php endif; ?>
             <?php if ($editing): ?>
+=======
+>>>>>>> e8901278f92df2140c5dae33545eb4f1955a0134
                 <div class="col-md-4"><label for="movement-competence" class="form-label">Data usada nas análises</label><input id="movement-competence" name="data_competencia" type="date" required class="form-control" value="<?= H::escape($value('data_competencia')) ?>"></div>
                 <div class="col-md-4"><label for="movement-due" class="form-label">Vencimento</label><input id="movement-due" name="data_vencimento" type="date" required <?= $isCard ? 'readonly' : '' ?> class="form-control" value="<?= H::escape($value('data_vencimento')) ?>"></div>
                 <div class="col-md-4"><label for="movement-paid" class="form-label"><?= $isCard ? 'Data original da compra' : 'Data do pagamento ou recebimento' ?></label><input id="movement-paid" name="data_efetivacao" type="date" max="<?= date('Y-m-d') ?>" <?= $isCard ? 'readonly' : '' ?> class="form-control" value="<?= H::escape($value('data_efetivacao') ?: date('Y-m-d')) ?>"></div>
             <?php endif; ?>
-            <div class="col-12">
-                <details <?= $old ? 'open' : '' ?>>
-                    <summary>Mais opções</summary>
-                    <div class="row g-3 mt-1">
-                        <?php if (!$editing): ?>
-                            <div class="col-md-6" data-movement-section="competence"><label for="movement-competence" class="form-label">Data usada nas análises (opcional)</label><input id="movement-competence" name="data_competencia" type="date" class="form-control" value="<?= H::escape($value('data_competencia')) ?>"><small class="form-text">Deixe em branco para usar a data do lançamento.</small></div>
-                            <div class="col-md-6" data-movement-section="card"><label for="movement-invoice" class="form-label">Primeira fatura (opcional)</label><input id="movement-invoice" name="primeira_fatura" type="month" class="form-control" value="<?= H::escape($value('primeira_fatura')) ?>"><small class="form-text">Mês do fechamento. Deixe em branco para calcular pelo cartão.</small></div>
-                        <?php endif; ?>
-                        <div class="col-12"><label for="movement-notes" class="form-label">Observações</label><textarea id="movement-notes" name="observacao" maxlength="500" class="form-control" rows="2"><?= H::escape($value('observacao')) ?></textarea></div>
-                    </div>
-                </details>
-            </div>
+            <?php if ($editing): ?><div class="col-12">
+                    <details <?= $old ? 'open' : '' ?>>
+                        <summary>Mais opções</summary>
+                        <div class="row g-3 mt-1">
+                            <div class="col-12"><label for="movement-notes" class="form-label">Observações</label><textarea id="movement-notes" name="observacao" maxlength="500" class="form-control" rows="2"><?= H::escape($value('observacao')) ?></textarea></div>
+                        </div>
+                    </details>
+                </div><?php endif; ?>
         </div>
         <p class="small text-secondary mt-3" data-movement-help><?= $editing ? 'Os saldos e as análises acompanham as alterações salvas.' : 'Você pode revisar todos os dados antes de salvar.' ?></p>
     </div>

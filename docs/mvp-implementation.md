@@ -1,6 +1,6 @@
 # Implementação do MVP financeiro
 
-Atualização de 22 de setembro de 2026. Este documento registra o comportamento implementado sobre o projeto existente e complementa o roadmap inicial.
+Atualização de 30 de setembro de 2026. Este documento registra o comportamento implementado sobre o projeto existente e complementa o roadmap inicial.
 
 ## Escopo entregue
 
@@ -15,6 +15,8 @@ Atualização de 22 de setembro de 2026. Este documento registra o comportamento
 | Cartões | Cadastro, edição, limite utilizado/disponível, desativação com saldo quitado, compra simples/parcelada com divisão exata dos centavos |
 | Faturas | Histórico, fechamento manual, pagamento integral/parcial, ajuste de fatura da compra, crédito por estorno e transporte de crédito |
 | Planejamento | Limite por categoria/mês, realizado/restante/pendente, alertas e cópia do mês anterior sem sobrescrever limites existentes |
+| Investimentos | Registro e atualização da posição patrimonial por aplicação |
+| Projeções | Cenários salvos vinculados a investimento ou objetivo, CRUD completo, visão futura ou jornada histórica, marcador da posição atual, juros compostos, gráfico, marcos e tabela anual |
 | Visão geral | Saldo de hoje, previsão até o fim do mês atual, receitas/despesas por competência, resultado, pendências, faturas e orçamento |
 | Análises | Intervalo por competência, agrupamento por categoria, subcategoria, conta, cartão, meio, recorrente/eventual e mês; maiores despesas e comparação mensal |
 | Contas | Transferência atômica, extrato de caixa, conferência com ajuste identificado, saldos iniciais negativos, desativação sem saldo e reativação |
