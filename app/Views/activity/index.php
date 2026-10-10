@@ -54,31 +54,35 @@ $selects = [
     <div class="card-body">
         <div class="section-heading"><h2 class="h5"><?= $total ?> <?= $total === 1 ? 'lançamento' : 'lançamentos' ?></h2><a href="<?= H::escape($basePath . '/movimentacoes/exportar?' . http_build_query($filters)) ?>">Exportar CSV</a></div>
         <?php if (!$entries): ?><div class="empty-state"><h2 class="h5"><?= $trash ? 'A lixeira está vazia' : 'Nenhum lançamento encontrado' ?></h2><p><?= $trash ? 'Lançamentos excluídos aparecerão aqui.' : 'Altere os filtros ou registre um novo lançamento.' ?></p></div><?php endif; ?>
-        <?php foreach (array_slice($entries, 0, 50) as $entry):
+        <?php if ($entries): ?><div class="table-responsive activity-table-responsive"><table class="table activity-table align-middle mb-0">
+            <thead><tr><th>Descrição</th><th>Data</th><th>Conta / cartão</th><th>Situação</th><th class="text-end">Valor</th><th class="text-end">Ações</th></tr></thead>
+            <tbody><?php foreach (array_slice($entries, 0, 50) as $entry):
             $detailUrl = $basePath . '/movimentacoes/' . $entry['id'] . '?' . $context;
             $editUrl = $basePath . '/movimentacoes/' . $entry['id'] . '/editar?' . $context;
             $label = $entry['status'] === 'efetivada' ? ($entry['tipo'] === 'receita' ? 'Recebido' : ($entry['cartao_id'] ? 'No cartão' : 'Pago')) : ($entry['status'] === 'cancelada' ? 'Cancelada' : ($entry['tipo'] === 'receita' ? 'A receber' : 'A pagar'));
         ?>
-            <article class="movement-row" id="movimento-<?= (int) $entry['id'] ?>">
-                <div class="movement-main">
+            <tr id="movimento-<?= (int) $entry['id'] ?>">
+                <td class="activity-description">
                     <?php if ($trash): ?><strong><?= H::escape($entry['descricao']) ?></strong><?php else: ?><a class="movement-title" href="<?= H::escape($detailUrl) ?>"><?= H::escape($entry['descricao']) ?></a><?php endif; ?>
                     <small><?= H::escape($entry['grupo_nome'] . ' · ' . $entry['subgrupo_nome']) ?></small>
-                    <small><?= H::date($entry['data_competencia']) ?> · <?= H::escape($entry['cartao_nome'] ?? $entry['conta_nome'] ?? 'Conta a definir') ?><?= $entry['parcelamento_id'] ? ' · Parcela ' . (int) $entry['numero_parcela'] . '/' . (int) $entry['total_parcelas'] : ($entry['recorrencia_id'] ? ' · Recorrente' : '') ?></small>
-                    <?php if (!$trash && $entry['status'] === 'pendente' && $entry['data_vencimento'] < date('Y-m-d')): ?><small class="text-danger">Venceu em <?= H::date($entry['data_vencimento']) ?></small><?php endif; ?>
-                </div>
-                <div class="movement-value"><strong class="<?= $entry['tipo'] === 'receita' ? 'text-success' : '' ?>"><?= $entry['tipo'] === 'receita' ? '+' : '−' ?> <?= Money::format((int) $entry['valor_centavos']) ?></strong><span class="status-pill"><?= $trash ? 'Excluída' : $label ?></span><?php if ((int) $entry['estornado'] > 0): ?><small>Estorno: <?= Money::format((int) $entry['estornado']) ?></small><?php endif; ?></div>
-                <div class="movement-actions">
+                    <?php if ($entry['parcelamento_id'] || $entry['recorrencia_id']): ?><small><?= $entry['parcelamento_id'] ? 'Parcela ' . (int) $entry['numero_parcela'] . '/' . (int) $entry['total_parcelas'] : 'Recorrente' ?></small><?php endif; ?>
+                </td>
+                <td><?= H::date($entry['data_competencia']) ?><?php if (!$trash && $entry['status'] === 'pendente' && $entry['data_vencimento'] < date('Y-m-d')): ?><small class="text-danger">Venceu em <?= H::date($entry['data_vencimento']) ?></small><?php endif; ?></td>
+                <td><?= H::escape($entry['cartao_nome'] ?? $entry['conta_nome'] ?? 'Conta a definir') ?></td>
+                <td><span class="status-pill"><?= $trash ? 'Excluída' : $label ?></span></td>
+                <td class="text-end activity-value"><strong class="<?= $entry['tipo'] === 'receita' ? 'text-success' : '' ?>"><?= $entry['tipo'] === 'receita' ? '+' : '−' ?> <?= Money::format((int) $entry['valor_centavos']) ?></strong><?php if ((int) $entry['estornado'] > 0): ?><small>Estorno: <?= Money::format((int) $entry['estornado']) ?></small><?php endif; ?></td>
+                <td><div class="activity-actions">
                     <?php if ($trash): ?>
                         <form method="post" action="<?= H::escape($basePath . '/movimentacoes/' . $entry['id'] . '/restaurar') ?>" data-confirm="Restaurar este lançamento e seus efeitos nos saldos?"><?= H::fields($csrfToken) ?><input type="hidden" name="versao" value="<?= (int) $entry['versao'] ?>"><button class="btn btn-sm btn-outline-secondary">Restaurar</button></form>
                     <?php else: ?>
-                        <?php if ($entry['status'] === 'pendente' && !$entry['cartao_id']): ?><a class="btn btn-sm btn-outline-secondary" href="<?= H::escape($editUrl . '&situacao=efetivada') ?>"><?= $entry['tipo'] === 'receita' ? 'Marcar recebido' : 'Marcar pago' ?></a><?php endif; ?>
                         <a class="btn btn-sm btn-outline-secondary" href="<?= H::escape($detailUrl) ?>">Ver</a>
                         <a class="btn btn-sm btn-outline-secondary" href="<?= H::escape($editUrl) ?>">Editar</a>
                         <form method="post" action="<?= H::escape($basePath . '/movimentacoes/' . $entry['id'] . '/excluir') ?>" data-confirm="Enviar este lançamento para a lixeira? Ele e seus estornos sairão dos saldos. As outras parcelas e recorrências serão mantidas."><?= H::fields($csrfToken) ?><input type="hidden" name="versao" value="<?= (int) $entry['versao'] ?>"><input type="hidden" name="_retorno" value="<?= H::escape($returnPath) ?>"><button class="btn btn-sm btn-outline-danger">Excluir</button></form>
                     <?php endif; ?>
-                </div>
-            </article>
-        <?php endforeach; ?>
+                </div></td>
+            </tr>
+        <?php endforeach; ?></tbody>
+        </table></div><?php endif; ?>
         <nav class="pagination-links" aria-label="Páginas de movimentações">
             <?php if ($page > 1): ?><a href="<?= H::escape($filterUrl(['pagina' => $page - 1])) ?>#lista">← Anterior</a><?php endif; ?>
             <span>Página <?= $page ?> de <?= max(1, (int) ceil($total / 50)) ?></span>

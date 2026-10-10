@@ -1385,6 +1385,33 @@ details summary {
 .activity-table td:nth-child(5) {
   white-space: nowrap;
 }
+.activity-table-responsive {
+  margin-inline: -4px;
+  padding-inline: 4px;
+}
+.activity-table th:first-child,
+.activity-table td:first-child { padding-left: .75rem; }
+.activity-table th:last-child,
+.activity-table td:last-child { padding-right: .75rem; }
+.activity-table tbody tr { transition: background-color .15s ease; }
+.activity-table tbody tr:hover { background: var(--uai-surface-secondary); }
+.activity-description small,
+.activity-value small {
+  display: block;
+  margin-top: .2rem;
+  color: var(--uai-muted);
+  font-size: .76rem;
+}
+.activity-value { font-variant-numeric: tabular-nums; }
+.activity-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: .4rem;
+  min-width: 214px;
+}
+.activity-actions form { margin: 0; }
 
 /* Análises */
 .analysis-toolbar,
@@ -1714,6 +1741,61 @@ details summary {
   margin-inline: auto;
 }
 
+.movement-form-banner {
+  display: flex;
+  flex-direction: column;
+  gap: .15rem;
+  padding: 1.15rem 1.5rem;
+  border-radius: 12px 12px 0 0;
+}
+.movement-form-banner span { font-size: .65rem; font-weight: 700; letter-spacing: .12em; }
+.movement-form-banner strong { font-size: 1.1rem; }
+.movement-form-banner small { font-size: .8rem; }
+.movement-form--receita .movement-form-banner { background: color-mix(in srgb, var(--uai-success) 15%, var(--uai-surface)); color: var(--uai-success); }
+.movement-form--despesa .movement-form-banner { background: color-mix(in srgb, var(--uai-danger) 13%, var(--uai-surface)); color: var(--uai-danger); }
+.movement-type-heading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: .5rem; }
+.movement-type-heading small { color: var(--uai-muted); font-size: .75rem; }
+
+.movement-type-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .5rem;
+}
+
+.movement-type-picker {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .5rem;
+  max-width: 960px;
+  margin: 0 auto .75rem;
+}
+.movement-type-picker .movement-type-button:only-child { grid-column: 1 / -1; }
+
+.movement-type-button {
+  min-height: 64px;
+  padding: .65rem .75rem;
+  border: 1px solid var(--uai-border);
+  border-radius: .6rem;
+  background: var(--uai-surface);
+  color: var(--uai-text);
+  text-align: left;
+  transition: background-color .15s ease, border-color .15s ease, box-shadow .15s ease, transform .15s ease;
+}
+
+.movement-type-button strong,
+.movement-type-button small { display: block; }
+.movement-type-button small { margin-top: .12rem; color: var(--uai-muted); font-size: .72rem; }
+.movement-type-button:only-child { grid-column: 1 / -1; }
+.movement-type-button.is-income { color: var(--uai-success); background: color-mix(in srgb, var(--uai-success) 4%, var(--uai-surface)); }
+.movement-type-button.is-expense { color: var(--uai-danger); background: color-mix(in srgb, var(--uai-danger) 4%, var(--uai-surface)); }
+.movement-type-button.is-income small,
+.movement-type-button.is-expense small { color: currentColor; }
+.movement-type-button:hover { transform: translateY(-1px); }
+.movement-type-button.is-income.is-selected { background: color-mix(in srgb, var(--uai-success) 12%, var(--uai-surface)); border-color: var(--uai-success); color: var(--uai-success); }
+.movement-type-button.is-expense.is-selected { background: color-mix(in srgb, var(--uai-danger) 10%, var(--uai-surface)); border-color: var(--uai-danger); color: var(--uai-danger); }
+.movement-type-button.is-selected small { color: currentColor; }
+.movement-type-button:focus-visible { outline: 3px solid color-mix(in srgb, currentColor 25%, transparent); outline-offset: 2px; }
+
 .quick-filters {
   display: flex;
   gap: .5rem;
@@ -1898,22 +1980,6 @@ details summary {
   .app-topbar > div:last-child { gap: 4px !important; }
   .app-topbar .btn { white-space: nowrap; }
   .app-topbar .btn-uai-primary { padding-right: .55rem; padding-left: .55rem; font-size: .78rem; }
-  #themeToggle {
-    position: relative;
-    width: 44px;
-    padding: 0;
-    overflow: hidden;
-    color: transparent;
-  }
-  #themeToggle::after {
-    position: absolute;
-    inset: 0;
-    display: grid;
-    place-items: center;
-    content: "◐";
-    color: var(--uai-text);
-    font-size: 1rem;
-  }
 }
 
 .movement-form > .form-actions {
@@ -2030,9 +2096,10 @@ details summary {
 /* Institutional identity: quiet surfaces, clear hierarchy and restrained depth. */
 :root,
 [data-bs-theme="light"] {
-  --uai-bg: #f5f7fa;
-  --uai-surface-secondary: #eef2f6;
-  --uai-border: #e0e6ec;
+  --uai-bg: #f1f1f0;
+  --uai-surface: #f7f7f6;
+  --uai-surface-secondary: #e9e9e7;
+  --uai-border: #dededb;
   --uai-muted: #627286;
   --uai-text-muted: var(--uai-muted);
   --uai-shadow: 0 4px 20px rgba(18, 38, 58, .035);
@@ -2081,6 +2148,37 @@ h1 { font-size: clamp(1.75rem, 2.4vw, 2.25rem); letter-spacing: -.035em; font-we
 .user-avatar { border-radius: 10px; border: 1px solid var(--uai-border); }
 .btn { font-size: .875rem; font-weight: 600; border-radius: 7px; padding: .6rem 1rem; }
 .btn-sm { font-size: .78rem; padding: .45rem .75rem; }
+#themeToggle {
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  min-width: 36px;
+  height: 34px;
+  padding: 0;
+  background: var(--uai-primary);
+  border-color: var(--uai-primary);
+  color: #fff;
+}
+#themeToggle:hover,
+#themeToggle:focus {
+  background: var(--uai-primary-hover);
+  border-color: var(--uai-primary-hover);
+  color: #fff;
+}
+[data-bs-theme="dark"] #themeToggle,
+[data-bs-theme="dark"] #themeToggle:hover,
+[data-bs-theme="dark"] #themeToggle:focus {
+  color: #091722;
+}
+#themeToggle svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
 .btn-uai-primary { box-shadow: 0 2px 4px rgba(18, 62, 99, .08); }
 .btn-uai-primary:active { color: var(--uai-surface) !important; }
 .btn-outline-secondary { color: var(--uai-muted); }

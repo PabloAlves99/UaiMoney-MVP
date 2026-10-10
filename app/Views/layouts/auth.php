@@ -42,7 +42,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <link rel="stylesheet" href="<?= htmlspecialchars(
-        $basePath . '/css/app.css?v=20260929-refined',
+        $basePath . '/css/app.css?v=20261009-surfaces',
         ENT_QUOTES,
         'UTF-8'
     ) ?>">
@@ -54,9 +54,7 @@
 
     <div class="position-fixed top-0 end-0 p-3" style="z-index: 1000;">
 
-        <button type="button" class="btn btn-outline-secondary btn-sm" id="themeToggle">
-            Alternar tema
-        </button>
+        <button type="button" class="btn btn-outline-secondary btn-sm theme-toggle" id="themeToggle" aria-label="Ativar tema escuro" title="Ativar tema escuro"></button>
 
     </div>
 

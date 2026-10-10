@@ -22,7 +22,7 @@ unset($_SESSION['flash']);
     <title><?= H::escape($pageTitle ?? 'UaiMoney') ?></title>
     <link rel="icon" type="image/png" sizes="any" href="<?= H::escape($basePath . '/images/brand/favicon.png?v=10') ?>">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="<?= H::escape($basePath . '/css/app.css?v=20260929-refined') ?>" rel="stylesheet">
+    <link href="<?= H::escape($basePath . '/css/app.css?v=20261009-surfaces') ?>" rel="stylesheet">
 </head>
 
 <body class="has-mobile-nav">
@@ -51,8 +51,8 @@ unset($_SESSION['flash']);
                     class="d-none d-md-inline"><?= H::escape($usuario['nome']) ?></span></div>
             <div class="d-flex align-items-center gap-2"><a class="btn btn-uai-primary btn-sm"
                     href="<?= H::escape($basePath . '/movimentacoes/nova') ?>">+ Novo lançamento</a><button type="button"
-                    class="btn btn-outline-secondary btn-sm" id="themeToggle"
-                    aria-label="Alternar tema claro e escuro">Alternar tema</button>
+                    class="btn btn-outline-secondary btn-sm theme-toggle" id="themeToggle"
+                    aria-label="Ativar tema escuro" title="Ativar tema escuro"></button>
                 <form method="post" action="<?= H::escape($basePath . '/logout') ?>" class="m-0"><input type="hidden"
                         id="csrfToken" name="_token" value="<?= H::escape($csrfToken) ?>"><button
                         class="btn btn-outline-secondary btn-sm">Sair</button></form>
