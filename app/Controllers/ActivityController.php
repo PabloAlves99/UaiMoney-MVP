@@ -33,7 +33,8 @@ final class ActivityController extends FinancialController
         $u = (int) $this->requireUser()['id'];
         $filters = $this->filters();
         $page = max(1, min(100000, (int) ($_GET['pagina'] ?? 1)));
-        $this->page('activity/index', 'Movimentações', ['entries' => $this->activity->list($u, $filters, $page), 'total' => $this->activity->count($u, $filters), 'filters' => $filters, 'page' => $page, 'accounts' => $this->accounts->listActive($u), 'cards' => $this->cards->list($u), 'categories' => $this->reports->categories($u)]);
+        $totals = $this->activity->totals($u, $filters);
+        $this->page('activity/index', 'Movimentações', ['entries' => $this->activity->list($u, $filters, $page), 'total' => (int) $totals['quantidade'], 'totals' => $totals, 'monthly' => $this->activity->monthly($u, $filters), 'filters' => $filters, 'page' => $page, 'accounts' => $this->accounts->listActive($u), 'cards' => $this->cards->list($u), 'categories' => $this->activity->categories($u)]);
     }
 
     public function export(): void

@@ -14,6 +14,15 @@ final class Html
         return $value ? self::escape(implode('/',array_reverse(explode('-',$value)))) : '—';
     }
 
+    public static function flowLabel(string $name, string $type): string
+    {
+        return match ($type) {
+            'receita', 'entrada' => 'E - ' . $name,
+            'despesa', 'saida' => 'S - ' . $name,
+            default => $name,
+        };
+    }
+
     public static function fields(string $token): string
     {
         return '<input type="hidden" name="_token" value="'.self::escape($token).'"><input type="hidden" name="_operation" value="'.bin2hex(random_bytes(16)).'">';

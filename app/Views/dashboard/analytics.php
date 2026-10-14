@@ -6,12 +6,12 @@ use App\Core\Money;
 $query = array_merge($filters, ['periodo' => 'personalizado', 'inicio' => $start, 'fim' => $end]);
 $url = fn(array $changes = [], string $anchor = '') => $basePath . '/analises?' . http_build_query(array_filter(array_replace($query, $changes), fn($value) => $value !== null && $value !== '')) . $anchor;
 $groups = [];
-foreach ($categories as $category) $groups[$category['grupo_id']] = $category['grupo_nome'];
+foreach ($categories as $category) $groups[$category['grupo_id']] = H::flowLabel($category['grupo_nome'], $category['tipo']);
 $filterOptions = [
     'conta_id' => ['Conta', array_column($accounts, 'nome', 'id')],
     'cartao_id' => ['Cartão', array_column($cards, 'nome', 'id')],
     'grupo_id' => ['Categoria', $groups],
-    'subgrupo_id' => ['Subcategoria', array_column(array_map(fn($c) => ['id' => $c['id'], 'nome' => $c['grupo_nome'] . ' · ' . $c['nome']], $categories), 'nome', 'id')],
+    'subgrupo_id' => ['Subcategoria', array_column(array_map(fn($c) => ['id' => $c['id'], 'nome' => H::flowLabel($c['grupo_nome'] . ' · ' . $c['nome'], $c['tipo'])], $categories), 'nome', 'id')],
     'tipo' => ['Tipo', ['receita' => 'Receitas', 'despesa' => 'Despesas']],
     'meio_pagamento' => ['Meio de pagamento', ['pix' => 'Pix', 'dinheiro' => 'Dinheiro', 'debito' => 'Débito', 'credito' => 'Crédito', 'boleto' => 'Boleto', 'transferencia' => 'Transferência', 'outro' => 'Outro']],
 ];

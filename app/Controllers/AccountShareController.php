@@ -155,6 +155,9 @@ final class AccountShareController extends BaseController
             'entries'=>$this->shares->entries($share, $filters, $page),
             'totals'=>$this->shares->totals($share, $filters),
             'monthly'=>$this->shares->monthly($share, $filters),
+            'incomeGroups'=>$this->shares->incomeBreakdown($share, $filters, 'grupo'),
+            'incomeSubgroups'=>$this->shares->incomeBreakdown($share, $filters, 'subgrupo'),
+            'categories'=>$this->shares->categories($share),
             'filters'=>$filters, 'page'=>$page, 'token'=>$token,
             'basePath'=>$this->basePath,
             'pageTitle'=>'Extrato de ' . $share['conta_nome'] . ' - UaiMoney'
@@ -191,7 +194,7 @@ final class AccountShareController extends BaseController
             return;
         }
         $totals = $this->shares->totals($share, $filters);
-        $description = $this->filterDescription($filters);
+        $description = $this->filterDescription($filters, $this->shares->categories($share));
         $filename = 'uaimoney-extrato-compartilhado-' . date('Y-m-d');
         if ($format === 'pdf') {
             $this->download($this->exports->pdf((string)$share['conta_nome'], $entries, $totals, $description), 'application/pdf', $filename.'.pdf');
@@ -208,12 +211,16 @@ final class AccountShareController extends BaseController
             || array_key_exists('fim', $input)
             || array_key_exists('tipo', $input)
             || array_key_exists('q', $input)
+            || array_key_exists('grupo_id', $input)
+            || array_key_exists('subgrupo_id', $input)
             || (($input['periodo'] ?? '') === 'tudo');
         $filters = [
             'inicio'=>$hasExplicitFilter ? '' : date('Y-m-01'),
             'fim'=>$hasExplicitFilter ? '' : date('Y-m-t'),
             'tipo'=>'',
             'q'=>'',
+            'grupo_id'=>'',
+            'subgrupo_id'=>'',
             'periodo'=>$hasExplicitFilter ? 'tudo' : 'mes',
         ];
         foreach (['inicio', 'fim'] as $key) {
@@ -223,19 +230,27 @@ final class AccountShareController extends BaseController
         $type = (string) ($input['tipo'] ?? '');
         if (in_array($type, ['entrada', 'saida'], true)) $filters['tipo'] = $type;
         $filters['q'] = mb_substr(trim((string) ($input['q'] ?? '')), 0, 100);
-        if ($hasExplicitFilter && ($filters['inicio'] !== '' || $filters['fim'] !== '' || $filters['tipo'] !== '' || $filters['q'] !== '')) {
+        foreach (['grupo_id', 'subgrupo_id'] as $key) {
+            $value = (string) ($input[$key] ?? '');
+            if (ctype_digit($value) && (int) $value > 0) $filters[$key] = (string) (int) $value;
+        }
+        if ($hasExplicitFilter && ($filters['inicio'] !== '' || $filters['fim'] !== '' || $filters['tipo'] !== '' || $filters['q'] !== '' || $filters['grupo_id'] !== '' || $filters['subgrupo_id'] !== '')) {
             $filters['periodo'] = 'personalizado';
         }
         return $filters;
     }
 
-    private function filterDescription(array $filters): string
+    private function filterDescription(array $filters, array $categories): string
     {
         $parts = [];
         if ($filters['inicio'] !== '') $parts[] = 'de ' . date('d/m/Y', strtotime($filters['inicio']));
         if ($filters['fim'] !== '') $parts[] = 'até ' . date('d/m/Y', strtotime($filters['fim']));
         if ($filters['tipo'] !== '') $parts[] = $filters['tipo'] === 'entrada' ? 'somente entradas' : 'somente saídas';
         if ($filters['q'] !== '') $parts[] = 'busca: ' . $filters['q'];
+        $groups = array_column($categories, 'grupo_nome', 'grupo_id');
+        $subgroups = array_column($categories, 'nome', 'id');
+        if ($filters['grupo_id'] !== '') $parts[] = 'categoria: ' . ($groups[$filters['grupo_id']] ?? 'não encontrada');
+        if ($filters['subgrupo_id'] !== '') $parts[] = 'subcategoria: ' . ($subgroups[$filters['subgrupo_id']] ?? 'não encontrada');
         return $parts === [] ? 'sem filtros' : implode(' · ', $parts);
     }
 

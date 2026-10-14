@@ -46,6 +46,33 @@ final class ActivityRepository extends FinanceRepository
         return (int) $this->rows("SELECT COUNT(*) AS total $from", $params)[0]['total'];
     }
 
+    public function totals(int $user, array $filters): array
+    {
+        [$from, $params] = $this->query($user, $filters);
+        return $this->rows("SELECT COUNT(*) AS quantidade,
+            COALESCE(SUM(CASE WHEN g.tipo='receita' AND t.status!='cancelada' THEN t.valor_centavos ELSE 0 END),0) AS entradas,
+            COALESCE(SUM(CASE WHEN g.tipo='despesa' AND t.status!='cancelada' THEN t.valor_centavos ELSE 0 END),0) AS saidas,
+            COALESCE(SUM(CASE WHEN g.tipo='receita' AND t.status='pendente' THEN t.valor_centavos ELSE 0 END),0) AS receber,
+            COALESCE(SUM(CASE WHEN g.tipo='despesa' AND t.status='pendente' THEN t.valor_centavos ELSE 0 END),0) AS pagar
+            $from", $params)[0];
+    }
+
+    public function monthly(int $user, array $filters): array
+    {
+        [$from, $params] = $this->query($user, $filters);
+        return $this->rows("SELECT substr(t.data_competencia,1,7) AS mes,
+            SUM(CASE WHEN g.tipo='receita' THEN t.valor_centavos ELSE 0 END) AS entradas,
+            SUM(CASE WHEN g.tipo='despesa' THEN t.valor_centavos ELSE 0 END) AS saidas
+            $from AND t.status!='cancelada' GROUP BY substr(t.data_competencia,1,7) ORDER BY mes", $params);
+    }
+
+    public function categories(int $user): array
+    {
+        return $this->rows('SELECT s.id,s.nome,g.id AS grupo_id,g.nome AS grupo_nome,g.tipo
+            FROM subgrupos s JOIN grupos g ON g.id=s.grupo_id WHERE g.usuario_id=?
+            ORDER BY g.nome,s.nome', [$user]);
+    }
+
     public function export(int $user, array $filters): \Generator
     {
         [$from, $params] = $this->query($user, $filters);

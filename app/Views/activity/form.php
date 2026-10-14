@@ -37,17 +37,7 @@ $amount = $old['valor'] ?? ($editing ? number_format((int) $movement['valor_cent
         <?php endif; ?>
         <?php if ($isCard): ?><p class="small text-secondary">Compra em <?= H::escape($movement['cartao_nome']) ?>. Correções atualizam o total da fatura; pagamentos já registrados são preservados. Para trocar a fatura, use o detalhe do lançamento.</p><?php endif; ?>
         <div class="row g-3">
-<<<<<<< HEAD
             <input id="movement-type" type="hidden" name="tipo" value="<?= H::escape($type) ?>" data-movement-type>
-=======
-            <div class="col-sm-4">
-                <span class="form-label d-block">O que você vai registrar?</span>
-                <div class="movement-type-picker" role="radiogroup" aria-label="Tipo de movimentação">
-                    <input id="movement-type-expense" type="radio" name="tipo" value="despesa" data-movement-type <?= $type === 'despesa' ? 'checked' : '' ?>><label for="movement-type-expense">Despesa</label>
-                    <?php if (!$isCard): ?><input id="movement-type-income" type="radio" name="tipo" value="receita" data-movement-type <?= $type === 'receita' ? 'checked' : '' ?>><label for="movement-type-income">Receita</label><?php endif; ?>
-                </div>
-            </div>
->>>>>>> e8901278f92df2140c5dae33545eb4f1955a0134
             <div class="col-sm-4">
                 <label for="movement-value" class="form-label">Valor<?= !$editing && $mode === 'parcelado' ? ' total' : '' ?> (R$)</label>
                 <input id="movement-value" name="valor" class="form-control movement-amount" inputmode="decimal" required value="<?= H::escape($amount) ?>" placeholder="0,00" autofocus>
@@ -142,14 +132,11 @@ $amount = $old['valor'] ?? ($editing ? number_format((int) $movement['valor_cent
                         <option value="cancelada" <?= $status === 'cancelada' ? 'selected' : '' ?>>Cancelada</option>
                     </select>
                 </div>
-<<<<<<< HEAD
                 <div class="col-sm-6" data-movement-section="installment"><label for="movement-count" class="form-label">Número de parcelas</label><input id="movement-count" name="parcelas" type="number" min="2" max="120" class="form-control" value="<?= H::escape($value('parcelas', 2)) ?>"><small class="form-text">Informe o valor total da compra acima.</small></div>
                 <div class="col-sm-6" data-movement-section="recurring"><label for="movement-frequency" class="form-label">Repetir a cada</label><select id="movement-frequency" name="frequencia" class="form-select"><?php foreach (['mensal' => 'Mês', 'semanal' => 'Semana', 'anual' => 'Ano'] as $key => $label): ?><option value="<?= $key ?>" <?= $value('frequencia', 'mensal') === $key ? 'selected' : '' ?>><?= $label ?></option><?php endforeach; ?></select></div>
                 <div class="col-sm-6" data-movement-section="recurring"><label for="movement-occurrences" class="form-label">Quantidade de ocorrências (opcional)</label><input id="movement-occurrences" name="ocorrencias" type="number" min="1" class="form-control" value="<?= H::escape($value('ocorrencias')) ?>" placeholder="Sem data para terminar"></div>
             <?php endif; ?>
             <?php if ($editing): ?>
-=======
->>>>>>> e8901278f92df2140c5dae33545eb4f1955a0134
                 <div class="col-md-4"><label for="movement-competence" class="form-label">Data usada nas análises</label><input id="movement-competence" name="data_competencia" type="date" required class="form-control" value="<?= H::escape($value('data_competencia')) ?>"></div>
                 <div class="col-md-4"><label for="movement-due" class="form-label">Vencimento</label><input id="movement-due" name="data_vencimento" type="date" required <?= $isCard ? 'readonly' : '' ?> class="form-control" value="<?= H::escape($value('data_vencimento')) ?>"></div>
                 <div class="col-md-4"><label for="movement-paid" class="form-label"><?= $isCard ? 'Data original da compra' : 'Data do pagamento ou recebimento' ?></label><input id="movement-paid" name="data_efetivacao" type="date" max="<?= date('Y-m-d') ?>" <?= $isCard ? 'readonly' : '' ?> class="form-control" value="<?= H::escape($value('data_efetivacao') ?: date('Y-m-d')) ?>"></div>

@@ -56,34 +56,59 @@ final class AccountShareRepository extends FinanceRepository
 
     private function filteredWhere(array $share, array $filters): array
     {
-        $where = 'usuario_id=? AND conta_id=?';
+        $where = 'm.usuario_id=? AND m.conta_id=?';
         $params = [(int) $share['usuario_id'], (int) $share['conta_id']];
         if (($filters['inicio'] ?? '') !== '') {
-            $where .= ' AND data>=?';
+            $where .= ' AND m.data>=?';
             $params[] = $filters['inicio'];
         }
         if (($filters['fim'] ?? '') !== '') {
-            $where .= ' AND data<=?';
+            $where .= ' AND m.data<=?';
             $params[] = $filters['fim'];
         }
         if (($filters['tipo'] ?? '') === 'entrada') {
-            $where .= ' AND valor_centavos>0';
+            $where .= ' AND m.valor_centavos>0';
         } elseif (($filters['tipo'] ?? '') === 'saida') {
-            $where .= ' AND valor_centavos<0';
+            $where .= ' AND m.valor_centavos<0';
         }
         if (($filters['q'] ?? '') !== '') {
-            $where .= ' AND descricao LIKE ? ESCAPE \'\\\'';
+            $where .= ' AND m.descricao LIKE ? ESCAPE \'\\\'';
             $params[] = '%' . str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $filters['q']) . '%';
         }
+        foreach (['grupo_id' => 'g.id', 'subgrupo_id' => 's.id'] as $key => $column) {
+            if (!empty($filters[$key])) {
+                $where .= " AND $column=?";
+                $params[] = $filters[$key];
+            }
+        }
         return [$where, $params];
+    }
+
+    private function ledgerFrom(): string
+    {
+        return "FROM movimentos_caixa m
+            LEFT JOIN estornos e ON m.origem='estorno' AND e.id=m.origem_id AND e.usuario_id=m.usuario_id
+            LEFT JOIN transacoes t ON t.usuario_id=m.usuario_id
+                AND t.id=CASE WHEN m.origem='lancamento' THEN m.origem_id WHEN m.origem='estorno' THEN e.transacao_id END
+            LEFT JOIN subgrupos s ON s.id=t.subgrupo_id
+            LEFT JOIN grupos g ON g.id=s.grupo_id AND g.usuario_id=m.usuario_id";
+    }
+
+    public function categories(array $share): array
+    {
+        $from = $this->ledgerFrom();
+        return $this->rows("SELECT DISTINCT g.id AS grupo_id,g.nome AS grupo_nome,g.tipo,s.id,s.nome
+            $from WHERE m.usuario_id=? AND m.conta_id=? AND g.id IS NOT NULL ORDER BY g.nome,s.nome",
+            [(int) $share['usuario_id'], (int) $share['conta_id']]);
     }
 
     public function entries(array $share, array $filters, int $page): array
     {
         [$where, $params] = $this->filteredWhere($share, $filters);
+        $from = $this->ledgerFrom();
         return $this->rows(
-            "SELECT data,descricao,valor_centavos,origem FROM movimentos_caixa WHERE $where
-             ORDER BY data DESC, origem_id DESC LIMIT 51 OFFSET " . ((max(1, $page) - 1) * 50),
+            "SELECT m.data,m.descricao,m.valor_centavos,m.origem,g.nome AS grupo_nome,s.nome AS subgrupo_nome $from WHERE $where
+             ORDER BY m.data DESC, m.origem_id DESC LIMIT 51 OFFSET " . ((max(1, $page) - 1) * 50),
             $params
         );
     }
@@ -91,9 +116,10 @@ final class AccountShareRepository extends FinanceRepository
     public function exportEntries(array $share, array $filters): array
     {
         [$where, $params] = $this->filteredWhere($share, $filters);
+        $from = $this->ledgerFrom();
         return $this->rows(
-            "SELECT data,descricao,valor_centavos,origem FROM movimentos_caixa WHERE $where
-             ORDER BY data DESC, origem_id DESC LIMIT 10001",
+            "SELECT m.data,m.descricao,m.valor_centavos,m.origem,g.nome AS grupo_nome,s.nome AS subgrupo_nome $from WHERE $where
+             ORDER BY m.data DESC, m.origem_id DESC LIMIT 10001",
             $params
         );
     }
@@ -101,10 +127,12 @@ final class AccountShareRepository extends FinanceRepository
     public function totals(array $share, array $filters): array
     {
         [$where, $params] = $this->filteredWhere($share, $filters);
+        $from = $this->ledgerFrom();
         return $this->rows(
-            "SELECT COALESCE(SUM(CASE WHEN valor_centavos>0 THEN valor_centavos ELSE 0 END),0) AS entradas,
-                    COALESCE(SUM(CASE WHEN valor_centavos<0 THEN -valor_centavos ELSE 0 END),0) AS saidas
-             FROM movimentos_caixa WHERE $where",
+            "SELECT COUNT(*) AS quantidade,
+                    COALESCE(SUM(CASE WHEN m.valor_centavos>0 THEN m.valor_centavos ELSE 0 END),0) AS entradas,
+                    COALESCE(SUM(CASE WHEN m.valor_centavos<0 THEN -m.valor_centavos ELSE 0 END),0) AS saidas
+             $from WHERE $where",
             $params
         )[0];
     }
@@ -112,12 +140,26 @@ final class AccountShareRepository extends FinanceRepository
     public function monthly(array $share, array $filters): array
     {
         [$where, $params] = $this->filteredWhere($share, $filters);
+        $from = $this->ledgerFrom();
         return $this->rows(
-            "SELECT substr(data,1,7) AS mes,
-                    SUM(CASE WHEN valor_centavos>0 THEN valor_centavos ELSE 0 END) AS entradas,
-                    SUM(CASE WHEN valor_centavos<0 THEN -valor_centavos ELSE 0 END) AS saidas
-             FROM movimentos_caixa WHERE $where GROUP BY substr(data,1,7) ORDER BY mes",
+            "SELECT substr(m.data,1,7) AS mes,
+                    SUM(CASE WHEN m.valor_centavos>0 THEN m.valor_centavos ELSE 0 END) AS entradas,
+                    SUM(CASE WHEN m.valor_centavos<0 THEN -m.valor_centavos ELSE 0 END) AS saidas
+             $from WHERE $where GROUP BY substr(m.data,1,7) ORDER BY mes",
             $params
         );
+    }
+
+    public function incomeBreakdown(array $share, array $filters, string $dimension): array
+    {
+        [$where, $params] = $this->filteredWhere($share, $filters);
+        $from = $this->ledgerFrom();
+        $column = $dimension === 'subgrupo' ? 's.id' : 'g.id';
+        $name = $dimension === 'subgrupo'
+            ? "CASE WHEN s.id IS NULL THEN 'Sem categoria · Sem subcategoria' ELSE g.nome || ' · ' || s.nome END"
+            : "COALESCE(g.nome,'Sem categoria')";
+        return $this->rows("SELECT $column AS id,g.id AS grupo_id,$name AS nome,SUM(m.valor_centavos) AS valor_centavos
+            $from WHERE $where AND m.valor_centavos>0
+            GROUP BY $column,g.id ORDER BY valor_centavos DESC,nome", $params);
     }
 }

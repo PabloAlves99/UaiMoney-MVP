@@ -113,20 +113,15 @@ document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll("[data-movement-form]").forEach((form) => {
     const editing = form.dataset.editing === "1";
     const fixedCard = form.dataset.card === "1";
-<<<<<<< HEAD
     const type = form.querySelector("[data-movement-type]");
+    const typeValue = () => type.value;
     const typeButtons = document.querySelectorAll(`[data-movement-type-button][data-movement-form-id="${form.id}"]`);
-=======
-    const types = form.querySelectorAll("[data-movement-type]");
-    const typeValue = () => form.querySelector("[data-movement-type]:checked")?.value || types[0]?.value;
->>>>>>> e8901278f92df2140c5dae33545eb4f1955a0134
     const mode = form.querySelector("[data-movement-mode]");
     const method = form.querySelector("[data-movement-method]");
     const status = form.querySelector("[data-movement-status]");
     const category = form.querySelector("[data-movement-category]");
     const advanced = form.querySelector("[data-movement-advanced]");
     const sync = () => {
-<<<<<<< HEAD
       const income = type.value === "receita";
       form.classList.toggle("movement-form--receita", income);
       form.classList.toggle("movement-form--despesa", type.value === "despesa");
@@ -134,9 +129,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const bannerDescription = form.querySelector("[data-movement-banner-description]");
       if (bannerTitle) bannerTitle.textContent = income ? "Cadastrar receita" : "Cadastrar despesa";
       if (bannerDescription) bannerDescription.textContent = income ? "Registre um valor que entrou nas suas contas." : "Registre um valor que saiu das suas contas.";
-=======
-      form.dataset.movementVariant = typeValue();
->>>>>>> e8901278f92df2140c5dae33545eb4f1955a0134
       const recurring = mode?.value === "recorrente";
       const installment = mode?.value === "parcelado";
       const creditOption = method?.querySelector('[value="credito"]');
@@ -175,7 +167,6 @@ document.addEventListener("DOMContentLoaded", () => {
         amountLabel.textContent = installment ? "Valor total (R$)" : "Valor (R$)";
       }
     };
-<<<<<<< HEAD
     typeButtons.forEach((button) => button.addEventListener("click", () => {
       type.value = button.dataset.value;
       typeButtons.forEach((item) => {
@@ -186,9 +177,6 @@ document.addEventListener("DOMContentLoaded", () => {
       sync();
     }));
     [type, mode, method, status].forEach((control) => control?.addEventListener("change", sync));
-=======
-    [...types, mode, method, status].forEach((control) => control?.addEventListener("change", sync));
->>>>>>> e8901278f92df2140c5dae33545eb4f1955a0134
     sync();
   });
 });
