@@ -15,6 +15,7 @@ $query = array_filter($filters, fn($value) => $value !== '');
     </form>
     <div class="filter-actions mt-3"><a class="btn btn-outline-secondary" href="<?= H::escape($basePath . '/compartilhado/' . $token) ?>">Limpar</a><a class="small" href="<?= H::escape($basePath . '/compartilhado/' . $token . '?' . http_build_query(array_replace($query, ['inicio'=>'', 'fim'=>'', 'periodo'=>'tudo']))) ?>">Ver todo o período</a></div>
 </div></section>
+<section class="card metric-card featured mb-4" aria-label="Saldo atual da conta"><div class="card-body"><p>Saldo atual</p><strong class="metric-value"><?= Money::format((int) $balance) ?></strong><small>Saldo da conta até hoje, independente do período filtrado</small></div></section>
 <?php require dirname(__DIR__) . '/partials/financial-overview.php'; ?>
 <?php
 $incomeChartNote = 'Entradas efetivadas na conta, incluindo estornos recebidos e entradas sem categoria.';

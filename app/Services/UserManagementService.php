@@ -56,13 +56,13 @@ final class UserManagementService
         $tipo = (string) ($input['tipo'] ?? 'usuario');
         $ativo = ($input['ativo'] ?? '1') === '1';
         $tema = (string) ($input['tema'] ?? 'light');
+        if (!in_array($tema, ['light', 'dark'], true)) throw new DomainException('Selecione um tema válido.');
         $senha = (string) ($input['senha'] ?? '');
         $confirmacao = (string) ($input['confirmacao_senha'] ?? '');
         if ($nome === '' || mb_strlen($nome) > 100) throw new DomainException('Informe um nome de até 100 caracteres.');
         if (!preg_match('/^[a-zA-Z0-9._-]{3,30}$/', $login)) throw new DomainException('O login deve possuir entre 3 e 30 caracteres e conter apenas letras, números, ponto, hífen ou underline.');
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) throw new DomainException('Informe um e-mail válido.');
         if (!in_array($tipo, ['usuario', 'admin'], true)) throw new DomainException('Selecione um perfil válido.');
-        if (!in_array($tema, ['light', 'dark'], true)) throw new DomainException('Selecione um tema válido.');
         if (($creating || $senha !== '') && (strlen($senha) < 8 || strlen($senha) > 72)) throw new DomainException('A senha deve possuir entre 8 e 72 caracteres.');
         if (($creating || $senha !== '') && $senha !== $confirmacao) throw new DomainException('As senhas não conferem.');
         return [$nome, $login, $email, $tipo, $ativo, $tema, $senha];

@@ -18,45 +18,20 @@
     </title>
 
 
-    <script>
-        (() => {
-
-            const theme = localStorage.getItem(
-                'uaimoney_theme'
-            );
-
-            if (
-                theme === 'light' ||
-                theme === 'dark'
-            ) {
-                document.documentElement.setAttribute(
-                    'data-bs-theme',
-                    theme
-                );
-            }
-
-        })();
-    </script>
-
-
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <link rel="stylesheet" href="<?= htmlspecialchars(
-        $basePath . '/css/app.css?v=20261009-budget-icons',
+        $basePath . '/css/app.css?v=20261015-steel-theme',
         ENT_QUOTES,
         'UTF-8'
     ) ?>">
 
+    <?php require __DIR__ . '/theme-head.php'; ?>
 </head>
 
 
 <body>
-
-    <div class="position-fixed top-0 end-0 p-3" style="z-index: 1000;">
-
-        <button type="button" class="btn btn-outline-secondary btn-sm theme-toggle" id="themeToggle" aria-label="Ativar tema escuro" title="Ativar tema escuro"></button>
-
-    </div>
+    <div class="position-fixed top-0 end-0 p-3" style="z-index: 1000;"><button type="button" class="btn btn-outline-secondary btn-sm theme-toggle" id="themeToggle" aria-label="Alternar tema" title="Alternar tema"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A8.5 8.5 0 1 1 11.2 3 6.7 6.7 0 0 0 21 12.8Z"/></svg></button></div>
 
 
     <div class="auth-page">
@@ -75,13 +50,7 @@
 
     </div>
 
-
-    <script src="<?= htmlspecialchars(
-        $basePath . '/js/theme.js?v=20261009-icons',
-        ENT_QUOTES,
-        'UTF-8'
-    ) ?>"></script>
-
+    <script src="<?= \App\Core\Html::escape($basePath . '/js/theme.js?v=20261015-graphite-theme') ?>"></script>
 </body>
 
 </html>

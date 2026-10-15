@@ -29,11 +29,15 @@ document.addEventListener("DOMContentLoaded", () => {
    * Mantém a preferência deste navegador.
    */
 
-  localStorage.setItem(storageKey, getCurrentTheme());
+  const saveBrowserTheme = (theme) => {
+    try { localStorage.setItem(storageKey, theme); } catch (_) {}
+  };
+  saveBrowserTheme(getCurrentTheme());
 
   updateButton();
 
   button.addEventListener("click", async () => {
+    button.disabled = true;
     const html = document.documentElement;
 
     const currentTheme = getCurrentTheme();
@@ -46,7 +50,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     html.setAttribute("data-bs-theme", newTheme);
 
-    localStorage.setItem(storageKey, newTheme);
+    saveBrowserTheme(newTheme);
 
     updateButton();
 
@@ -56,12 +60,14 @@ document.addEventListener("DOMContentLoaded", () => {
      */
 
     if (!window.UaiMoney || !window.UaiMoney.themeUrl) {
+      button.disabled = false;
       return;
     }
 
     const csrfInput = document.querySelector("#csrfToken");
 
     if (!csrfInput) {
+      button.disabled = false;
       return;
     }
 
@@ -90,11 +96,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
       html.setAttribute("data-bs-theme", currentTheme);
 
-      localStorage.setItem(storageKey, currentTheme);
+      saveBrowserTheme(currentTheme);
 
       updateButton();
 
       console.error("Erro ao alterar tema:", error);
+    } finally {
+      button.disabled = false;
     }
   });
 });

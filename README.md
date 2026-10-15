@@ -2,7 +2,7 @@
 
 Controle financeiro pessoal em PHP 8.1+, SQLite, Bootstrap e JavaScript. A versão atual permite cadastro público e uso por várias pessoas, com registros isolados por usuário. A assinatura mensal é um objetivo futuro; cobrança e gestão de planos ainda não estão implementadas.
 
-Contas, categorias, movimentações, parcelamentos, recorrências, cartões, faturas, orçamento, análises, transferências, conferência de saldo e estornos trabalham na mesma base. A interface usa temas claro/escuro e se adapta ao celular.
+Contas, categorias, movimentações, parcelamentos, recorrências, cartões, faturas, orçamento, análises, transferências, conferência de saldo e estornos trabalham na mesma base. A interface usa temas claro e escuro em azul UaiMoney e cinza grafite, com menu superior compacto, links diretos e menus de Planejar, Mais e perfil, adaptada ao celular.
 
 O extrato de uma conta pode ser compartilhado em modo somente leitura por um link secreto revogável, com senha adicional opcional. A página pública mostra apenas datas, descrições, entradas, saídas e um gráfico mensal, sempre respeitando os filtros escolhidos.
 

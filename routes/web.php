@@ -30,6 +30,8 @@ return function (Router $router, AuthController $authController, UserPreferenceC
     );
 
 
+    $router->post('/preferencias/tema', [$userPreferenceController, 'updateTheme']);
+
     $router->get('/admin/usuarios', [$adminUserController, 'index']);
     $router->get('/esqueci-senha', [$authController, 'showForgotPassword']);
     $router->post('/esqueci-senha', [$authController, 'sendResetCode']);
@@ -43,11 +45,6 @@ return function (Router $router, AuthController $authController, UserPreferenceC
     $router->post(
         '/logout',
         [$authController, 'logout']
-    );
-
-    $router->post(
-        '/preferencias/tema',
-        [$userPreferenceController, 'updateTheme']
     );
 
 
