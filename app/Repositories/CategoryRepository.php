@@ -109,7 +109,8 @@ final class CategoryRepository
     public function groupExists(
         int $usuarioId,
         string $nome,
-        string $tipo
+        string $tipo,
+        int $exceptId = 0
     ): bool {
         $stmt = $this->pdo->prepare("
             SELECT 1
@@ -117,13 +118,15 @@ final class CategoryRepository
             WHERE usuario_id = :usuario_id
               AND tipo = :tipo
               AND nome = :nome
+              AND id <> :except_id
             LIMIT 1
         ");
 
         $stmt->execute([
             ':usuario_id' => $usuarioId,
             ':tipo' => $tipo,
-            ':nome' => $nome
+            ':nome' => $nome,
+            ':except_id' => $exceptId
         ]);
 
         return $stmt->fetchColumn() !== false;
@@ -132,19 +135,22 @@ final class CategoryRepository
 
     public function subgroupExists(
         int $grupoId,
-        string $nome
+        string $nome,
+        int $exceptId = 0
     ): bool {
         $stmt = $this->pdo->prepare("
             SELECT 1
             FROM subgrupos
             WHERE grupo_id = :grupo_id
               AND nome = :nome
+              AND id <> :except_id
             LIMIT 1
         ");
 
         $stmt->execute([
             ':grupo_id' => $grupoId,
-            ':nome' => $nome
+            ':nome' => $nome,
+            ':except_id' => $exceptId
         ]);
 
         return $stmt->fetchColumn() !== false;
@@ -295,5 +301,53 @@ final class CategoryRepository
         $subgrupo = $stmt->fetch();
 
         return $subgrupo ?: null;
+    }
+
+    public function managementGroups(int $user): array
+    {
+        $stmt = $this->pdo->prepare("SELECT g.*,
+            (SELECT COUNT(*) FROM subgrupos s WHERE s.grupo_id=g.id AND s.ativo=1) AS subcategorias_ativas,
+            (SELECT COUNT(*) FROM subgrupos s WHERE s.grupo_id=g.id) AS subcategorias_total
+            FROM grupos g WHERE g.usuario_id=? ORDER BY g.nome COLLATE NOCASE");
+        $stmt->execute([$user]);
+        return $stmt->fetchAll();
+    }
+
+    public function managementSubgroups(int $user): array
+    {
+        $stmt = $this->pdo->prepare('SELECT s.*,g.nome AS grupo_nome,g.tipo,g.ativo AS grupo_ativo FROM subgrupos s JOIN grupos g ON g.id=s.grupo_id WHERE g.usuario_id=? ORDER BY g.nome COLLATE NOCASE,s.nome COLLATE NOCASE');
+        $stmt->execute([$user]);
+        return $stmt->fetchAll();
+    }
+
+    public function groupHasHistory(int $user, int $id): bool
+    {
+        $stmt = $this->pdo->prepare('SELECT EXISTS(SELECT 1 FROM transacoes t JOIN subgrupos s ON s.id=t.subgrupo_id WHERE s.grupo_id=? AND t.usuario_id=?) OR EXISTS(SELECT 1 FROM recorrencias r JOIN subgrupos s ON s.id=r.subgrupo_id WHERE s.grupo_id=? AND r.usuario_id=?) OR EXISTS(SELECT 1 FROM orcamentos WHERE grupo_id=? AND usuario_id=?)');
+        $stmt->execute([$id,$user,$id,$user,$id,$user]);
+        return (bool) $stmt->fetchColumn();
+    }
+
+    public function updateGroup(int $user, int $id, string $name, string $type, string $classification): void
+    {
+        $stmt = $this->pdo->prepare('UPDATE grupos SET nome=?,tipo=?,classificacao=?,atualizado_em=CURRENT_TIMESTAMP WHERE id=? AND usuario_id=?');
+        $stmt->execute([$name,$type,$classification,$id,$user]);
+    }
+
+    public function updateSubgroup(int $user, int $id, string $name, ?string $description): void
+    {
+        $stmt = $this->pdo->prepare('UPDATE subgrupos SET nome=?,descricao=?,atualizado_em=CURRENT_TIMESTAMP WHERE id=? AND grupo_id IN (SELECT id FROM grupos WHERE usuario_id=?)');
+        $stmt->execute([$name,$description,$id,$user]);
+    }
+
+    public function reactivateGroup(int $user, int $id): void
+    {
+        $stmt = $this->pdo->prepare('UPDATE grupos SET ativo=1,atualizado_em=CURRENT_TIMESTAMP WHERE id=? AND usuario_id=?');
+        $stmt->execute([$id,$user]);
+    }
+
+    public function reactivateSubgroup(int $user, int $id): void
+    {
+        $stmt = $this->pdo->prepare('UPDATE subgrupos SET ativo=1,atualizado_em=CURRENT_TIMESTAMP WHERE id=? AND grupo_id IN (SELECT id FROM grupos WHERE usuario_id=? AND ativo=1)');
+        $stmt->execute([$id,$user]);
     }
 }

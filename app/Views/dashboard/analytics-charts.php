@@ -32,24 +32,26 @@ $budgetAlerts = array_values(array_filter($budgets, fn($budget) => (int)$budget[
                 <div class="section-heading">
                     <h2 class="h4">Onde estou gastando?</h2><span class="small text-secondary">Por categoria</span>
                 </div>
-                <p class="small text-secondary">Abra uma categoria para ver as subcategorias. Selecione um valor para conferir os lançamentos.</p>
+                <p class="small text-secondary">Clique em uma categoria ou subcategoria para filtrar toda a análise.</p>
                 <?php if (!$spending): ?><p class="empty-state">Nenhuma despesa realizada nesta seleção.</p><?php endif; ?>
                 <?php foreach ($spending as $row): $budget = $budgetMap[$row['id']] ?? null; ?>
-                    <details class="analysis-category" <?= (string)($filters['grupo_id'] ?? '') === (string)$row['id'] ? 'open' : '' ?>>
-                        <summary>
+                    <div class="analysis-category">
+                        <a class="analysis-category-filter" href="<?= H::escape($url(['grupo_id' => $row['id'], 'subgrupo_id' => null, 'tipo' => 'despesa', 'conferir' => 1])) ?>">
                             <span class="analysis-category-heading"><span><?= H::escape($row['nome']) ?></span><strong><?= Money::format((int)$row['despesas']) ?></strong></span>
                             <span class="analysis-track" aria-hidden="true"><span style="width:<?= round(abs((int)$row['despesas']) / $scale * 100, 2) ?>%"></span></span>
-                            <span class="analysis-category-meta"><?= (int)$row['despesas'] < 0 ? 'Estornos maiores que os gastos' : ($positiveTotal > 0 ? number_format((int)$row['despesas'] / $positiveTotal * 100, 1, ',', '.') . '% das categorias com gasto positivo' : '') ?> <span aria-hidden="true">⌄</span></span>
-                        </summary>
+                            <span class="analysis-category-meta"><?= (int)$row['despesas'] < 0 ? 'Estornos maiores que os gastos' : ($positiveTotal > 0 ? number_format((int)$row['despesas'] / $positiveTotal * 100, 1, ',', '.') . '% das categorias com gasto positivo' : '') ?> <span aria-hidden="true">→</span></span>
+                        </a>
+                        <?php if ((string)($filters['grupo_id'] ?? '') === (string)$row['id']): ?>
                         <div class="analysis-subcategories">
-                            <a class="small" href="<?= H::escape($url(['grupo_id' => $row['id'], 'tipo' => 'despesa', 'conferir' => 1], '#lancamentos')) ?>">Conferir <?= H::escape($row['nome']) ?> →</a>
+                            <a class="small" href="<?= H::escape($url(['grupo_id' => $row['id'], 'subgrupo_id' => null, 'tipo' => 'despesa', 'conferir' => 1])) ?>">Conferir <?= H::escape($row['nome']) ?> →</a>
                             <?php foreach ($subcategories[$row['id']] ?? [] as $sub): ?>
-                                <a class="analysis-subcategory" href="<?= H::escape($url(['grupo_id' => $row['id'], 'subgrupo_id' => $sub['id'], 'tipo' => 'despesa', 'conferir' => 1], '#lancamentos')) ?>">
+                                <a class="analysis-subcategory" href="<?= H::escape($url(['grupo_id' => $row['id'], 'subgrupo_id' => $sub['id'], 'tipo' => 'despesa', 'conferir' => 1])) ?>">
                                     <span><?= H::escape($sub['nome']) ?></span><strong><?= Money::format((int)$sub['despesas']) ?></strong>
                                 </a>
                             <?php endforeach; ?>
                         </div>
-                    </details>
+                        <?php endif; ?>
+                    </div>
                     <?php if ($budget): $remaining = (int)$budget['valor_limite_centavos'] - (int)$row['despesas']; ?>
                         <div class="analysis-budget-line <?= $remaining < 0 ? 'is-over-budget' : 'is-within-budget' ?>"><span>Limite do mês: <?= Money::format((int)$budget['valor_limite_centavos']) ?></span><strong><?= $remaining < 0 ? 'Acima do limite: ' : 'Ainda disponível: ' ?><?= Money::format(abs($remaining)) ?></strong></div>
                     <?php endif; ?>
@@ -69,7 +71,7 @@ $budgetAlerts = array_values(array_filter($budgets, fn($budget) => (int)$budget[
                     <div class="analysis-insight">
                         <p class="eyebrow">MAIOR AUMENTO</p><strong><?= H::escape($increase['nome']) ?></strong>
                         <p><?= Money::format($increase['change']) ?> a mais que no período anterior.</p>
-                        <a href="<?= H::escape($url(['grupo_id' => $increase['id'], 'tipo' => 'despesa', 'conferir' => 1], '#lancamentos')) ?>">Revisar gastos →</a>
+                        <a href="<?= H::escape($url(['grupo_id' => $increase['id'], 'subgrupo_id' => null, 'tipo' => 'despesa', 'conferir' => 1])) ?>">Revisar gastos →</a>
                     </div>
                 <?php endif; ?>
                 <?php if (count($positive) > 1): $largest = $positive[0]; ?>
@@ -82,7 +84,7 @@ $budgetAlerts = array_values(array_filter($budgets, fn($budget) => (int)$budget[
                     <div class="analysis-insight">
                         <p class="eyebrow">OPORTUNIDADE DE AJUSTE</p><strong><?= H::escape($top['nome']) ?></strong>
                         <p>É a maior subcategoria do período. Uma redução de 10% representaria <?= Money::format($cut) ?> neste mesmo período.</p>
-                        <a href="<?= H::escape($url(['grupo_id' => $top['grupo_id'], 'subgrupo_id' => $top['id'], 'tipo' => 'despesa', 'conferir' => 1], '#lancamentos')) ?>">Ver o que compõe esse gasto →</a>
+                        <a href="<?= H::escape($url(['grupo_id' => $top['grupo_id'], 'subgrupo_id' => $top['id'], 'tipo' => 'despesa', 'conferir' => 1])) ?>">Ver o que compõe esse gasto →</a>
                     </div>
                 <?php endif; ?>
                 <?php if ((int)$totals['receitas'] > 0): ?>

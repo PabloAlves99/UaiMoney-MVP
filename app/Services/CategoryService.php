@@ -266,4 +266,61 @@ final class CategoryService
                 $usuarioId
             );
     }
+
+    public function management(int $user): array
+    {
+        return ['groups'=>$this->categoryRepository->managementGroups($user), 'subgroups'=>$this->categoryRepository->managementSubgroups($user)];
+    }
+
+    public function group(int $user, int $id): array
+    {
+        return $this->categoryRepository->findGroupById($id,$user) ?? throw new DomainException('Categoria não encontrada.');
+    }
+
+    public function subgroup(int $user, int $id): array
+    {
+        return $this->categoryRepository->findSubgroupById($id,$user) ?? throw new DomainException('Subcategoria não encontrada.');
+    }
+
+    public function groupHasHistory(int $user, int $id): bool
+    {
+        $this->group($user,$id);
+        return $this->categoryRepository->groupHasHistory($user,$id);
+    }
+
+    public function editGroup(int $user, int $id, array $input): void
+    {
+        $group = $this->group($user,$id);
+        $name = trim((string)($input['nome'] ?? ''));
+        $type = (string)($input['tipo'] ?? $group['tipo']);
+        if ($name === '' || strlen($name)>100) throw new DomainException('Informe um nome de até 100 caracteres.');
+        if (!in_array($type,['receita','despesa'],true)) throw new DomainException('Tipo de categoria inválido.');
+        if ($type !== $group['tipo'] && $this->categoryRepository->groupHasHistory($user,$id)) throw new DomainException('Esta categoria possui lançamentos, recorrências ou orçamento. O tipo não pode ser alterado para preservar o histórico.');
+        if ($this->categoryRepository->groupExists($user,$name,$type,$id)) throw new DomainException('Esta categoria já existe, inclusive entre as desativadas.');
+        $classification = $type === 'despesa' && isset($input['essencial']) ? 'essencial' : 'variavel';
+        $this->categoryRepository->updateGroup($user,$id,$name,$type,$classification);
+    }
+
+    public function editSubgroup(int $user, int $id, array $input): void
+    {
+        $subgroup = $this->subgroup($user,$id);
+        $name = trim((string)($input['nome'] ?? ''));
+        if ($name === '' || strlen($name)>100) throw new DomainException('Informe um nome de até 100 caracteres.');
+        if ($this->categoryRepository->subgroupExists((int)$subgroup['grupo_id'],$name,$id)) throw new DomainException('Esta subcategoria já existe, inclusive entre as desativadas.');
+        $description = trim((string)($input['descricao'] ?? ''));
+        $this->categoryRepository->updateSubgroup($user,$id,$name,$description==='' ? null : $description);
+    }
+
+    public function reactivateGroup(int $user, int $id): void
+    {
+        $this->group($user,$id);
+        $this->categoryRepository->reactivateGroup($user,$id);
+    }
+
+    public function reactivateSubgroup(int $user, int $id): void
+    {
+        $subgroup = $this->subgroup($user,$id);
+        if (!(int)$subgroup['grupo_ativo']) throw new DomainException('Reative primeiro a categoria à qual esta subcategoria pertence.');
+        $this->categoryRepository->reactivateSubgroup($user,$id);
+    }
 }

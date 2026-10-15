@@ -65,6 +65,14 @@ return function (Router $router, AuthController $authController, UserPreferenceC
         [$categoryController, 'storeGroup']
     );
     $router->post('/categorias/grupos/{id}/classificacao', [$categoryController, 'updateClassification']);
+    $router->get('/categorias/desativadas', [$categoryController, 'inactive']);
+    $router->get('/categorias/grupos/{id}/editar', [$categoryController, 'editGroup']);
+    $router->post('/categorias/grupos/{id}/editar', [$categoryController, 'updateGroup']);
+    $router->post('/categorias/grupos/{id}/reativar', [$categoryController, 'reactivateGroup']);
+    $router->get('/categorias/subgrupos/{id}/editar', [$categoryController, 'editSubgroup']);
+    $router->post('/categorias/subgrupos/{id}/editar', [$categoryController, 'updateSubgroup']);
+    $router->post('/categorias/subgrupos/{id}/reativar', [$categoryController, 'reactivateSubgroup']);
+
 
 
     $router->post(

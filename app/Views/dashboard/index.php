@@ -3,7 +3,7 @@
 use App\Core\Html as H;
 use App\Core\Money;
 
-$unpaid = array_values(array_filter($invoices, fn($invoice) => (int) $invoice['total'] > (int) $invoice['pago']));
+$unpaid = array_values(array_filter($invoices, fn($invoice) => $invoice['status'] !== 'cancelada' && (int) $invoice['total'] > (int) $invoice['pago']));
 usort($unpaid, fn($a, $b) => strcmp($a['data_vencimento'], $b['data_vencimento']));
 ?>
 <div class="page-heading">
@@ -37,7 +37,10 @@ usort($unpaid, fn($a, $b) => strcmp($a['data_vencimento'], $b['data_vencimento']
         <div class="section-heading"><h2 class="h4">Faturas a pagar</h2><a href="<?= H::escape($basePath . '/cartoes') ?>">Ver cartões →</a></div>
         <?php if (!$unpaid): ?><p class="empty-state">Nenhuma fatura a pagar.</p><?php endif; ?>
         <?php foreach (array_slice($unpaid, 0, 4) as $invoice): ?>
-            <a class="list-row text-decoration-none" href="<?= H::escape($basePath . '/faturas/' . $invoice['id']) ?>"><div><?= H::escape($invoice['cartao_nome']) ?><small class="d-block <?= $invoice['data_vencimento'] < date('Y-m-d') ? 'text-danger' : 'text-secondary' ?>">Vence <?= H::date($invoice['data_vencimento']) ?></small></div><strong><?= Money::format((int) $invoice['total'] - (int) $invoice['pago']) ?></strong></a>
+            <a class="list-row text-decoration-none" href="<?= H::escape($basePath . '/faturas/' . $invoice['id']) ?>">
+                <div><strong><?= H::escape('Fatura · ' . $invoice['cartao_nome']) ?></strong><small class="d-block text-secondary"><?= H::escape(substr($invoice['competencia'], 5, 2) . '/' . substr($invoice['competencia'], 0, 4)) ?></small><small class="d-block <?= $invoice['data_vencimento'] < date('Y-m-d') ? 'text-danger' : 'text-secondary' ?>">Vence <?= H::date($invoice['data_vencimento']) ?></small></div>
+                <div class="text-end"><small class="d-block text-secondary">Total da fatura</small><strong><?= Money::format((int) $invoice['total']) ?></strong><?php if ((int) $invoice['pago'] > 0): ?><small class="d-block text-secondary">Restante: <?= Money::format((int) $invoice['total'] - (int) $invoice['pago']) ?></small><?php endif; ?></div>
+            </a>
         <?php endforeach; ?>
     </div></section></div>
 </div>

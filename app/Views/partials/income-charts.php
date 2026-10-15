@@ -9,6 +9,7 @@ $pieTotal = array_sum(array_column($positiveGroups, 'valor_centavos'));
 $incomeNetTotal = array_sum(array_column($incomeGroups, 'valor_centavos'));
 $barMax = max([1, ...array_map(fn($row) => abs((int) $row['valor_centavos']), $subgroupValues)]);
 $colors = ['#198754', '#2463b5', '#d39b20', '#8957bd', '#d76a32', '#1696a3', '#c94e73', '#657b38'];
+if (!empty($incomeInteractiveDonut)) $colors = ['#4285b5', '#3eb9ae', '#8c83d5', '#d5ab60', '#6796c7', '#ce829e', '#7ba697', '#9ba8bd'];
 $stops = [];
 $angle = 0;
 foreach ($positiveGroups as $index => $row) {
@@ -22,8 +23,10 @@ foreach ($positiveGroups as $index => $row) {
         <h2 class="h5">Recebimentos por grupo</h2>
         <p class="small text-secondary"><?= H::escape($incomeChartNote) ?></p>
         <?php if (!$positiveGroups): ?><p class="empty-state">Nenhum recebimento positivo nesta seleção.</p><?php else: ?>
-        <div class="income-pie-layout">
+        <div class="income-pie-layout<?= !empty($incomeInteractiveDonut) ? ' income-interactive' : '' ?>">
+            <?php if (!empty($incomeInteractiveDonut)): require dirname(__DIR__) . '/dashboard/analytics-income-donut.php'; else: ?>
             <div class="income-pie" role="img" aria-label="Pizza de recebimentos por grupo. Valores e percentuais na legenda." style="background:conic-gradient(<?= H::escape(implode(',', $stops)) ?>)"></div>
+            <?php endif; ?>
             <ul class="income-pie-legend">
                 <?php foreach ($positiveGroups as $index => $row): $percent = (int) $row['valor_centavos'] / $pieTotal * 100; $href = $incomeChartLink($row, 'grupo'); ?>
                 <li><span class="income-pie-swatch" style="background:<?= $colors[$index % count($colors)] ?>" aria-hidden="true"></span><div><?php if ($href): ?><a href="<?= H::escape($href) ?>"><?= H::escape($row['nome']) ?></a><?php else: ?><span><?= H::escape($row['nome']) ?></span><?php endif; ?><small><?= Money::format((int) $row['valor_centavos']) ?> · <?= number_format($percent, 1, ',', '.') ?>%</small></div></li>

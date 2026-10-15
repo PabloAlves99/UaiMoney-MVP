@@ -67,6 +67,9 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }, { passive: true });
   }
+  document.querySelectorAll("[data-classification-toggle]").forEach((checkbox) => {
+    checkbox.addEventListener("change", () => checkbox.form.requestSubmit());
+  });
   document.querySelectorAll("form[data-confirm]").forEach((form) => {
     form.addEventListener("submit", (event) => {
       if (!window.confirm(form.dataset.confirm)) event.preventDefault();

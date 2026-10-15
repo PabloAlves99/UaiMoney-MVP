@@ -22,9 +22,9 @@ $monthUrl = fn($row, $type = null) => $url([
     'fim' => min($end, Dates::day($row['nome'], 31)),
     'tipo' => $type ?? ($filters['tipo'] ?? null),
     'conferir' => 1,
-], '#lancamentos');
+]);
 ?>
-<div class="analysis-legend"><?php foreach ($series as [$color, $label]): ?><span class="<?= $color ?>"><?= $label ?></span><?php endforeach; ?></div>
+<div class="analysis-legend"><?php foreach ($series as [$color, $label, $type]): ?><a class="<?= $color ?>" href="<?= H::escape($url(['tipo' => $type])) ?>"><?= $label ?></a><?php endforeach; ?></div>
 <div class="analysis-line-chart" data-analysis-chart>
     <svg class="analysis-plot" viewBox="0 0 760 310" role="group" aria-label="Evolução mensal de receitas e despesas" data-chart-count="<?= $count ?>">
         <?php for ($tick = 0; $tick <= 4; $tick++): $value = $low + $range * $tick / 4;
@@ -35,9 +35,9 @@ $monthUrl = fn($row, $type = null) => $url([
         <text class="plot-label" x="55" y="20" text-anchor="end">R$</text>
         <line class="plot-zero" x1="65" y1="<?= $y(0) ?>" x2="745" y2="<?= $y(0) ?>" />
         <?php foreach ($series as $key => [$color, $label, $type]): ?>
-            <polyline class="plot-line <?= $color ?>" points="<?= implode(' ', array_map(fn($index) => $x($index) . ',' . $y((int)$monthlyRows[$index][$key]), array_keys($monthlyRows))) ?>" />
+            <a href="<?= H::escape($url(['tipo' => $type])) ?>" aria-label="Filtrar <?= $label ?>"><polyline class="plot-line <?= $color ?>" points="<?= implode(' ', array_map(fn($index) => $x($index) . ',' . $y((int)$monthlyRows[$index][$key]), array_keys($monthlyRows))) ?>" /></a>
             <?php foreach ($monthlyRows as $index => $row): $tip = substr($row['nome'], 5, 2) . '/' . substr($row['nome'], 0, 4) . ' · ' . $label . ': ' . Money::format((int)$row[$key]); ?>
-                <a href="<?= H::escape($monthUrl($row, $type)) ?>" class="plot-link <?= $color ?>" data-chart-tip="<?= H::escape($tip) ?>" aria-label="<?= H::escape($tip . '. Conferir lançamentos') ?>">
+                <a href="<?= H::escape($monthUrl($row, $type)) ?>" class="plot-link <?= $color ?>" data-chart-tip="<?= H::escape($tip) ?>" aria-label="<?= H::escape($tip . '. Filtrar análise') ?>">
                     <title><?= H::escape($tip) ?></title>
                     <circle class="plot-hit" cx="<?= $x($index) ?>" cy="<?= $y((int)$row[$key]) ?>" r="13" data-chart-index="<?= $index ?>" />
                     <circle class="plot-point <?= $color ?>" cx="<?= $x($index) ?>" cy="<?= $y((int)$row[$key]) ?>" r="4" data-chart-index="<?= $index ?>" />
@@ -45,10 +45,10 @@ $monthUrl = fn($row, $type = null) => $url([
             <?php endforeach; ?>
         <?php endforeach; ?>
         <?php foreach ($monthlyRows as $index => $row): ?>
-            <text class="plot-label plot-month" x="<?= $x($index) ?>" y="295" text-anchor="middle" data-chart-index="<?= $index ?>"><?= H::escape(substr($row['nome'], 5, 2) . '/' . substr($row['nome'], 2, 2)) ?></text>
+            <a href="<?= H::escape($monthUrl($row)) ?>" aria-label="<?= H::escape('Filtrar mês ' . $row['nome']) ?>"><text class="plot-label plot-month" x="<?= $x($index) ?>" y="295" text-anchor="middle" data-chart-index="<?= $index ?>"><?= H::escape(substr($row['nome'], 5, 2) . '/' . substr($row['nome'], 2, 2)) ?></text></a>
         <?php endforeach; ?>
     </svg>
-    <p class="analysis-chart-readout" aria-live="polite">Selecione um ponto para conferir os lançamentos do mês.</p>
+    <p class="analysis-chart-readout" aria-live="polite">Clique em um ponto ou mês para filtrar toda a análise.</p>
 </div>
 <details class="analysis-data">
     <summary>Ver valores por mês</summary>

@@ -2490,3 +2490,62 @@ h1 { font-size: clamp(1.75rem, 2.4vw, 2.25rem); letter-spacing: -.035em; font-we
 [data-bs-theme="dark"] .text-danger { color: #f48a91 !important; }
 [data-bs-theme="dark"] #themeToggle { background: #304151; color: #e7eef4; border-color: #597184; }
 [data-bs-theme="dark"] #themeToggle:hover { background: #3c5366; border-color: #9bbbd2; }
+
+/* Interactive analytics charts. */
+.income-donut { position: relative; width: min(260px, 100%); flex: 0 0 240px; max-width: 100%; margin-inline: auto; aspect-ratio: 1; }
+.income-donut svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.income-donut-track { stroke: var(--uai-surface-secondary); }
+.income-donut-segment { cursor: pointer; transition: stroke-width .18s ease, filter .18s ease; }
+.income-donut-link:hover .income-donut-segment, .income-donut-link:focus-visible .income-donut-segment { stroke-width: 36px; filter: brightness(1.12); }
+.income-donut-link:focus-visible { outline: none; }
+.income-donut-center { position: absolute; inset: 28%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; text-align: center; pointer-events: none; }
+.income-donut-center small, .income-donut-center span { font-size: .72rem; color: var(--uai-muted); }
+.income-donut-center strong { font-size: clamp(.85rem, 1.3vw, 1.1rem); font-variant-numeric: tabular-nums; line-height: 1.4; overflow-wrap: anywhere; max-width: 100%; color: var(--uai-text); }
+.income-interactive .income-pie-legend { gap: 4px; }
+.income-interactive .income-pie-legend li { position: relative; padding: 9px 10px; border-radius: 8px; transition: background-color .15s ease; }
+.income-interactive .income-pie-legend li:hover, .income-interactive .income-pie-legend li:focus-within { background: var(--uai-surface-secondary); }
+.income-interactive .income-pie-legend a { text-decoration: none; }
+.income-interactive .income-pie-legend a::after { content: ''; position: absolute; inset: 0; border-radius: 8px; }
+.income-interactive .income-pie-legend a:focus-visible::after { outline: 2px solid var(--uai-primary); outline-offset: 2px; }
+.analysis-category-filter { display: block; color: var(--uai-text); padding: 18px 0; text-decoration: none; }
+.analysis-category-filter:hover .analysis-category-heading { color: var(--uai-primary); }
+.analysis-category-filter:focus-visible { outline: 2px solid var(--uai-primary); outline-offset: 4px; border-radius: 6px; }
+.analysis-legend a { color: var(--uai-muted); text-decoration: none; font-size: .8rem; }
+.analysis-legend a::before { content: ''; display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; background: var(--uai-success); }
+.analysis-legend a.expense::before { background: var(--uai-danger); }
+.analysis-legend a:hover { color: var(--uai-primary); }
+.analysis-plot a { cursor: pointer; }
+.analysis-plot a:hover .plot-line { stroke-width: 4; }
+@media (max-width: 575.98px) {
+  .income-donut { flex-basis: 220px; width: 220px; }
+  .income-interactive .income-pie-legend { flex-basis: 100%; }
+  .income-donut-center strong { font-size: .95rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .income-donut-segment, .income-interactive .income-pie-legend li { transition: none; }
+}
+
+/* Category management tables and compact mobile rows. */
+.category-create > summary { padding: 18px 24px; color: var(--uai-primary); font-weight: 600; cursor: pointer; }
+.category-edit-card { max-width: 720px; }
+.category-table th { font-size: .75rem; color: var(--uai-muted); font-weight: 600; white-space: nowrap; }
+.category-table td { padding-block: 16px; font-size: .86rem; }
+.category-table td:first-child { min-width: 160px; overflow-wrap: anywhere; }
+.category-row-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.category-row-actions form { margin: 0; }
+.category-essential-form { display: flex; align-items: center; min-height: 32px; }
+.category-essential-form .form-check-input { width: 20px; height: 20px; cursor: pointer; }
+.category-subgroup-filter { max-width: 100%; }
+.category-subgroup-filter select { min-width: 0; max-width: 260px; }
+@media (max-width: 767.98px) {
+  .category-table, .category-table tbody { display: block; width: 100%; }
+  .category-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .category-table tbody tr { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px 16px; padding: 18px 0; border-bottom: 1px solid var(--uai-border); }
+  .category-table tbody tr:last-child { border-bottom: 0; }
+  .category-table tbody td { display: block; padding: 0; border: 0; min-width: 0; overflow-wrap: anywhere; }
+  .category-table tbody td:first-child, .category-table tbody td:last-child { grid-column: 1 / -1; }
+  .category-table tbody td::before { content: attr(data-label); display: block; color: var(--uai-muted); font-size: .7rem; margin-bottom: 5px; }
+  .category-table tbody td:first-child::before { display: none; }
+  .category-subgroup-filter { width: 100%; }
+  .category-subgroup-filter select { max-width: none; flex: 1; }
+}
