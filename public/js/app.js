@@ -67,6 +67,31 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }, { passive: true });
   }
+  document.querySelectorAll("[data-category-row]").forEach((row) => {
+    const toggle = row.querySelector("[data-category-expand]");
+    const children = document.getElementById(toggle?.getAttribute("aria-controls"));
+    if (!toggle || !children) return;
+    const expand = () => {
+      children.hidden = !children.hidden;
+      toggle.setAttribute("aria-expanded", String(!children.hidden));
+    };
+    toggle.addEventListener("click", expand);
+    row.addEventListener("click", (event) => {
+      if (!event.target.closest("a, button, input, label, select, textarea, form")) expand();
+    });
+  });
+  const subcategoryModal = document.getElementById("new-subcategory-modal");
+  subcategoryModal?.addEventListener("show.bs.modal", (event) => {
+    const trigger = event.relatedTarget;
+    if (!trigger?.dataset.parentId) return;
+    subcategoryModal.querySelector('[name="grupo_id"]').value = trigger.dataset.parentId;
+    subcategoryModal.querySelector("[data-subcategory-parent-label]").textContent = trigger.dataset.parentName;
+    subcategoryModal.querySelector('[name="nome"]').value = "";
+    subcategoryModal.querySelector('[name="descricao"]').value = "";
+  });
+  document.querySelectorAll("[data-category-reopen]").forEach((modal) => {
+    window.bootstrap?.Modal.getOrCreateInstance(modal).show();
+  });
   document.querySelectorAll("[data-classification-toggle]").forEach((checkbox) => {
     checkbox.addEventListener("change", () => checkbox.form.requestSubmit());
   });

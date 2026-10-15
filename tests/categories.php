@@ -52,5 +52,16 @@ foreach ([false,true] as $inactive) {
  check(str_contains($html,'category-table') && str_contains($html,'Essencial'),'Category table renders');
  check(str_contains($html,$inactive ? '/reativar' : '/desativar'),'Correct lifecycle actions in each list');
  check(str_contains($html,'/editar'),'Editing available in both lists');
+ libxml_use_internal_errors(true);
+ $document = new DOMDocument(); $document->loadHTML('<?xml encoding="utf-8" ?>'.$html);
+ $xpath = new DOMXPath($document);
+ check($xpath->query('//table')->length===1,'One table contains categories and subcategories');
+ check($xpath->query('//button[@data-category-expand]')->length===count($grupos),'Every category has an accessible expansion control');
+ check($xpath->query('//span[contains(@class,"text-bg-secondary")]')->length===0,'Expense type never uses neutral badges');
+ if (!$inactive) {
+  check($xpath->query('//button[@data-parent-id]')->length===count($grupos),'Subcategory creation is attached to each active category');
+  check($xpath->query('//input[@name="grupo_id" and @type="hidden"]')->length===1,'Subcategory modal receives the category from its row');
+ }
+
 }
 echo 'OK: '.($count-$before)." verificações de edição, reativação, histórico, permissões e tabelas.\n";

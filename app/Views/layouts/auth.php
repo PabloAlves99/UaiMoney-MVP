@@ -21,7 +21,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <link rel="stylesheet" href="<?= htmlspecialchars(
-        $basePath . '/css/app.css?v=20261015-category-tables',
+        $basePath . '/css/app.css?v=20261015-category-tree',
         ENT_QUOTES,
         'UTF-8'
     ) ?>">

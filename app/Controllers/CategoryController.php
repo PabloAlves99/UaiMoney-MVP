@@ -21,7 +21,9 @@ final class CategoryController extends BaseController
 
     private function destination(): string
     {
-        return ($_POST['origem'] ?? '') === 'desativadas' ? '/categorias/desativadas' : '/categorias';
+        if (($_POST['origem'] ?? '') === 'desativadas') return '/categorias/desativadas';
+        $group = filter_var($_POST['grupo_id'] ?? null,FILTER_VALIDATE_INT);
+        return $group && $group>0 ? '/categorias?grupo_id='.$group : '/categorias';
     }
 
     private function action(callable $action): void
@@ -126,11 +128,11 @@ final class CategoryController extends BaseController
     private function renderIndex(array $usuario, ?string $error = null, bool $inactive = false): void
     {
         $data = $this->categoryService->management((int)$usuario['id']);
-        $groups = array_values(array_filter($data['groups'],fn($g) => (bool)$g['ativo'] !== $inactive));
         $subgroups = array_values(array_filter($data['subgroups'],fn($s) => ((bool)$s['ativo'] && (bool)$s['grupo_ativo']) !== $inactive));
+        $inactiveParents = array_fill_keys(array_column($subgroups,'grupo_id'),true);
+        $groups = array_values(array_filter($data['groups'],fn($g) => $inactive ? (!(bool)$g['ativo'] || isset($inactiveParents[$g['id']])) : (bool)$g['ativo']));
         $selectedGroup = (string)($_GET['grupo_id'] ?? '');
-        if ($selectedGroup!=='' && ctype_digit($selectedGroup)) $subgroups = array_values(array_filter($subgroups,fn($s) => (int)$s['grupo_id']===(int)$selectedGroup));
-        else $selectedGroup='';
+        if (!ctype_digit($selectedGroup)) $selectedGroup='';
         View::render('categories/index',[
             'usuario'=>$usuario,'grupos'=>$groups,'subgrupos'=>$subgroups,'allGroups'=>$data['groups'],
             'inactive'=>$inactive,'selectedGroup'=>$selectedGroup,'error'=>$error,'old'=>$error!==null ? $_POST : [],
