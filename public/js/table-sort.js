@@ -65,6 +65,48 @@
       const current = new URL(window.location.href);
       const controls = [];
       let syncMobile = () => {};
+      const setSortState = (selected, ascending) => {
+        controls.forEach(({ header, button, label }) => {
+          const state = header === selected ? (ascending ? "ascending" : "descending") : "none";
+          header.setAttribute("aria-sort", state);
+          button.setAttribute("aria-label", `${label}: ordenar em ordem ${state === "ascending" ? "decrescente" : "crescente"}`);
+        });
+        syncMobile();
+      };
+      let feedback;
+      const refreshSortedRows = async (url) => {
+        if (!feedback) {
+          feedback = document.createElement("p"); feedback.className = "visually-hidden"; feedback.setAttribute("role", "status");
+          table.before(feedback);
+        }
+        feedback.className = "visually-hidden";
+        feedback.textContent = "Ordenando tabela";
+        table.setAttribute("aria-busy", "true");
+        controls.forEach(({ button }) => { button.disabled = true; });
+        try {
+          const response = await fetch(url, { credentials: "same-origin", headers: { "X-Requested-With": "XMLHttpRequest" } });
+          if (!response.ok || response.redirected) throw new Error("Não foi possível ordenar a tabela. Tente novamente.");
+          const page = new DOMParser().parseFromString(await response.text(), "text/html");
+          const updated = page.querySelector("table[data-server-sort]");
+          if (!updated || !updated.tBodies.length) throw new Error("Não foi possível ordenar a tabela. Tente novamente.");
+          const bodies = [...updated.tBodies].map((body) => document.importNode(body, true));
+          [...table.tBodies].forEach((body) => body.remove());
+          bodies.forEach((body) => table.appendChild(body));
+          const pagination = table.closest(".card-body")?.querySelector(".pagination-links");
+          const nextPagination = updated.closest(".card-body")?.querySelector(".pagination-links");
+          if (pagination && nextPagination) pagination.replaceWith(document.importNode(nextPagination, true));
+          const form = document.querySelector('form[method="get"]');
+          if (form) ["ordenacao", "direcao"].forEach((key) => {
+            let input = form.querySelector(`input[name="${key}"]`);
+            if (!input) { input = document.createElement("input"); input.type = "hidden"; input.name = key; form.appendChild(input); }
+            input.value = url.searchParams.get(key);
+          });
+          feedback.textContent = "Tabela ordenada";
+        } finally {
+          table.removeAttribute("aria-busy");
+          controls.forEach(({ button }) => { button.disabled = false; });
+        }
+      };
       headers.forEach((header, index) => {
         const label = header.textContent.trim();
         if (!label || normalize(label) === "acoes" || header.dataset.sortable === "false") return;
@@ -80,21 +122,27 @@
         if (table.hasAttribute("data-server-sort") && current.searchParams.get("ordenacao") === header.dataset.sortKey) header.setAttribute("aria-sort", current.searchParams.get("direcao") === "desc" ? "descending" : "ascending");
         const updateLabel = () => button.setAttribute("aria-label", `${label}: ordenar em ordem ${header.getAttribute("aria-sort") === "ascending" ? "decrescente" : "crescente"}`);
         updateLabel();
-        button.addEventListener("click", () => {
+        button.addEventListener("click", async () => {
           const ascending = header.getAttribute("aria-sort") !== "ascending";
           if (table.hasAttribute("data-server-sort")) {
             if (!header.dataset.sortKey) return;
-            current.searchParams.set("ordenacao", header.dataset.sortKey);
-            current.searchParams.set("direcao", ascending ? "asc" : "desc");
-            current.searchParams.set("pagina", "1");
-            window.location.assign(current.toString());
+            if (table.getAttribute("aria-busy") === "true") return;
+            const requested = new URL(current);
+            requested.searchParams.set("ordenacao", header.dataset.sortKey);
+            requested.searchParams.set("direcao", ascending ? "asc" : "desc");
+            requested.searchParams.set("pagina", "1");
+            try {
+              await refreshSortedRows(requested);
+              current.search = requested.search;
+              setSortState(header, ascending);
+            } catch (error) {
+              feedback.className = "small text-danger my-2";
+              feedback.textContent = error.message || "Não foi possível ordenar a tabela. Tente novamente.";
+            }
             return;
           }
           sortTable(table, index, ascending ? 1 : -1);
-          headers.forEach((item) => { if (item.hasAttribute("aria-sort")) item.setAttribute("aria-sort", "none"); });
-          header.setAttribute("aria-sort", ascending ? "ascending" : "descending");
-          headers.forEach((item) => { const control=item.querySelector(".table-sort-button"); if(control) control.setAttribute("aria-label", `${item.textContent.replace("↕", "").trim()}: ordenar em ordem ${item.getAttribute("aria-sort") === "ascending" ? "decrescente" : "crescente"}`); });
-          syncMobile();
+          setSortState(header, ascending);
         });
       });
       if (table.classList.contains("category-tree") && controls.length) {

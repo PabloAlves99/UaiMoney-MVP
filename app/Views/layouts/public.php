@@ -15,6 +15,6 @@
     <main class="container py-4 py-md-5"><?= $content ?></main>
     <script src="<?= \App\Core\Html::escape($basePath . '/js/financial-overview.js?v=20261014') ?>"></script>
     <script src="<?= \App\Core\Html::escape($basePath . '/js/theme.js?v=20261015-graphite-theme') ?>"></script>
-    <script src="<?= \App\Core\Html::escape($basePath . '/js/table-sort.js?v=20261015') ?>"></script>
+    <script src="<?= \App\Core\Html::escape($basePath . '/js/table-sort.js?v=20261015-async') ?>"></script>
 </body>
 </html>
