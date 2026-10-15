@@ -2570,3 +2570,20 @@ h1 { font-size: clamp(1.75rem, 2.4vw, 2.25rem); letter-spacing: -.035em; font-we
   .category-child-row td:nth-child(2), .category-child-row td:nth-child(4) { display: none; }
 }
 @media (prefers-reduced-motion: reduce) { .category-expand svg { transition: none; } }
+
+/* Sortable data-table headings. */
+.category-expand { color: var(--uai-text); }
+.table-sort-button { display: inline-flex; align-items: center; justify-content: inherit; gap: 7px; padding: 4px 0; border: 0; background: transparent; font: inherit; color: inherit; text-align: inherit; cursor: pointer; }
+.table-sort-button:hover { color: var(--uai-primary); }
+.table-sort-button:focus-visible { outline: 2px solid var(--uai-primary); outline-offset: 4px; border-radius: 3px; }
+.table-sort-indicator { opacity: .5; font-size: .85em; }
+th[aria-sort="ascending"] .table-sort-indicator, th[aria-sort="descending"] .table-sort-indicator { opacity: 1; color: var(--uai-primary); font-size: 0; }
+th[aria-sort="ascending"] .table-sort-indicator::after { content: '↑'; font-size: .8rem; }
+th[aria-sort="descending"] .table-sort-indicator::after { content: '↓'; font-size: .8rem; }
+
+.table-sort-mobile { display: none; }
+@media (max-width: 767.98px) {
+  .table-sort-mobile { display: flex; align-items: flex-end; flex-wrap: wrap; gap: 10px; margin-block: 16px; }
+  .table-sort-mobile label { flex: 1; min-width: 140px; font-size: .75rem; color: var(--uai-muted); }
+  .table-sort-mobile select { margin-top: 5px; }
+}

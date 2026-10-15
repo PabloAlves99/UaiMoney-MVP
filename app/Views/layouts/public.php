@@ -7,7 +7,7 @@
     <link rel="icon" type="image/png" sizes="any" href="<?= \App\Core\Html::escape($basePath.'/images/brand/favicon.png?v=10') ?>">
     <title><?= \App\Core\Html::escape($pageTitle ?? 'UaiMoney') ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="<?= \App\Core\Html::escape($basePath . '/css/app.css?v=20261015-category-tree') ?>">
+    <link rel="stylesheet" href="<?= \App\Core\Html::escape($basePath . '/css/app.css?v=20261015-sortable-tables') ?>">
     <?php require __DIR__ . '/theme-head.php'; ?>
 </head>
 <body class="public-share-page">
@@ -15,5 +15,6 @@
     <main class="container py-4 py-md-5"><?= $content ?></main>
     <script src="<?= \App\Core\Html::escape($basePath . '/js/financial-overview.js?v=20261014') ?>"></script>
     <script src="<?= \App\Core\Html::escape($basePath . '/js/theme.js?v=20261015-graphite-theme') ?>"></script>
+    <script src="<?= \App\Core\Html::escape($basePath . '/js/table-sort.js?v=20261015') ?>"></script>
 </body>
 </html>

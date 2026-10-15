@@ -20,8 +20,8 @@ foreach ($subgrupos as $sub) $children[(int)$sub['grupo_id']][] = $sub;
             $color=$grupo['tipo']==='receita' ? 'success' : 'danger';
         ?>
         <tbody><tr class="category-parent-row" data-category-row>
-            <td data-label="Categoria"><button class="category-expand text-<?= $color ?>" type="button" aria-expanded="<?= $expanded ? 'true' : 'false' ?>" aria-controls="category-children-<?= $id ?>" data-category-expand><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3 5 5-5 5"/></svg><strong><?= H::escape($grupo['nome']) ?></strong></button><?php if ($inactive && (int)$grupo['ativo']): ?><small class="d-block text-secondary">Categoria ativa · subcategorias desativadas</small><?php endif; ?></td>
-            <td data-label="Subcategorias"><?= count($subs) ?> subcategorias</td>
+            <td data-label="Categoria"><button class="category-expand" type="button" aria-expanded="<?= $expanded ? 'true' : 'false' ?>" aria-controls="category-children-<?= $id ?>" data-category-expand><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3 5 5-5 5"/></svg><strong><?= H::escape($grupo['nome']) ?></strong></button><?php if ($inactive && (int)$grupo['ativo']): ?><small class="d-block text-secondary">Categoria ativa · subcategorias desativadas</small><?php endif; ?></td>
+            <td data-label="Subcategorias" data-sort-value="<?= count($subs) ?>"><?= count($subs) ?> subcategorias</td>
             <td data-label="Tipo"><span class="badge text-bg-<?= $color ?>"><?= $grupo['tipo']==='receita' ? 'Receita' : 'Despesa' ?></span></td>
             <td data-label="Essencial">
                 <?php if ($grupo['tipo']==='despesa'): ?>
@@ -29,7 +29,7 @@ foreach ($subgrupos as $sub) $children[(int)$sub['grupo_id']][] = $sub;
                 <?php else: ?><span class="text-secondary" aria-label="Não se aplica a receitas">—</span><?php endif; ?>
             </td>
             <td data-label="Ações"><div class="category-row-actions">
-                <?php if (!$inactive): ?><button type="button" class="btn btn-sm btn-outline-<?= $color ?>" data-bs-toggle="modal" data-bs-target="#new-subcategory-modal" data-parent-id="<?= $id ?>" data-parent-name="<?= H::escape($grupo['nome']) ?>">+ Cadastrar subcategoria</button><?php endif; ?>
+                <?php if (!$inactive): ?><button type="button" class="btn btn-sm btn-outline-<?= $color ?>" data-bs-toggle="modal" data-bs-target="#new-subcategory-modal" data-parent-id="<?= $id ?>" data-parent-name="<?= H::escape($grupo['nome']) ?>">+ Subcategoria</button><?php endif; ?>
                 <a class="btn btn-sm btn-outline-secondary" href="<?= H::escape($basePath.'/categorias/grupos/'.$id.'/editar') ?>">Editar</a>
                 <?php if (!$inactive || !(int)$grupo['ativo']): ?><form method="post" action="<?= H::escape($basePath.'/categorias/grupos/'.$id.($inactive ? '/reativar' : '/desativar')) ?>" <?= !$inactive ? 'data-confirm="Desativar esta categoria? Suas subcategorias ficarão indisponíveis para novos lançamentos."' : '' ?>><?= H::fields($csrfToken) ?><input type="hidden" name="origem" value="<?= $origin ?>"><button class="btn btn-sm <?= $inactive ? 'btn-uai-primary' : 'btn-outline-secondary' ?>"><?= $inactive ? 'Reativar' : 'Desativar' ?></button></form><?php endif; ?>
             </div></td>
@@ -38,7 +38,7 @@ foreach ($subgrupos as $sub) $children[(int)$sub['grupo_id']][] = $sub;
             <?php if (!$subs): ?><tr class="category-empty-row"><td colspan="5" class="text-secondary">Nenhuma subcategoria nesta categoria.</td></tr><?php endif; ?>
             <?php foreach ($subs as $sub): $subId=(int)$sub['id']; ?>
             <tr class="category-child-row">
-                <td data-label="Subcategoria"><div class="category-child-name"><span aria-hidden="true">↳</span><div><strong class="text-<?= $color ?>"><?= H::escape($sub['nome']) ?></strong><?php if ($sub['descricao']): ?><small class="d-block text-secondary"><?= H::escape($sub['descricao']) ?></small><?php endif; ?><?php if ($inactive): ?><small class="d-block text-secondary"><?= !(int)$sub['grupo_ativo'] ? 'Categoria desativada' : 'Subcategoria desativada' ?></small><?php endif; ?></div></div></td>
+                <td data-label="Subcategoria"><div class="category-child-name"><span aria-hidden="true">↳</span><div><strong><?= H::escape($sub['nome']) ?></strong><?php if ($sub['descricao']): ?><small class="d-block text-secondary"><?= H::escape($sub['descricao']) ?></small><?php endif; ?><?php if ($inactive): ?><small class="d-block text-secondary"><?= !(int)$sub['grupo_ativo'] ? 'Categoria desativada' : 'Subcategoria desativada' ?></small><?php endif; ?></div></div></td>
                 <td data-label="Subcategorias"><span class="text-secondary">—</span></td>
                 <td data-label="Tipo"><span class="text-<?= $color ?>"><?= $sub['tipo']==='receita' ? 'Receita' : 'Despesa' ?></span></td>
                 <td data-label="Essencial"><span class="text-secondary">—</span></td>

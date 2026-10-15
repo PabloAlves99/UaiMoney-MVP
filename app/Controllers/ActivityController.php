@@ -25,7 +25,7 @@ final class ActivityController extends FinancialController
 
     private function filters(): array
     {
-        return array_filter(array_intersect_key($_GET, array_flip(['q', 'status', 'tipo', 'conta_id', 'cartao_id', 'grupo_id', 'subgrupo_id', 'meio_pagamento', 'data_inicio', 'data_fim', 'lixeira'])), fn($v) => is_string($v) && $v !== '');
+        return array_filter(array_intersect_key($_GET, array_flip(['q', 'status', 'tipo', 'conta_id', 'cartao_id', 'grupo_id', 'subgrupo_id', 'meio_pagamento', 'data_inicio', 'data_fim', 'lixeira', 'ordenacao', 'direcao'])), fn($v) => is_string($v) && $v !== '');
     }
 
     public function index(): void

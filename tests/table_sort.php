@@ -1,0 +1,26 @@
+<?php
+declare(strict_types=1);
+require __DIR__.'/run.php';
+$before=$count;
+$account=$accounts->create(1,'Ordenação global','corrente',null,0,'2025-01-01');
+$group=$categories->createGroup(1,'Receitas ordenadas','receita');
+$sub=$categories->createSubgroup($group,'Ordenação',null);
+for($i=60;$i>=1;$i--) $tx->create(1,$sub,$account,sprintf('Item %03d',$i),(string)$i,'2025-01-01','2025-01-01','2025-01-01','efetivada','pix',null);
+$share=['usuario_id'=>1,'conta_id'=>$account];
+$filter=['conta_id'=>(string)$account,'ordenacao'=>'descricao','direcao'=>'asc'];
+check($activity->list(1,$filter,1)[0]['descricao']==='Item 001','Activity sort starts with global first row');
+check($activity->list(1,$filter,2)[0]['descricao']==='Item 051','Activity pagination follows sorted dataset');
+check($shares->entries($share,$filter,2)[0]['descricao']==='Item 051','Shared pagination follows sorted dataset');
+$descending=array_replace($filter,['direcao'=>'desc']);
+check($activity->list(1,$descending)[0]['descricao']==='Item 060','Activity descending');
+check($shares->entries($share,$descending,1)[0]['descricao']==='Item 060','Shared descending');
+$amount=array_replace($filter,['ordenacao'=>'valor']);
+check((int)$activity->list(1,$amount,2)[0]['valor_centavos']===5100,'Activity numeric sorting across pages');
+check((int)$shares->entries($share,$amount,2)[0]['valor_centavos']===5100,'Shared numeric sorting across pages');
+foreach(['descricao','data','conta','situacao','valor'] as $column) check(count($activity->list(1,array_replace($filter,['ordenacao'=>$column])))===51,'Activity supports column '.$column);
+foreach(['descricao','data','tipo','valor'] as $column) check(count($shares->entries($share,array_replace($filter,['ordenacao'=>$column]),1))===51,'Sharing supports column '.$column);
+check(count($activity->list(1,array_replace($filter,['ordenacao'=>'DROP TABLE usuarios','direcao'=>'INVALID'])))===51,'Activity rejects arbitrary ordering expressions');
+check(count($shares->entries($share,array_replace($filter,['ordenacao'=>'DROP TABLE usuarios']),1))===51,'Sharing rejects arbitrary ordering expressions');
+check($activity->list(2,$filter)===[],'Sorting preserves owner isolation');
+check($shares->exportEntries($share,$descending)[0]['descricao']==='Item 060','Shared export follows requested order');
+echo 'OK: '.($count-$before)." verificações de ordenação global, paginação e isolamento.\n";

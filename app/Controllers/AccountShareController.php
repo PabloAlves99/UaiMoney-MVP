@@ -237,6 +237,11 @@ final class AccountShareController extends BaseController
         if ($hasExplicitFilter && ($filters['inicio'] !== '' || $filters['fim'] !== '' || $filters['tipo'] !== '' || $filters['q'] !== '' || $filters['grupo_id'] !== '' || $filters['subgrupo_id'] !== '')) {
             $filters['periodo'] = 'personalizado';
         }
+        $sort = (string)($input['ordenacao'] ?? '');
+        if (in_array($sort,['data','descricao','tipo','valor'],true)) {
+            $filters['ordenacao'] = $sort;
+            $filters['direcao'] = ($input['direcao'] ?? '')==='desc' ? 'desc' : 'asc';
+        }
         return $filters;
     }
 

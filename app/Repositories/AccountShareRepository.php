@@ -102,13 +102,22 @@ final class AccountShareRepository extends FinanceRepository
             [(int) $share['usuario_id'], (int) $share['conta_id']]);
     }
 
+    private function order(array $filters): string
+    {
+        $columns = ['data'=>'m.data','descricao'=>'m.descricao COLLATE NOCASE','tipo'=>"CASE WHEN m.valor_centavos>0 THEN 'Entrada' ELSE 'Saída' END",'valor'=>'ABS(m.valor_centavos)'];
+        $column = $columns[$filters['ordenacao'] ?? ''] ?? null;
+        if ($column===null) return 'm.data DESC,m.origem_id DESC';
+        return $column . (($filters['direcao'] ?? '')==='desc' ? ' DESC' : ' ASC') . ',m.data DESC,m.origem_id DESC';
+    }
+
     public function entries(array $share, array $filters, int $page): array
     {
         [$where, $params] = $this->filteredWhere($share, $filters);
         $from = $this->ledgerFrom();
+        $order = $this->order($filters);
         return $this->rows(
             "SELECT m.data,m.descricao,m.valor_centavos,m.origem,g.nome AS grupo_nome,s.nome AS subgrupo_nome $from WHERE $where
-             ORDER BY m.data DESC, m.origem_id DESC LIMIT 51 OFFSET " . ((max(1, $page) - 1) * 50),
+             ORDER BY $order LIMIT 51 OFFSET " . ((max(1, $page) - 1) * 50),
             $params
         );
     }
@@ -117,9 +126,10 @@ final class AccountShareRepository extends FinanceRepository
     {
         [$where, $params] = $this->filteredWhere($share, $filters);
         $from = $this->ledgerFrom();
+        $order = $this->order($filters);
         return $this->rows(
             "SELECT m.data,m.descricao,m.valor_centavos,m.origem,g.nome AS grupo_nome,s.nome AS subgrupo_nome $from WHERE $where
-             ORDER BY m.data DESC, m.origem_id DESC LIMIT 10001",
+             ORDER BY $order LIMIT 10001",
             $params
         );
     }

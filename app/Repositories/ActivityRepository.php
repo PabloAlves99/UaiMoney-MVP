@@ -32,12 +32,21 @@ final class ActivityRepository extends FinanceRepository
         return [$from, $params];
     }
 
+    private function order(array $filters): string
+    {
+        $columns = ['descricao'=>'t.descricao COLLATE NOCASE','data'=>'t.data_competencia','conta'=>"COALESCE(k.nome,c.nome,'Conta a definir') COLLATE NOCASE",'situacao'=>"CASE WHEN t.excluida_em IS NOT NULL THEN 'Excluída' WHEN t.status='cancelada' THEN 'Cancelada' WHEN t.status='pendente' THEN CASE g.tipo WHEN 'receita' THEN 'A receber' ELSE 'A pagar' END WHEN g.tipo='receita' THEN 'Recebido' WHEN t.cartao_id IS NOT NULL THEN 'No cartão' ELSE 'Pago' END",'valor'=>"CASE g.tipo WHEN 'receita' THEN t.valor_centavos ELSE -t.valor_centavos END"];
+        $column = $columns[$filters['ordenacao'] ?? ''] ?? null;
+        if ($column===null) return 't.data_competencia DESC,t.id DESC';
+        return $column . (($filters['direcao'] ?? '')==='desc' ? ' DESC' : ' ASC') . ',t.id DESC';
+    }
+
     public function list(int $user, array $filters, int $page = 1): array
     {
         [$from, $params] = $this->query($user, $filters);
+        $order = $this->order($filters);
         return $this->rows("SELECT t.*,g.tipo,g.nome AS grupo_nome,s.nome AS subgrupo_nome,c.nome AS conta_nome,k.nome AS cartao_nome,p.total_parcelas,
             COALESCE((SELECT SUM(e.valor_centavos) FROM estornos e WHERE e.usuario_id=t.usuario_id AND e.transacao_id=t.id),0) AS estornado $from
-            ORDER BY t.data_competencia DESC,t.id DESC LIMIT 51 OFFSET " . ((max(1, $page) - 1) * 50), $params);
+            ORDER BY $order LIMIT 51 OFFSET " . ((max(1, $page) - 1) * 50), $params);
     }
 
     public function count(int $user, array $filters): int

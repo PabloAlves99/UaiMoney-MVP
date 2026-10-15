@@ -26,6 +26,7 @@ $selects = [
     <?php endforeach; ?>
 </nav>
 <form method="get" class="card mb-4">
+        <?php if (!empty($filters['ordenacao'])): ?><input type="hidden" name="ordenacao" value="<?= H::escape($filters['ordenacao']) ?>"><input type="hidden" name="direcao" value="<?= H::escape($filters['direcao'] ?? 'asc') ?>"><?php endif; ?>
     <div class="card-body">
         <?php if ($trash): ?><input type="hidden" name="lixeira" value="1"><?php endif; ?>
         <div class="row g-3 align-items-end">
@@ -53,8 +54,8 @@ $selects = [
     <div class="card-body">
         <div class="section-heading"><h2 class="h5"><?= $total ?> <?= $total === 1 ? 'lançamento' : 'lançamentos' ?></h2><a href="<?= H::escape($basePath . '/movimentacoes/exportar?' . http_build_query($filters)) ?>">Exportar CSV</a></div>
         <?php if (!$entries): ?><div class="empty-state"><h2 class="h5"><?= $trash ? 'A lixeira está vazia' : 'Nenhum lançamento encontrado' ?></h2><p><?= $trash ? 'Lançamentos excluídos aparecerão aqui.' : 'Altere os filtros ou registre um novo lançamento.' ?></p></div><?php endif; ?>
-        <?php if ($entries): ?><div class="table-responsive activity-table-responsive"><table class="table activity-table align-middle mb-0">
-            <thead><tr><th>Descrição</th><th>Data</th><th>Conta / cartão</th><th>Situação</th><th class="text-end">Valor</th><th class="text-end">Ações</th></tr></thead>
+        <?php if ($entries): ?><div class="table-responsive activity-table-responsive"><table class="table activity-table align-middle mb-0" data-server-sort>
+            <thead><tr><th data-sort-key="descricao">Descrição</th><th data-sort-key="data">Data</th><th data-sort-key="conta">Conta / cartão</th><th data-sort-key="situacao">Situação</th><th class="text-end" data-sort-key="valor">Valor</th><th class="text-end">Ações</th></tr></thead>
             <tbody><?php foreach (array_slice($entries, 0, 50) as $entry):
             $detailUrl = $basePath . '/movimentacoes/' . $entry['id'] . '?' . $context;
             $editUrl = $basePath . '/movimentacoes/' . $entry['id'] . '/editar?' . $context;
