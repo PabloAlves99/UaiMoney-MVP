@@ -217,9 +217,11 @@ $adminUserController = new AdminUserController(
 );
 $statementImportController = new \App\Controllers\StatementImportController(
     $authService, $csrf, $basePath,
-    new \App\Services\StatementImportService($pdo, $transactionService),
+    new \App\Services\StatementImportService($pdo, $transactionService,
+        new \App\Services\CardService(new \App\Repositories\CardRepository($pdo), $accountRepository, $categoryRepository)),
     $accountRepository, new \App\Repositories\ReportRepository($pdo),
-    new \App\Repositories\MovementRepository($pdo)
+    new \App\Repositories\MovementRepository($pdo),
+    new \App\Repositories\CardRepository($pdo)
 );
 
 /*

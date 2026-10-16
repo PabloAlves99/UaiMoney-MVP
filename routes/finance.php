@@ -61,7 +61,7 @@ $router->post('/movimentacoes/importar/rascunho', [$statementImportController, '
 $router->post('/movimentacoes/importar/linha/remover', [$statementImportController, 'removeRow']);
 $router->post('/movimentacoes/importar/descartar', [$statementImportController, 'discard']);
 $router->post('/movimentacoes/importar', [$statementImportController, 'save']);
-$router->post('/movimentacoes/importar/desfazer', [$statementImportController, 'undo']);
+$router->post('/movimentacoes/importar/excluir', [$statementImportController, 'deleteBatch']);
 $router->post('/movimentacoes', [$movementController, 'save']);
 $router->get('/movimentacoes/{id}/editar', [$movementController, 'form']);
 $router->post('/movimentacoes/{id}/editar', [$movementController, 'save']);

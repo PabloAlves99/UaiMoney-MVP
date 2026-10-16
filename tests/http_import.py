@@ -28,20 +28,21 @@ csv = 'Data;Descrição;Valor\n14/04/2025;Teste HTTP importação;-9,50\n'
 parts = [
     f'--{boundary}\r\nContent-Disposition: form-data; name="_token"\r\n\r\n{token(html)}\r\n',
     f'--{boundary}\r\nContent-Disposition: form-data; name="conta_id"\r\n\r\n1\r\n',
+    f'--{boundary}\r\nContent-Disposition: form-data; name="tipo_padrao"\r\n\r\noutro\r\n',
     f'--{boundary}\r\nContent-Disposition: form-data; name="arquivo"; filename="extrato.csv"\r\nContent-Type: text/csv\r\n\r\n{csv}\r\n',
     f'--{boundary}--\r\n',
 ]
 request = urllib.request.Request(base + '/movimentacoes/importar/previa', ''.join(parts).encode(),
     headers={'Content-Type': 'multipart/form-data; boundary=' + boundary})
 html = opener.open(request).read().decode('utf-8')
-assert 'Teste HTTP importação' in html and 'Prévia do extrato' in html
+assert 'Teste HTTP importação' in html and 'Prévia salva' in html
 nonce = re.search(r'name="nonce" value="([^"]+)"', html).group(1)
 category = re.search(r'name="categoria\[0\]".*?<option value="(\d+)"', html, re.S).group(1)
 html = post('/movimentacoes/importar', {'_token': token(html), 'nonce': nonce,
     'selecionar[0]': '1', 'categoria[0]': category})
-assert 'Extrato importado' in html
+assert 'Lançamento(s) importado(s)' in html
 batch = re.search(r'name="lote_id" value="(\d+)"', html).group(1)
 operation = re.findall(r'name="_operation" value="([^"]+)"', html)[-1]
-html = post('/movimentacoes/importar/desfazer', {'_token': token(html), '_operation': operation, 'lote_id': batch})
-assert 'Lote desfeito' in html
-print('OK: prévia, confirmação e desfazer importação via HTTP.')
+html = post('/movimentacoes/importar/excluir', {'_token': token(html), '_operation': operation, 'lote_id': batch})
+assert 'excluídos permanentemente' in html
+print('OK: prévia, confirmação e exclusão permanente via HTTP.')

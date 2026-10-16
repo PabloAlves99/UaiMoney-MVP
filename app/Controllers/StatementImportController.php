@@ -6,6 +6,7 @@ use App\Core\Csrf;
 use App\Repositories\AccountRepository;
 use App\Repositories\ReportRepository;
 use App\Repositories\MovementRepository;
+use App\Repositories\CardRepository;
 use App\Services\AuthService;
 use App\Services\StatementImportService;
 use DomainException;
@@ -16,7 +17,8 @@ final class StatementImportController extends FinancialController
         private readonly StatementImportService $imports,
         private readonly AccountRepository $accounts,
         private readonly ReportRepository $reports,
-        private readonly MovementRepository $movements) {
+        private readonly MovementRepository $movements,
+        private readonly CardRepository $cards) {
         parent::__construct($auth, $csrf, $basePath);
     }
 
@@ -26,9 +28,10 @@ final class StatementImportController extends FinancialController
         $preview = $this->imports->draft($user);
         $this->page('activity/import', 'Importar extrato', [
             'accounts' => $this->accounts->listActive($user),
+            'cards' => $this->cards->list($user),
             'categories' => $this->reports->categories($user),
             'preview' => $preview,
-            'lastBatch' => $this->imports->lastBatch($user),
+            'batches' => $this->imports->batches($user),
         ]);
     }
 
@@ -38,23 +41,29 @@ final class StatementImportController extends FinancialController
         $this->validateCsrf();
         try {
             $account = (int) ($_POST['conta_id'] ?? 0);
+            $card = (int) ($_POST['cartao_id'] ?? 0);
+            $defaultType = (string) ($_POST['tipo_padrao'] ?? 'outro');
             $allowed = array_column($this->accounts->listActive($user), 'id');
-            if (!in_array($account, $allowed)) throw new DomainException('Escolha uma conta ativa.');
+            $allowedCards = array_column($this->cards->list($user), 'id');
+            if ($account && !in_array($account, $allowed)) throw new DomainException('Escolha uma conta ativa.');
+            if ($card && !in_array($card, $allowedCards)) throw new DomainException('Escolha um cartão ativo.');
             $upload = $_FILES['arquivo'] ?? null;
             if (!$upload || $upload['error'] !== UPLOAD_ERR_OK || $upload['size'] > 2_000_000 || !is_uploaded_file($upload['tmp_name']))
                 throw new DomainException('Selecione um arquivo CSV ou OFX de até 2 MB.');
-            $rows = $this->imports->parse((string) $upload['name'], (string) file_get_contents($upload['tmp_name']));
+            $rows = $this->imports->applyDefaults(
+                $this->imports->parse((string) $upload['name'], (string) file_get_contents($upload['tmp_name'])),
+                $defaultType, $account ?: null, $card ?: null);
             $suggested = [];
             foreach ($this->movements->categorySuggestions($user) as $item)
                 $suggested[mb_strtolower($item['descricao']) . '|' . $item['tipo']] = (int) $item['subgrupo_id'];
             foreach ($rows as &$row) {
                 $row['existente'] = $this->imports->duplicate($user, $account, $row);
-                $row['selected'] = !$row['repetida'] && !$row['existente'];
+                $row['selected'] = !$row['repetida'] && !$row['existente'] && !($defaultType === 'cartao' && $row['centavos'] > 0);
                 $type = $row['centavos'] < 0 ? 'despesa' : 'receita';
                 $row['category_id'] = $suggested[mb_strtolower($row['descricao']) . '|' . $type] ?? 0;
             }
             unset($row);
-            $this->imports->createDraft($user, $account, $rows);
+            $this->imports->createDraft($user, $account ?: null, $rows);
             $_SESSION['flash'] = ['type' => 'success', 'message' => 'Prévia salva. Você pode sair e continuar depois.'];
         } catch (DomainException $error) {
             $_SESSION['flash'] = ['type' => 'danger', 'message' => $error->getMessage()];
@@ -78,10 +87,11 @@ final class StatementImportController extends FinancialController
             }
             $categories = is_array($_POST['categoria'] ?? null) ? $_POST['categoria'] : [];
             $this->imports->saveDraftChoices($user, $preview['nonce'],
-                is_array($_POST['selecionar'] ?? null) ? $_POST['selecionar'] : [], $categories);
+                is_array($_POST['selecionar'] ?? null) ? $_POST['selecionar'] : [], $categories,
+                $this->choices('destino_tipo'), $this->choices('conta'), $this->choices('cartao'), $this->choices('meio_pagamento'));
             $preview = $this->imports->draft($user);
             $batch = $this->imports->import($user, $preview['account'], $preview['rows'], $selected, $categories, $preview['nonce']);
-            $_SESSION['flash'] = ['type' => 'success', 'message' => 'Lançamento(s) importado(s). Lote ' . $batch . ' disponível para desfazer nesta página.'];
+            $_SESSION['flash'] = ['type' => 'success', 'message' => 'Lançamento(s) importado(s). Lote ' . $batch . ' disponível para exclusão nesta página.'];
         } catch (DomainException $error) {
             $_SESSION['flash'] = ['type' => 'danger', 'message' => $error->getMessage()];
         }
@@ -96,7 +106,8 @@ final class StatementImportController extends FinancialController
         try {
             $this->imports->saveDraftChoices($user, (string) ($_POST['nonce'] ?? ''),
                 is_array($_POST['selecionar'] ?? null) ? $_POST['selecionar'] : [],
-                is_array($_POST['categoria'] ?? null) ? $_POST['categoria'] : []);
+                is_array($_POST['categoria'] ?? null) ? $_POST['categoria'] : [],
+                $this->choices('destino_tipo'), $this->choices('conta'), $this->choices('cartao'), $this->choices('meio_pagamento'));
             if ($ajax) {
                 header('Content-Type: application/json; charset=UTF-8');
                 echo json_encode(['ok' => true]);
@@ -122,7 +133,8 @@ final class StatementImportController extends FinancialController
             $nonce = (string) ($_POST['nonce'] ?? '');
             $this->imports->saveDraftChoices($user, $nonce,
                 is_array($_POST['selecionar'] ?? null) ? $_POST['selecionar'] : [],
-                is_array($_POST['categoria'] ?? null) ? $_POST['categoria'] : []);
+                is_array($_POST['categoria'] ?? null) ? $_POST['categoria'] : [],
+                $this->choices('destino_tipo'), $this->choices('conta'), $this->choices('cartao'), $this->choices('meio_pagamento'));
             $index = filter_var($_POST['indice'] ?? null, FILTER_VALIDATE_INT);
             if ($index === false) throw new DomainException('Linha inválida.');
             $this->imports->removeDraftRow($user, $nonce, $index);
@@ -135,8 +147,13 @@ final class StatementImportController extends FinancialController
             $user, (string) ($_POST['nonce'] ?? '')), 'Prévia descartada.');
     }
 
-    public function undo(): void
+    public function deleteBatch(): void
     {
-        $this->action('/movimentacoes/importar', fn($user) => $this->imports->undo($user, (int) ($_POST['lote_id'] ?? 0)), 'Lote desfeito. Lançamentos preservados em Arquivados.');
+        $this->action('/movimentacoes/importar', fn($user) => $this->imports->deleteBatch($user, (int) ($_POST['lote_id'] ?? 0)), 'Importação e lançamentos excluídos permanentemente.');
+    }
+
+    private function choices(string $name): array
+    {
+        return is_array($_POST[$name] ?? null) ? $_POST[$name] : [];
     }
 }

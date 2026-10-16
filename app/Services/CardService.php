@@ -64,28 +64,36 @@ final class CardService
     {
         $this->cards->atomic(function () use ($user, $input) {
             if (!$this->cards->once($user, $input, 'purchase')) return;
-            $card = $this->get($user, (int)($input['cartao_id'] ?? 0));
-            if (!(int)$card['ativo']) throw new DomainException('Este cartão está desativado.');
-            $category = $this->categories->findSubgroupById((int)($input['subgrupo_id'] ?? 0), $user);
-            if (!$category || !(int)$category['ativo'] || !(int)$category['grupo_ativo'] || $category['tipo'] !== 'despesa') throw new DomainException('Selecione uma categoria de despesa ativa.');
-            $date = Dates::past($input['data'] ?? '');
-            $description = trim($input['descricao'] ?? '');
-            $amount = Money::toCents($input['valor'] ?? '');
-            $count = filter_var($input['parcelas'] ?? 1, FILTER_VALIDATE_INT);
-            if ($description === '' || mb_strlen($description) > 160) throw new DomainException('Informe uma descrição de até 160 caracteres.');
-            if (!$count || $count < 1 || $count > 120 || $amount < $count) throw new DomainException('Use entre 1 e 120 parcelas, com pelo menos um centavo em cada.');
-            // The invoice is always determined by the purchase date and the card's closing day.
-            $month = $this->cycle($card, $date);
-            $installment = $count > 1 ? $this->cards->installment($user, $description, $amount, $count) : null;
-            for ($i = 0; $i < $count; $i++) {
-                $invoice = $this->invoiceFor($user, $card, Dates::shift($month, $i));
-                $existing = $this->cards->invoice($user, (int)$invoice['id']);
-                if ($invoice['status'] !== 'aberta' || (int)$existing['pago'] > 0) throw new DomainException('A fatura calculada pela data da compra já foi fechada ou recebeu pagamentos.');
-                // Budget consumption follows each installment's cycle; a single purchase uses its purchase date.
-                $competence = $count === 1 ? $date : Dates::day(Dates::shift($month, $i), (int)substr($date, 8, 2));
-                $this->cards->purchase($user, (int)$category['id'], (int)$card['id'], $invoice, $description, intdiv($amount, $count) + ($i < $amount % $count ? 1 : 0), $competence, $installment, $i + 1, $date, trim((string)($input['observacao'] ?? '')) ?: null);
-            }
+            $this->recordPurchase($user, $input);
         });
+    }
+
+    /** Caller owns the transaction; used to include a card purchase in an import batch. */
+    public function recordPurchase(int $user, array $input): array
+    {
+        $card = $this->get($user, (int)($input['cartao_id'] ?? 0));
+        if (!(int)$card['ativo']) throw new DomainException('Este cartão está desativado.');
+        $category = $this->categories->findSubgroupById((int)($input['subgrupo_id'] ?? 0), $user);
+        if (!$category || !(int)$category['ativo'] || !(int)$category['grupo_ativo'] || $category['tipo'] !== 'despesa') throw new DomainException('Selecione uma categoria de despesa ativa.');
+        $date = Dates::past($input['data'] ?? '');
+        $description = trim($input['descricao'] ?? '');
+        $amount = Money::toCents($input['valor'] ?? '');
+        $count = filter_var($input['parcelas'] ?? 1, FILTER_VALIDATE_INT);
+        if ($description === '' || mb_strlen($description) > 160) throw new DomainException('Informe uma descrição de até 160 caracteres.');
+        if (!$count || $count < 1 || $count > 120 || $amount < $count) throw new DomainException('Use entre 1 e 120 parcelas, com pelo menos um centavo em cada.');
+        // The invoice is always determined by the purchase date and the card's closing day.
+        $month = $this->cycle($card, $date);
+        $installment = $count > 1 ? $this->cards->installment($user, $description, $amount, $count) : null;
+        $ids = [];
+        for ($i = 0; $i < $count; $i++) {
+            $invoice = $this->invoiceFor($user, $card, Dates::shift($month, $i));
+            $existing = $this->cards->invoice($user, (int)$invoice['id']);
+            if ($invoice['status'] !== 'aberta' || (int)$existing['pago'] > 0) throw new DomainException('A fatura calculada pela data da compra já foi fechada ou recebeu pagamentos.');
+            // Budget consumption follows each installment's cycle; a single purchase uses its purchase date.
+            $competence = $count === 1 ? $date : Dates::day(Dates::shift($month, $i), (int)substr($date, 8, 2));
+            $ids[] = $this->cards->purchase($user, (int)$category['id'], (int)$card['id'], $invoice, $description, intdiv($amount, $count) + ($i < $amount % $count ? 1 : 0), $competence, $installment, $i + 1, $date, trim((string)($input['observacao'] ?? '')) ?: null);
+        }
+        return $ids;
     }
 
     public function pay(int $user, int $id, array $input): void

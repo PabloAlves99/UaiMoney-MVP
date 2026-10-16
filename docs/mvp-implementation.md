@@ -8,7 +8,7 @@ A navegação principal destaca visão geral, movimentações, pendências, plan
 
 O formulário de lançamento usa uma única data e uma única situação; parcelamento, recorrência e outros ajustes ficam em **Mais opções**. Descrições anteriores sugerem uma categoria ativa do próprio usuário, que pode ser alterada antes de salvar.
 
-A importação de CSV/OFX aceita até 200 linhas e 2 MB por arquivo. A prévia permite revisar categorias e possíveis duplicatas. Somente linhas selecionadas entram no banco. Cada importação fica em um lote que pode ser desfeito enquanto seus lançamentos não forem editados. Transferências e pagamentos de fatura devem usar os fluxos próprios.
+A importação de CSV/OFX aceita até 200 linhas e 2 MB por arquivo. O tipo definido no topo (meio de pagamento em conta ou compra no cartão) é aplicado a todas as linhas da prévia; cada linha pode ser ajustada individualmente. A prévia permite revisar categoria, destino e possíveis duplicatas por destino. Somente linhas selecionadas entram no banco. Compras no cartão são associadas à fatura e não debitam a conta; exigem valor negativo e fatura aberta sem pagamentos. Cada importação fica em um lote que pode ser excluído permanentemente com seus lançamentos, desde que estes não tenham sido alterados ou estornados e as faturas envolvidas estejam abertas, sem pagamentos ou créditos. Transferências entre contas e pagamentos de fatura devem usar os fluxos próprios.
 
 ## Escopo entregue
 
