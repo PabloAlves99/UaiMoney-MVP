@@ -1,0 +1,32 @@
+<?php
+declare(strict_types=1);
+require dirname(__DIR__).'/vendor/autoload.php';
+date_default_timezone_set('America/Sao_Paulo');
+$pdo=new PDO('sqlite::memory:',null,null,[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION,PDO::ATTR_DEFAULT_FETCH_MODE=>PDO::FETCH_ASSOC]);
+$pdo->exec('PRAGMA foreign_keys=ON');
+foreach(glob(dirname(__DIR__).'/database/migrations/*.php') as $file){$pdo->beginTransaction();(require $file)($pdo);$pdo->commit();}
+$pdo->exec("INSERT INTO usuarios(nome,login,email,senha_hash) VALUES('Teste','teste','teste@example.test','hash')");
+$investments=new App\Repositories\InvestmentRepository($pdo);
+$investmentService=new App\Services\InvestmentService($investments);
+$investmentService->create(1,['nome'=>'Reserva','tipo'=>'renda_fixa','valor_aplicado'=>'1000','valor_atual'=>'1000','data_inicio'=>date('Y-m-d')]);
+$investmentService->recordEvent(1,1,['tipo'=>'aporte','valor'=>'200','data'=>date('Y-m-d')]);
+$investmentService->recordEvent(1,1,['tipo'=>'retirada','valor'=>'100','data'=>date('Y-m-d')]);
+$investmentService->recordEvent(1,1,['tipo'=>'rendimento','modo'=>'valor','valor'=>'30','data'=>date('Y-m-d')]);
+$item=$investments->find(1,1);
+if((int)$item['valor_atual_centavos']!==113000||(int)$item['valor_aplicado_centavos']!==110000)throw new RuntimeException('Saldo de investimento incorreto.');
+$eventId=(int)$investments->events(1,1)[0]['id'];
+$investmentService->deactivateEvent(1,1,$eventId);
+if((int)$investments->find(1,1)['valor_atual_centavos']!==110000)throw new RuntimeException('Inativação não recalculou saldo.');
+$investmentService->reactivateEvent(1,1,$eventId);
+$pdo->exec("INSERT INTO contas(usuario_id,nome,tipo,saldo_inicial_centavos,saldo_inicial_em) VALUES(1,'Banco','corrente',100000,'2025-01-01')");
+$goals=new App\Repositories\GoalRepository($pdo);$goalService=new App\Services\GoalService($goals);
+$goalService->create(1,['nome'=>'Emergência','tipo'=>'reserva','valor_meta'=>'5000','aporte_mensal'=>'200','prioridade'=>'alta']);
+$goalService->reserve(1,1,['fonte'=>'conta:1','valor'=>'300']);
+if((int)$goals->find(1,1)['valor_atual_centavos']!==30000)throw new RuntimeException('Reserva não atualizou objetivo.');
+$projections=new App\Repositories\ProjectionRepository($pdo);
+$projectionService=new App\Services\ProjectionService($projections,new App\Services\InvestmentProjectionService());
+$id=$projectionService->create(1,['nome'=>'Livre','origem'=>'livre','valor_inicial'=>'100','valor_meta'=>'1000','aporte_mensal'=>'100','taxa'=>'0','periodicidade_taxa'=>'mensal']);
+if((int)$projectionService->detail(1,$id)['result']['months']!==9)throw new RuntimeException('Prazo da simulação livre incorreto.');
+$projectionService->delete(1,$id);$projectionService->reactivate(1,$id);
+if($pdo->query('PRAGMA foreign_key_check')->fetchAll()!==[])throw new RuntimeException('Referência inválida.');
+echo "OK: aportes, retiradas, rendimento, reserva e simulação livre.\n";

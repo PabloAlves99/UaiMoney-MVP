@@ -10,6 +10,7 @@ use App\Repositories\AccountRepository;
 use App\Repositories\CardRepository;
 use App\Repositories\ReportRepository;
 use App\Repositories\InvestmentRepository;
+use App\Repositories\GoalRepository;
 use App\Services\AuthService;
 use App\Services\PlanningService;
 use DomainException;
@@ -24,7 +25,8 @@ final class DashboardController extends FinancialController
         private readonly AccountRepository $accounts,
         private readonly CardRepository $cards,
         private readonly PlanningService $planning,
-        private readonly InvestmentRepository $investments
+        private readonly InvestmentRepository $investments,
+        private readonly GoalRepository $goals
     ) {
         parent::__construct($auth, $csrf, $basePath);
     }
@@ -68,7 +70,13 @@ final class DashboardController extends FinancialController
     {
         $u = (int) $this->requireUser()['id'];
         $month = $this->month();
-        $this->page('planning/index', 'Planejamento', ['month' => $month, 'budgets' => $this->reports->budgets($u, $month), 'categories' => $this->reports->categories($u)]);
+        $this->page('planning/overview', 'Meu plano', ['month'=>$month,'budgets'=>$this->reports->budgets($u,$month),'goals'=>$this->goals->list($u),'investments'=>$this->investments->list($u)]);
+    }
+
+    public function categoryLimits(): void
+    {
+        $u=(int)$this->requireUser()['id'];$month=$this->month();
+        $this->page('planning/index','Limites por categoria',['month'=>$month,'budgets'=>$this->reports->budgets($u,$month),'categories'=>$this->reports->categories($u)]);
     }
 
     public function review(): void
@@ -86,18 +94,18 @@ final class DashboardController extends FinancialController
 
     public function saveBudget(): void
     {
-        $this->action('/planejamento?mes=' . urlencode((string) ($_POST['mes'] ?? date('Y-m'))), fn($u) => $this->planning->save($u, $_POST), 'Orçamento salvo.');
+        $this->action('/categorias/limites?mes=' . urlencode((string) ($_POST['mes'] ?? date('Y-m'))), fn($u) => $this->planning->save($u, $_POST), 'Limite salvo.');
     }
 
     public function copyBudget(): void
     {
         $month = (string) ($_POST['mes'] ?? '');
-        $this->action('/planejamento?mes=' . urlencode($month), fn($u) => $this->planning->copy($u, $month), 'Limites do mês anterior copiados. Os limites já existentes foram mantidos.');
+        $this->action('/categorias/limites?mes=' . urlencode($month), fn($u) => $this->planning->copy($u, $month), 'Limites do mês anterior copiados. Os limites já existentes foram mantidos.');
     }
 
     public function deleteBudget(string $id): void
     {
-        $this->action('/planejamento?mes=' . urlencode((string) ($_POST['mes'] ?? date('Y-m'))), fn($u) => $this->reports->deleteBudget($u, $this->parseId($id)), 'Limite removido deste mês.');
+        $this->action('/categorias/limites?mes=' . urlencode((string) ($_POST['mes'] ?? date('Y-m'))), fn($u) => $this->reports->deleteBudget($u, $this->parseId($id)), 'Limite arquivado neste mês.');
     }
 
     public function analytics(): void

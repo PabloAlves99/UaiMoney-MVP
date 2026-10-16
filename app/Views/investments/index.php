@@ -18,7 +18,7 @@ $gain = (int) $summary['atual'] - (int) $summary['aplicado'];
     <div>
         <p class="eyebrow">PATRIMÔNIO E OBJETIVOS</p>
         <h1>Investimentos</h1>
-        <p class="text-secondary">Registre sua posição para acompanhar o patrimônio que está construindo.</p>
+        <p class="text-secondary">Acompanhe aportes, retiradas e rendimentos confirmados em cada aplicação.</p>
     </div>
     <div class="d-flex flex-wrap gap-2">
         <a class="btn btn-outline-secondary" href="<?= H::escape($basePath . '/projecoes/nova') ?>">Criar projeção</a>
@@ -31,10 +31,10 @@ $gain = (int) $summary['atual'] - (int) $summary['aplicado'];
         <p>Posição atual</p><strong class="metric-value"><?= Money::format((int) $summary['atual']) ?></strong><small>Somente investimentos ativos cadastrados</small>
     </div></section></div>
     <div class="col-md-4"><section class="card metric-card"><div class="card-body">
-        <p>Total aplicado</p><strong class="metric-value"><?= Money::format((int) $summary['aplicado']) ?></strong><small>Valor informado ao registrar cada posição</small>
+        <p>Capital líquido aportado</p><strong class="metric-value"><?= Money::format((int) $summary['aplicado']) ?></strong><small>Aportes menos retiradas registrados</small>
     </div></section></div>
     <div class="col-md-4"><section class="card metric-card"><div class="card-body">
-        <p>Variação informada</p><strong class="metric-value <?= $gain < 0 ? 'text-danger' : 'text-success' ?>"><?= Money::format($gain) ?></strong><small>Posição atual menos o total aplicado; não é recomendação nem rentabilidade anual.</small>
+        <p>Resultado acumulado</p><strong class="metric-value <?= $gain < 0 ? 'text-danger' : 'text-success' ?>"><?= Money::format($gain) ?></strong><small>Saldo atual menos capital líquido aportado; inclui ajustes anteriores.</small>
     </div></section></div>
 </div>
 
@@ -42,12 +42,12 @@ $gain = (int) $summary['atual'] - (int) $summary['aplicado'];
     <div class="col-xl-7"><section class="card h-100"><div class="card-body">
         <div class="section-heading"><h2 class="h4">Onde seu dinheiro está investido</h2><span class="small text-secondary"><?= count($investments) ?> registro(s)</span></div>
         <?php if (!$investments): ?><div class="empty-state"><h3 class="h5">Comece pelo que você já possui</h3><p>Cadastre uma aplicação, mesmo que seja a reserva de emergência. Isso separa investimento de dinheiro disponível para gastar.</p></div><?php endif; ?>
-        <?php foreach ($investments as $investment): $change = (int) $investment['valor_atual_centavos'] - (int) $investment['valor_aplicado_centavos']; ?>
+        <?php foreach ($investments as $investment): $change = (int) $investment['valor_atual_centavos'] - (int) $investment['aporte_liquido_centavos']; ?>
             <article class="investment-row <?= !(int) $investment['ativo'] ? 'is-inactive' : '' ?>">
-                <div><strong><?= H::escape($investment['nome']) ?></strong><small><?= H::escape($types[$investment['tipo']] ?? 'Outro') ?><?= $investment['instituicao'] ? ' · ' . H::escape($investment['instituicao']) : '' ?> · desde <?= H::date($investment['data_inicio']) ?><?= $investment['objetivo'] ? '<br>Objetivo: ' . H::escape($investment['objetivo']) : '' ?></small></div>
+                <div><strong><a href="<?= H::escape($basePath.'/investimentos/'.$investment['id']) ?>"><?= H::escape($investment['nome']) ?></a></strong><small><?= H::escape($types[$investment['tipo']] ?? 'Outro') ?><?= $investment['instituicao'] ? ' · ' . H::escape($investment['instituicao']) : '' ?> · desde <?= H::date($investment['data_inicio']) ?><?= $investment['objetivo'] ? '<br>Objetivo: ' . H::escape($investment['objetivo']) : '' ?></small></div>
                 <div class="text-end"><strong><?= Money::format((int) $investment['valor_atual_centavos']) ?></strong><small class="<?= $change < 0 ? 'text-danger' : 'text-success' ?>">Variação: <?= Money::format($change) ?></small>
                     <?php if ((int) $investment['ativo']): ?>
-                        <details class="mt-2"><summary class="small">Atualizar valor</summary><form method="post" action="<?= H::escape($basePath . '/investimentos/' . $investment['id'] . '/valor-atual') ?>" class="d-flex gap-2 mt-2"><?= H::fields($csrfToken) ?><label class="visually-hidden" for="current-<?= (int) $investment['id'] ?>">Valor atual</label><input id="current-<?= (int) $investment['id'] ?>" class="form-control form-control-sm" name="valor_atual" inputmode="decimal" required value="<?= H::escape(number_format((int) $investment['valor_atual_centavos'] / 100, 2, ',', '')) ?>"><button class="btn btn-sm btn-uai-primary">Salvar</button></form></details>
+                        <a class="btn btn-sm btn-uai-primary mt-2" href="<?= H::escape($basePath.'/investimentos/'.$investment['id']) ?>">Registrar movimentação</a>
                         <form method="post" action="<?= H::escape($basePath . '/investimentos/' . $investment['id'] . '/arquivar') ?>" class="mt-2"><?= H::fields($csrfToken) ?><button class="btn btn-sm btn-outline-secondary">Arquivar</button></form>
                     <?php endif; ?>
                 </div>
@@ -63,6 +63,7 @@ $gain = (int) $summary['atual'] - (int) $summary['aplicado'];
             <div><label class="form-label" for="investment-institution">Instituição</label><input id="investment-institution" class="form-control" name="instituicao" placeholder="Opcional" value="<?= H::escape($old['instituicao'] ?? '') ?>"></div>
             <div><label class="form-label" for="investment-goal">Objetivo</label><input id="investment-goal" class="form-control" name="objetivo" placeholder="Ex.: Reserva de emergência" value="<?= H::escape($old['objetivo'] ?? '') ?>"></div>
             <div class="row g-3"><div class="col-sm-6"><label class="form-label" for="investment-applied">Total aplicado (R$)</label><input id="investment-applied" class="form-control" inputmode="decimal" name="valor_aplicado" required value="<?= H::escape($old['valor_aplicado'] ?? '') ?>"></div><div class="col-sm-6"><label class="form-label" for="investment-current">Valor atual (R$)</label><input id="investment-current" class="form-control" inputmode="decimal" name="valor_atual" required value="<?= H::escape($old['valor_atual'] ?? '') ?>"></div></div>
+            <div><label class="form-label" for="investment-monthly">Aporte mensal planejado (R$)</label><input id="investment-monthly" class="form-control" inputmode="decimal" name="aporte_mensal" value="<?=H::escape($old['aporte_mensal']??'0')?>"></div>
             <button class="btn btn-uai-primary">Salvar investimento</button>
         </form>
         <p class="small text-secondary mt-3 mb-0">Este registro é para visão patrimonial. Ele não movimenta o saldo das contas nem substitui uma corretora.</p>

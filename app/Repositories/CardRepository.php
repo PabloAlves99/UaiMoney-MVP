@@ -33,6 +33,8 @@ final class CardRepository extends FinanceRepository
         $this->run('UPDATE cartoes SET ativo=0 WHERE usuario_id=? AND id=?', [$user, $id]);
     }
 
+    public function reactivate(int $user,int $id): void { $this->run('UPDATE cartoes SET ativo=1,atualizado_em=CURRENT_TIMESTAMP WHERE usuario_id=? AND id=?',[$user,$id]); }
+
     public function invoices(int $user, ?int $card = null): array
     {
         return $this->rows("SELECT f.*,c.nome AS cartao_nome,c.conta_pagamento_id,

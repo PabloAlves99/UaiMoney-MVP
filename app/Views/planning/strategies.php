@@ -1,5 +1,5 @@
 <?php use App\Core\Html as H; ?>
-<div class="page-heading"><div><p class="eyebrow">MÉTODOS PARA TOMAR DECISÕES</p><h1>Estratégias financeiras</h1><p class="text-secondary">Escolha um método simples, teste por alguns meses e adapte-o à sua realidade.</p></div><a class="btn btn-outline-secondary" href="<?= H::escape($basePath . '/planejamento') ?>">Definir limites</a></div>
+<div class="page-heading"><div><p class="eyebrow">MÉTODOS PARA TOMAR DECISÕES</p><h1>Estratégias financeiras</h1><p class="text-secondary">Escolha um método simples, teste por alguns meses e adapte-o à sua realidade.</p></div><a class="btn btn-outline-secondary" href="<?= H::escape($basePath . '/categorias/limites') ?>">Definir limites</a></div>
 <div class="strategy-note mb-4"><strong>Antes de escolher:</strong> estratégias são guias de organização, não regras rígidas nem recomendação de investimento. Priorize despesas essenciais, dívidas caras e uma reserva adequada ao seu contexto.</div>
 <div class="row g-4">
 <?php foreach ([

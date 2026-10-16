@@ -32,10 +32,10 @@ final class ProjectionService
     public function detail(int $user, int $id): array
     {
         $projection = $this->projections->find($user, $id);
-        if (!$projection) throw new DomainException('Projeção não encontrada.');
+        if (!$projection || !(int)$projection['ativo']) throw new DomainException('Projeção não encontrada.');
         $projection['result'] = $this->calculateRow($projection);
         $sourceId = (int) ($projection['investimento_id'] ?: $projection['objetivo_id']);
-        $projection['history'] = $this->projections->history($user, (string) $projection['origem_tipo'], $sourceId);
+        $projection['history'] = $sourceId ? $this->projections->history($user, (string) $projection['origem_tipo'], $sourceId) : [];
         return $projection;
     }
 
@@ -58,6 +58,8 @@ final class ProjectionService
         if (!$this->projections->delete($user, $id)) throw new DomainException('Projeção não encontrada.');
     }
 
+    public function reactivate(int $user,int $id): void { if(!$this->projections->reactivate($user,$id)) throw new DomainException('Projeção arquivada não encontrada.'); }
+
     private function validated(int $user, array $input): array
     {
         $name = trim((string) ($input['nome'] ?? ''));
@@ -65,24 +67,23 @@ final class ProjectionService
 
         $origin = explode(':', (string) ($input['origem'] ?? ''), 2);
         $type = $origin[0] ?? '';
-        $sourceId = filter_var($origin[1] ?? null, FILTER_VALIDATE_INT);
-        if (!in_array($type, ['investimento', 'objetivo'], true) || !$sourceId || $sourceId < 1) {
-            throw new DomainException('Selecione um investimento ou objetivo válido.');
-        }
-        $source = $this->projections->source($user, $type, (int) $sourceId);
-        if (!$source || !(int) $source['ativo']) throw new DomainException('A origem selecionada não está ativa ou não pertence a você.');
+        $sourceId = $type==='livre' ? null : filter_var($origin[1] ?? null, FILTER_VALIDATE_INT);
+        if (!in_array($type, ['investimento', 'objetivo', 'livre'], true) || ($type!=='livre' && (!$sourceId || $sourceId < 1))) throw new DomainException('Selecione uma origem válida.');
+        $source = $type==='livre' ? null : $this->projections->source($user, $type, (int) $sourceId);
+        if ($type!=='livre' && (!$source || !(int) $source['ativo'])) throw new DomainException('A origem selecionada não está ativa ou não pertence a você.');
 
         $contribution = Money::toCents((string) ($input['aporte_mensal'] ?? ''));
         $rate = $this->calculator->ratePercent((string) ($input['taxa'] ?? ''));
         $period = (string) ($input['periodicidade_taxa'] ?? '');
         if (!in_array($period, ['mensal', 'anual'], true)) throw new DomainException('Selecione a periodicidade da taxa.');
 
+        $initial = $type==='livre' ? Money::toCents((string)($input['valor_inicial']??'0')) : (int)$source['atual_centavos'];
         $target = $type === 'objetivo'
             ? (int) $source['meta_centavos']
             : Money::toCents((string) ($input['valor_meta'] ?? ''));
-        $storedTarget = $type === 'investimento' ? $target : null;
+        $storedTarget = $type === 'objetivo' ? null : $target;
 
-        $this->calculator->calculateAmounts((int) $source['atual_centavos'], $contribution, $target, $rate, $period, date('Y-m'));
+        $this->calculator->calculateAmounts($initial, $contribution, $target, $rate, $period, date('Y-m'));
 
         return [
             $name,
@@ -93,6 +94,7 @@ final class ProjectionService
             (int) round($rate * 10000),
             $period,
             $storedTarget,
+            $type==='livre' ? $initial : 0,
         ];
     }
 

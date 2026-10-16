@@ -114,21 +114,24 @@ final class ReportRepository extends FinanceRepository
         return $this->rows("SELECT b.*,g.nome,
             COALESCE((SELECT SUM(c.valor_centavos) FROM consumo c WHERE c.usuario_id=b.usuario_id AND c.grupo_id=b.grupo_id AND substr(c.data,1,7)=b.ano_mes AND c.status='efetivada'),0) AS realizado,
             COALESCE((SELECT SUM(c.valor_centavos) FROM consumo c WHERE c.usuario_id=b.usuario_id AND c.grupo_id=b.grupo_id AND substr(c.data,1,7)=b.ano_mes AND c.status='pendente'),0) AS pendente
-            FROM orcamentos b JOIN grupos g ON g.id=b.grupo_id AND g.usuario_id=b.usuario_id WHERE b.usuario_id=? AND b.ano_mes=? ORDER BY g.nome", [$user, $month]);
+            FROM orcamentos b JOIN grupos g ON g.id=b.grupo_id AND g.usuario_id=b.usuario_id WHERE b.usuario_id=? AND b.ano_mes=? AND b.ativo=1 ORDER BY g.nome", [$user, $month]);
     }
 
     public function saveBudget(int $user, string $month, int $group, int $amount): void
     {
-        $this->run('INSERT INTO orcamentos(usuario_id,ano_mes,grupo_id,valor_limite_centavos) VALUES(?,?,?,?) ON CONFLICT(usuario_id,ano_mes,grupo_id) DO UPDATE SET valor_limite_centavos=excluded.valor_limite_centavos,atualizado_em=CURRENT_TIMESTAMP', [$user, $month, $group, $amount]);
+        $this->run('INSERT INTO orcamentos(usuario_id,ano_mes,grupo_id,valor_limite_centavos) VALUES(?,?,?,?) ON CONFLICT(usuario_id,ano_mes,grupo_id) DO UPDATE SET valor_limite_centavos=excluded.valor_limite_centavos,ativo=1,atualizado_em=CURRENT_TIMESTAMP', [$user, $month, $group, $amount]);
     }
 
     public function deleteBudget(int $user, int $id): void
     {
-        $this->run('DELETE FROM orcamentos WHERE usuario_id=? AND id=?', [$user, $id]);
+        $this->run('UPDATE orcamentos SET ativo=0,atualizado_em=CURRENT_TIMESTAMP WHERE usuario_id=? AND id=?', [$user, $id]);
     }
+
+    public function inactiveBudgets(int $user): array { return $this->rows('SELECT b.*,g.nome FROM orcamentos b JOIN grupos g ON g.id=b.grupo_id WHERE b.usuario_id=? AND b.ativo=0 ORDER BY b.ano_mes DESC,g.nome',[$user]); }
+    public function reactivateBudget(int $user,int $id): void { $this->run('UPDATE orcamentos SET ativo=1,atualizado_em=CURRENT_TIMESTAMP WHERE usuario_id=? AND id=?',[$user,$id]); }
 
     public function copyBudgets(int $user, string $from, string $to): void
     {
-        $this->run('INSERT OR IGNORE INTO orcamentos(usuario_id,ano_mes,grupo_id,valor_limite_centavos) SELECT usuario_id,?,grupo_id,valor_limite_centavos FROM orcamentos WHERE usuario_id=? AND ano_mes=?', [$to, $user, $from]);
+        $this->run('INSERT OR IGNORE INTO orcamentos(usuario_id,ano_mes,grupo_id,valor_limite_centavos) SELECT usuario_id,?,grupo_id,valor_limite_centavos FROM orcamentos WHERE usuario_id=? AND ano_mes=? AND ativo=1', [$to, $user, $from]);
     }
 }

@@ -7,17 +7,17 @@ namespace App\Repositories;
 final class ProjectionRepository extends FinanceRepository
 {
     private const SELECT = "SELECT p.*,
-        COALESCE(i.nome, m.nome) AS origem_nome,
-        CASE p.origem_tipo WHEN 'investimento' THEN i.valor_atual_centavos ELSE m.valor_atual_centavos END AS valor_inicial_centavos,
-        CASE p.origem_tipo WHEN 'investimento' THEN p.valor_meta_centavos ELSE m.valor_meta_centavos END AS meta_calculada_centavos,
-        CASE p.origem_tipo WHEN 'investimento' THEN i.ativo ELSE m.ativo END AS origem_ativa
+        COALESCE(i.nome, m.nome, 'Simulação livre') AS origem_nome,
+        CASE p.origem_tipo WHEN 'investimento' THEN i.valor_atual_centavos WHEN 'objetivo' THEN m.valor_atual_centavos ELSE p.valor_inicial_livre_centavos END AS valor_inicial_centavos,
+        CASE p.origem_tipo WHEN 'objetivo' THEN m.valor_meta_centavos ELSE p.valor_meta_centavos END AS meta_calculada_centavos,
+        CASE p.origem_tipo WHEN 'investimento' THEN i.ativo WHEN 'objetivo' THEN m.ativo ELSE 1 END AS origem_ativa
         FROM projecoes p
         LEFT JOIN investimentos i ON i.id=p.investimento_id AND i.usuario_id=p.usuario_id
         LEFT JOIN metas_financeiras m ON m.id=p.objetivo_id AND m.usuario_id=p.usuario_id";
 
     public function list(int $user): array
     {
-        return $this->rows(self::SELECT . ' WHERE p.usuario_id=? ORDER BY p.atualizado_em DESC, p.nome', [$user]);
+        return $this->rows(self::SELECT . ' WHERE p.usuario_id=? AND p.ativo=1 ORDER BY p.atualizado_em DESC, p.nome', [$user]);
     }
 
     public function find(int $user, int $id): ?array
@@ -28,10 +28,10 @@ final class ProjectionRepository extends FinanceRepository
 
     public function sources(int $user): array
     {
-        return $this->rows("SELECT 'investimento' AS tipo, id, nome, valor_atual_centavos AS atual_centavos, NULL AS meta_centavos, ativo
+        return $this->rows("SELECT 'investimento' AS tipo, id, nome, valor_atual_centavos AS atual_centavos, NULL AS meta_centavos, ativo, aporte_mensal_centavos,taxa_referencia_quatro_casas
             FROM investimentos WHERE usuario_id=?
             UNION ALL
-            SELECT 'objetivo', id, nome, valor_atual_centavos, valor_meta_centavos, ativo
+            SELECT 'objetivo', id, nome, valor_atual_centavos, valor_meta_centavos, ativo, aporte_mensal_centavos, 0
             FROM metas_financeiras WHERE usuario_id=?
             ORDER BY ativo DESC, tipo, nome", [$user, $user]);
     }
@@ -54,17 +54,20 @@ final class ProjectionRepository extends FinanceRepository
 
     public function create(int $user, array $data): int
     {
-        $this->run('INSERT INTO projecoes(usuario_id,nome,origem_tipo,investimento_id,objetivo_id,aporte_mensal_centavos,taxa_quatro_casas,periodicidade_taxa,valor_meta_centavos) VALUES(?,?,?,?,?,?,?,?,?)', [$user, ...$data]);
+        $this->run('INSERT INTO projecoes(usuario_id,nome,origem_tipo,investimento_id,objetivo_id,aporte_mensal_centavos,taxa_quatro_casas,periodicidade_taxa,valor_meta_centavos,valor_inicial_livre_centavos) VALUES(?,?,?,?,?,?,?,?,?,?)', [$user, ...$data]);
         return (int) $this->pdo->lastInsertId();
     }
 
     public function update(int $user, int $id, array $data): bool
     {
-        return $this->run('UPDATE projecoes SET nome=?,origem_tipo=?,investimento_id=?,objetivo_id=?,aporte_mensal_centavos=?,taxa_quatro_casas=?,periodicidade_taxa=?,valor_meta_centavos=?,atualizado_em=CURRENT_TIMESTAMP WHERE usuario_id=? AND id=?', [...$data, $user, $id]) === 1;
+        return $this->run('UPDATE projecoes SET nome=?,origem_tipo=?,investimento_id=?,objetivo_id=?,aporte_mensal_centavos=?,taxa_quatro_casas=?,periodicidade_taxa=?,valor_meta_centavos=?,valor_inicial_livre_centavos=?,atualizado_em=CURRENT_TIMESTAMP WHERE usuario_id=? AND id=? AND ativo=1', [...$data, $user, $id]) === 1;
     }
 
     public function delete(int $user, int $id): bool
     {
-        return $this->run('DELETE FROM projecoes WHERE usuario_id=? AND id=?', [$user, $id]) === 1;
+        return $this->run('UPDATE projecoes SET ativo=0,atualizado_em=CURRENT_TIMESTAMP WHERE usuario_id=? AND id=? AND ativo=1', [$user, $id]) === 1;
     }
+
+    public function reactivate(int $user,int $id): bool { return $this->run('UPDATE projecoes SET ativo=1,atualizado_em=CURRENT_TIMESTAMP WHERE usuario_id=? AND id=? AND ativo=0',[$user,$id])===1; }
+    public function inactive(int $user): array { return $this->rows(self::SELECT.' WHERE p.usuario_id=? AND p.ativo=0 ORDER BY p.atualizado_em DESC',[$user]); }
 }

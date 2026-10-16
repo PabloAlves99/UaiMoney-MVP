@@ -3,14 +3,14 @@ use App\Core\Html as H;
 $path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
 $relative = $basePath !== '' && str_starts_with($path, $basePath) ? substr($path, strlen($basePath)) : $path;
 $exploreLinks = ['/analises' => 'Análises', '/investimentos' => 'Investimentos', '/objetivos' => 'Objetivos', '/projecoes' => 'Projeções'];
-$moreLinks = ['/cartoes' => 'Cartões', '/categorias' => 'Categorias', '/recorrencias' => 'Recorrências'];
+$moreLinks = ['/cartoes' => 'Cartões', '/categorias' => 'Categorias', '/recorrencias' => 'Recorrências', '/arquivados'=>'Arquivados'];
 if (($usuario['tipo'] ?? '') === 'admin') $moreLinks['/admin/usuarios'] = 'Administração de usuários';
 $isActive = fn(string $url): bool => $url === '/' ? ($relative === '' || $relative === '/') : ($relative === $url || str_starts_with($relative, $url . '/'));
 $navigation = [
     ['label' => 'Visão geral', 'url' => '/'],
     ['label' => 'Movimentações', 'url' => '/movimentacoes'],
     ['label' => 'Para conferir', 'url' => '/conferir'],
-    ['label' => 'Planejamento', 'url' => '/planejamento'],
+    ['label' => 'Meu plano', 'url' => '/planejamento'],
     ['label' => 'Contas', 'url' => '/contas'],
     ['label' => 'Explorar', 'items' => $exploreLinks],
     ['label' => 'Mais', 'items' => $moreLinks],

@@ -58,7 +58,7 @@ $budgetAlerts = array_values(array_filter($budgets, fn($budget) => (int)$budget[
                 <?php endforeach; ?>
                 <div class="analysis-planning">
                     <p class="small text-secondary mb-2"><?= $budgetAvailable ? 'Os limites são mensais; o gasto considera apenas o período selecionado.' : 'Para comparar com os limites, selecione um mês a partir do dia 1, sem filtros de conta, cartão, subcategoria ou meio de pagamento.' ?></p>
-                    <a href="<?= H::escape($basePath . '/planejamento?mes=' . $month) ?>"><?= $budgets ? 'Ajustar limites' : 'Definir limites por categoria' ?> →</a>
+                    <a href="<?= H::escape($basePath . '/categorias/limites?mes=' . $month) ?>"><?= $budgets ? 'Ajustar limites' : 'Definir limites por categoria' ?> →</a>
                 </div>
             </div>
         </section>
@@ -107,7 +107,7 @@ $budgetAlerts = array_values(array_filter($budgets, fn($budget) => (int)$budget[
                     <div class="analysis-insight <?= $used >= $limit ? 'analysis-alert-danger' : 'analysis-alert-warning' ?>">
                         <p class="eyebrow"><?= $used >= $limit ? 'LIMITE EXCEDIDO' : 'ALERTA DE LIMITE' ?></p><strong><?= H::escape($alert['nome']) ?></strong>
                         <p><?= number_format($used / $limit * 100, 0, ',', '.') ?>% do limite mensal usado (<?= Money::format($used) ?> de <?= Money::format($limit) ?>).</p>
-                        <a href="<?= H::escape($basePath . '/planejamento?mes=' . $month) ?>">Ajustar planejamento →</a>
+                        <a href="<?= H::escape($basePath . '/categorias/limites?mes=' . $month) ?>">Ajustar limites →</a>
                     </div>
                 <?php endforeach; endif; ?>
                 <div class="analysis-insight">

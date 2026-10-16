@@ -76,6 +76,7 @@ final class ProjectionController extends FinancialController
 
     public function delete(string $id): void
     {
-        $this->action('/projecoes', fn(int $user) => $this->service->delete($user, $this->parseId($id)), 'Projeção excluída.');
+        $this->action('/projecoes', fn(int $user) => $this->service->delete($user, $this->parseId($id)), 'Projeção arquivada.');
     }
+    public function reactivate(string $id): void { $this->action('/arquivados',fn(int $u)=>$this->service->reactivate($u,$this->parseId($id)),'Projeção reativada.'); }
 }
