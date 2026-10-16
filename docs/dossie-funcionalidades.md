@@ -34,7 +34,7 @@ Categorias separam receita de despesa, contêm subcategorias e podem classificar
 
 O sistema separa **consumo por competência** de **movimento de caixa**. Isso permite ver a despesa no período correto sem confundir uma compra no crédito com a data em que a conta bancária pagou a fatura. Estornos reduzem o consumo original e ajustam o caixa quando correspondem a lançamentos de conta.
 
-O formulário sugere categorias com base em descrições já usadas, deixando a decisão final com o usuário. Há importação de extratos CSV e OFX com prévia, associação de categoria, sinalização de possíveis duplicatas e possibilidade de desfazer o último lote importado. O usuário também pode filtrar e exportar movimentações.
+O formulário sugere categorias com base em descrições já usadas, deixando a decisão final com o usuário. Há importação de extratos CSV e OFX com prévia persistente por usuário, associação de categoria, sinalização de possíveis duplicatas, seleção em massa, envio de uma linha ou das selecionadas e possibilidade de desfazer o último lote importado. Linhas não enviadas permanecem no rascunho para continuar depois de criar categorias; o usuário pode remover linhas ou descartar toda a prévia. O usuário também pode filtrar e exportar movimentações.
 
 ### Compromissos automáticos
 

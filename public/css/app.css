@@ -2521,7 +2521,18 @@ h1 { font-size: clamp(1.75rem, 2.4vw, 2.25rem); letter-spacing: -.035em; font-we
 .dashboard-balance .metric-value { color: var(--uai-text); }
 .dashboard-month-summary { background: var(--uai-surface); }
 .dashboard-month-divider { margin: 20px 0 0; border: 0; border-top: 1px solid var(--uai-border); opacity: 1; }
-.dashboard-month-details { margin-top: 0; }
+.dashboard-month-details { margin-top: 10px; }
+.dashboard-month-panel {
+  height: 100%;
+  padding: 18px 20px 20px;
+  border: 1px solid var(--uai-border);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--uai-surface) 92%, var(--uai-surface-secondary));
+}
+.dashboard-month-panel-budgets { border-top: 3px solid var(--uai-danger); }
+.dashboard-month-panel-goals { border-top: 3px solid var(--uai-primary); }
+.dashboard-month-panel .section-heading { gap: 12px; }
+.dashboard-month-panel .section-heading h3 { line-height: 1.35; }
 .dashboard-month-summary .budget-progress,
 .dashboard-month-summary .budget-progress::-webkit-progress-bar { background: var(--uai-surface-secondary); }
 .dashboard-month-summary .budget-progress { accent-color: var(--uai-danger); }

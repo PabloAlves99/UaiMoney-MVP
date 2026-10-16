@@ -98,10 +98,75 @@ final class StatementImportService
         return $stmt->fetchColumn() !== false;
     }
 
-    public function import(int $user, int $account, array $rows, array $selected, array $categories): int
+    public function draft(int $user): ?array
+    {
+        $stmt = $this->pdo->prepare('SELECT conta_id,nonce,itens_json,atualizado_em FROM rascunhos_importacao WHERE usuario_id=?');
+        $stmt->execute([$user]);
+        $record = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$record) return null;
+        return [
+            'user' => $user,
+            'account' => (int) $record['conta_id'],
+            'nonce' => $record['nonce'],
+            'rows' => json_decode($record['itens_json'], true, 512, JSON_THROW_ON_ERROR),
+            'updated' => $record['atualizado_em'],
+        ];
+    }
+
+    public function createDraft(int $user, int $account, array $rows): void
+    {
+        $nonce = bin2hex(random_bytes(16));
+        $stmt = $this->pdo->prepare('INSERT INTO rascunhos_importacao(usuario_id,conta_id,nonce,itens_json)
+            VALUES(?,?,?,?) ON CONFLICT(usuario_id) DO UPDATE SET conta_id=excluded.conta_id,
+            nonce=excluded.nonce,itens_json=excluded.itens_json,atualizado_em=CURRENT_TIMESTAMP');
+        $stmt->execute([$user, $account, $nonce, json_encode($rows, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR)]);
+    }
+
+    public function saveDraftChoices(int $user, string $nonce, array $selected, array $categories): void
+    {
+        $draft = $this->draft($user);
+        if (!$draft || !hash_equals($draft['nonce'], $nonce)) throw new DomainException('Prévia alterada. Recarregue a página.');
+        foreach ($draft['rows'] as $index => &$row) {
+            $row['selected'] = isset($selected[$index]);
+            $row['category_id'] = max(0, (int) ($categories[$index] ?? 0));
+        }
+        unset($row);
+        $stmt = $this->pdo->prepare('UPDATE rascunhos_importacao SET itens_json=?,atualizado_em=CURRENT_TIMESTAMP WHERE usuario_id=? AND nonce=?');
+        $stmt->execute([json_encode($draft['rows'], JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR), $user, $nonce]);
+        if ($stmt->rowCount() !== 1) throw new DomainException('Prévia alterada. Recarregue a página.');
+    }
+
+    public function discardDraft(int $user, string $nonce): void
+    {
+        $stmt = $this->pdo->prepare('DELETE FROM rascunhos_importacao WHERE usuario_id=? AND nonce=?');
+        $stmt->execute([$user, $nonce]);
+        if ($stmt->rowCount() !== 1) throw new DomainException('Prévia alterada. Recarregue a página.');
+    }
+
+    public function removeDraftRow(int $user, string $nonce, int $index): void
+    {
+        $draft = $this->draft($user);
+        if (!$draft || !hash_equals($draft['nonce'], $nonce) || !array_key_exists($index, $draft['rows']))
+            throw new DomainException('Linha não encontrada. Recarregue a página.');
+        array_splice($draft['rows'], $index, 1);
+        if (!$draft['rows']) {
+            $this->discardDraft($user, $nonce);
+            return;
+        }
+        $stmt = $this->pdo->prepare('UPDATE rascunhos_importacao SET nonce=?,itens_json=?,atualizado_em=CURRENT_TIMESTAMP WHERE usuario_id=? AND nonce=?');
+        $stmt->execute([bin2hex(random_bytes(16)), json_encode($draft['rows'], JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR), $user, $nonce]);
+        if ($stmt->rowCount() !== 1) throw new DomainException('Prévia alterada. Recarregue a página.');
+    }
+
+    public function import(int $user, int $account, array $rows, array $selected, array $categories, ?string $draftNonce = null): int
     {
         $this->pdo->exec('BEGIN IMMEDIATE');
         try {
+            if ($draftNonce !== null) {
+                $draft = $this->draft($user);
+                if (!$draft || !hash_equals($draft['nonce'], $draftNonce) || $draft['account'] !== $account || $draft['rows'] !== $rows)
+                    throw new DomainException('Prévia alterada. Recarregue a página.');
+            }
             $stmt = $this->pdo->prepare('INSERT INTO lotes_importacao(usuario_id) VALUES(?)');
             $stmt->execute([$user]);
             $batch = (int) $this->pdo->lastInsertId();
@@ -116,6 +181,20 @@ final class StatementImportService
                 $count++;
             }
             if ($count === 0) throw new DomainException('Selecione ao menos um lançamento novo para importar.');
+            if ($draftNonce !== null) {
+                $remaining = [];
+                foreach ($rows as $index => $row) {
+                    if (isset($selected[$index])) continue;
+                    $row['category_id'] = max(0, (int) ($categories[$index] ?? ($row['category_id'] ?? 0)));
+                    $remaining[] = $row;
+                }
+                if ($remaining) {
+                    $this->pdo->prepare('UPDATE rascunhos_importacao SET nonce=?,itens_json=?,atualizado_em=CURRENT_TIMESTAMP WHERE usuario_id=? AND nonce=?')
+                        ->execute([bin2hex(random_bytes(16)), json_encode($remaining, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR), $user, $draftNonce]);
+                } else {
+                    $this->pdo->prepare('DELETE FROM rascunhos_importacao WHERE usuario_id=? AND nonce=?')->execute([$user, $draftNonce]);
+                }
+            }
             $this->pdo->exec('COMMIT');
             return $batch;
         } catch (Throwable $error) {

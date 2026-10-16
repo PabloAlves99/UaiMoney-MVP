@@ -4,7 +4,7 @@ Controle financeiro pessoal em PHP 8.1+, SQLite, Bootstrap e JavaScript. A vers�
 
 Contas, categorias, movimentações, parcelamentos, recorrências, cartões, faturas, orçamento, análises, transferências, conferência de saldo e estornos trabalham na mesma base. A navegação prioriza visão geral, movimentações, pendências, planejamento e contas; recursos avançados ficam em Explorar e Mais.
 
-Em **Movimentações → Importar extrato**, arquivos CSV (Data, Descrição, Valor) e OFX têm prévia, seleção de categorias, detecção de duplicatas e opção de desfazer o último lote. O formulário de lançamento sugere categorias a partir de descrições já usadas, sempre permitindo revisão antes de salvar.
+Em **Movimentações → Importar extrato**, arquivos CSV (Data, Descrição, Valor) e OFX têm prévia salva no banco por usuário, seleção de categorias, detecção de duplicatas, envio de uma linha ou das selecionadas e opção de desfazer o último lote. As linhas ainda não enviadas permanecem no rascunho para continuar depois de criar categorias. O formulário de lançamento sugere categorias a partir de descrições já usadas, sempre permitindo revisão antes de salvar.
 
 O extrato de uma conta pode ser compartilhado em modo somente leitura por um link secreto revogável, com senha adicional opcional. A página pública mostra apenas datas, descrições, entradas, saídas e um gráfico mensal, sempre respeitando os filtros escolhidos.
 
@@ -39,7 +39,7 @@ php tests/upgrade.php
 php database/status.php
 ```
 
-Os testes financeiros usam SQLite em memória. O teste de atualização parte do schema 017 com lançamentos existentes e verifica preservação de registros, saldo e integridade ao migrar para 031. `php tests/statement_import.php` cobre importação sem usar o banco real.
+Os testes financeiros usam SQLite em memória. O teste de atualização parte do schema 017 com lançamentos existentes e verifica preservação de registros, saldo e integridade ao migrar para 032. `php tests/statement_import.php` cobre importação sem usar o banco real.
 
 - [Implementação, regras e teste HTTP](docs/mvp-implementation.md)
 - [Dossiê de funcionalidades e regras do produto](docs/dossie-funcionalidades.md)

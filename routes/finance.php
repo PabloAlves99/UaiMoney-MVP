@@ -57,6 +57,9 @@ $movementController = new \App\Controllers\MovementController(
 $router->get('/movimentacoes/nova', [$movementController, 'form']);
 $router->get('/movimentacoes/importar', [$statementImportController, 'index']);
 $router->post('/movimentacoes/importar/previa', [$statementImportController, 'preview']);
+$router->post('/movimentacoes/importar/rascunho', [$statementImportController, 'saveDraft']);
+$router->post('/movimentacoes/importar/linha/remover', [$statementImportController, 'removeRow']);
+$router->post('/movimentacoes/importar/descartar', [$statementImportController, 'discard']);
 $router->post('/movimentacoes/importar', [$statementImportController, 'save']);
 $router->post('/movimentacoes/importar/desfazer', [$statementImportController, 'undo']);
 $router->post('/movimentacoes', [$movementController, 'save']);
