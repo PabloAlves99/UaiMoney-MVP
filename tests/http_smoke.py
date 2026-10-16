@@ -66,7 +66,7 @@ class Client:
 ana = Client()
 status, html, _ = ana.submit('/login', '/login', {'identifier': 'ana', 'senha': 'UaiTeste!2026'})
 check(status == 200 and 'Visão geral' in html, 'Login')
-paths = ['/', '/conferir', '/cartoes', '/cartoes/1', '/faturas/1', '/planejamento', '/investimentos', '/objetivos', '/projecoes', '/projecoes/nova', '/estrategias', '/analises', '/analises?agrupar=mes', '/carteira', '/comecar', '/movimentacoes', '/movimentacoes/importar', '/movimentacoes/1', '/movimentacoes/avancado', '/recorrencias', '/categorias', '/contas', '/contas/1', '/movimentacoes/5/editar']
+paths = ['/', '/conferir', '/cartoes', '/cartoes/1', '/faturas/1', '/planejamento', '/investimentos', '/objetivos', '/projecoes', '/projecoes/nova', '/estrategias', '/analises', '/analises?agrupar=mes', '/carteira', '/comecar', '/movimentacoes', '/movimentacoes/importar', '/movimentacoes/1', '/movimentacoes/avancado', '/recorrencias', '/categorias', '/contas', '/contas/1', '/movimentacoes/5/editar', '/arquivados']
 for path in paths:
     status, html, headers = ana.request(path)
     check(status == 200, f'Route {path}: {status}')
@@ -184,15 +184,15 @@ check(status == 422 and 'mudou desde' in html, 'Stale edit rejected through HTTP
 status, _, _ = new.request(edit_path)
 check(status == 404, 'Foreign edit form blocked')
 status, html, _ = ana.submit(detail, detail + '/excluir', {})
-check(status == 200 and 'movida para a lixeira' in html, 'Delete through form')
+check(status == 200 and 'arquivada' in html, 'Archive through form')
 status, _, _ = ana.request(detail)
 check(status == 404, 'Deleted detail unavailable')
 status, html, _ = ana.request(query)
 check('0 lançamentos' in html, 'Deleted movement absent from active list')
-trash = query + '&lixeira=1'
-status, html, _ = ana.request(trash)
-check(status == 200 and '1 lançamento' in html, 'Deleted movement visible in trash')
-status, html, _ = ana.submit(trash, detail + '/restaurar', {})
+archives = '/arquivados'
+status, html, _ = ana.request(archives)
+check(status == 200 and 'Arquivados: Movimentações' in html and regular['descricao'] in html, 'Archived movement visible in archive table')
+status, html, _ = ana.submit(archives, detail + '/restaurar', {})
 check(status == 200 and 'Movimentação restaurada.' in html, 'Restore through form')
 status, html, _ = ana.request(detail)
 check(status == 200 and '15,67' in html and 'Restauração' in html, 'Restored detail and history')

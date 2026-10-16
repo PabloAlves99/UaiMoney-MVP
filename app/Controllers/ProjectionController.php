@@ -39,7 +39,7 @@ final class ProjectionController extends FinancialController
     {
         $user = (int) $this->requireUser()['id'];
         $projection = $id ? $this->projections->find($user, $this->parseId($id)) : null;
-        if ($id && !$projection) {
+        if ($id && (!$projection || !(int)$projection['ativo'] || !(int)$projection['origem_ativa'])) {
             http_response_code(404);
             $this->page('errors/not-found', 'Projeção não encontrada');
             return;

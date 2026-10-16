@@ -23,7 +23,7 @@ final class AccountShareRepository extends FinanceRepository
             'SELECT cc.*, c.nome AS conta_nome, c.ativo AS conta_ativa
              FROM compartilhamentos_conta cc
              JOIN contas c ON c.id=cc.conta_id AND c.usuario_id=cc.usuario_id
-             WHERE cc.token_hash=? AND cc.ativo=1',
+             WHERE cc.token_hash=? AND cc.ativo=1 AND c.ativo=1',
             [hash('sha256', $token)]
         );
         return $rows[0] ?? null;
@@ -98,7 +98,7 @@ final class AccountShareRepository extends FinanceRepository
     {
         $from = $this->ledgerFrom();
         return $this->rows("SELECT DISTINCT g.id AS grupo_id,g.nome AS grupo_nome,g.tipo,s.id,s.nome
-            $from WHERE m.usuario_id=? AND m.conta_id=? AND g.id IS NOT NULL ORDER BY g.nome,s.nome",
+            $from WHERE m.usuario_id=? AND m.conta_id=? AND g.id IS NOT NULL AND g.ativo=1 AND s.ativo=1 ORDER BY g.nome,s.nome",
             [(int) $share['usuario_id'], (int) $share['conta_id']]);
     }
 

@@ -39,9 +39,9 @@ final class GoalRepository extends FinanceRepository
 
     public function reservations(int $user,int $goal): array
     {
-        return $this->rows("SELECT r.*,CASE r.fonte_tipo WHEN 'conta' THEN c.nome ELSE i.nome END AS fonte_nome FROM objetivo_reservas r
+        return $this->rows("SELECT r.*,CASE r.fonte_tipo WHEN 'conta' THEN CASE WHEN c.ativo=1 THEN c.nome ELSE 'Conta arquivada' END ELSE CASE WHEN i.ativo=1 THEN i.nome ELSE 'Investimento arquivado' END END AS fonte_nome FROM objetivo_reservas r
             LEFT JOIN contas c ON c.id=r.fonte_id AND r.fonte_tipo='conta' LEFT JOIN investimentos i ON i.id=r.fonte_id AND r.fonte_tipo='investimento'
-            WHERE r.usuario_id=? AND r.objetivo_id=? ORDER BY r.ativo DESC,r.id",[$user,$goal]);
+            WHERE r.usuario_id=? AND r.objetivo_id=? AND r.ativo=1 ORDER BY r.id",[$user,$goal]);
     }
 
     public function reservationWarnings(int $user,int $goal): array

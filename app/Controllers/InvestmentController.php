@@ -39,7 +39,7 @@ final class InvestmentController extends FinancialController
     public function show(string $id): void
     {
         $user=(int)$this->requireUser()['id'];$investment=$this->investments->find($user,$this->parseId($id));
-        if (!$investment) { http_response_code(404);$this->page('errors/not-found','Investimento não encontrado');return; }
+        if (!$investment || !(int)$investment['ativo']) { http_response_code(404);$this->page('errors/not-found','Investimento não encontrado');return; }
         $this->page('investments/show','Detalhes do investimento',['investment'=>$investment,'events'=>$this->investments->events($user,(int)$investment['id'])]);
     }
 

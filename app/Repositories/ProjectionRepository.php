@@ -17,7 +17,7 @@ final class ProjectionRepository extends FinanceRepository
 
     public function list(int $user): array
     {
-        return $this->rows(self::SELECT . ' WHERE p.usuario_id=? AND p.ativo=1 ORDER BY p.atualizado_em DESC, p.nome', [$user]);
+        return $this->rows(self::SELECT . " WHERE p.usuario_id=? AND p.ativo=1 AND (p.origem_tipo='livre' OR (p.origem_tipo='investimento' AND i.ativo=1) OR (p.origem_tipo='objetivo' AND m.ativo=1)) ORDER BY p.atualizado_em DESC, p.nome", [$user]);
     }
 
     public function find(int $user, int $id): ?array
@@ -29,11 +29,11 @@ final class ProjectionRepository extends FinanceRepository
     public function sources(int $user): array
     {
         return $this->rows("SELECT 'investimento' AS tipo, id, nome, valor_atual_centavos AS atual_centavos, NULL AS meta_centavos, ativo, aporte_mensal_centavos,taxa_referencia_quatro_casas
-            FROM investimentos WHERE usuario_id=?
+            FROM investimentos WHERE usuario_id=? AND ativo=1
             UNION ALL
             SELECT 'objetivo', id, nome, valor_atual_centavos, valor_meta_centavos, ativo, aporte_mensal_centavos, 0
-            FROM metas_financeiras WHERE usuario_id=?
-            ORDER BY ativo DESC, tipo, nome", [$user, $user]);
+            FROM metas_financeiras WHERE usuario_id=? AND ativo=1
+            ORDER BY tipo, nome", [$user, $user]);
     }
 
     public function source(int $user, string $type, int $id): ?array

@@ -28,6 +28,7 @@ final class CardController extends FinancialController
     {
         $u = (int) $this->requireUser()['id'];
         $editing = isset($_GET['editar']) ? $this->cards->find($u, (int) $_GET['editar']) : null;
+        if ($editing && !(int)$editing['ativo']) { $this->redirect('/arquivados'); return; }
         $this->page('cards/index', 'Cartões', ['cards' => $this->cards->list($u), 'accounts' => $this->accounts->listActive($u), 'editing' => $editing]);
     }
 
@@ -45,7 +46,7 @@ final class CardController extends FinancialController
     {
         $u = (int) $this->requireUser()['id'];
         $card = $this->cards->find($u, $this->parseId($id));
-        if (!$card) {
+        if (!$card || !(int)$card['ativo']) {
             http_response_code(404);
             $this->page('errors/not-found', 'Cartão não encontrado');
             return;
@@ -71,7 +72,10 @@ final class CardController extends FinancialController
             $this->page('errors/not-found', 'Fatura não encontrada');
             return;
         }
-        $this->page('cards/invoice', 'Fatura ' . $invoice['competencia'], ['invoice' => $invoice, 'items' => $this->cards->items($u, (int) $id), 'payments' => $this->cards->payments($u, (int) $id), 'credits' => $this->cards->credits($u, (int) $id), 'accounts' => $this->accounts->listActive($u)]);
+        $showCancelled = ($_GET['exibir_cancelados'] ?? '') === '1';
+        $items = $this->cards->items($u, (int) $id);
+        if (!$showCancelled) $items = array_values(array_filter($items, static fn(array $item): bool => $item['status'] !== 'cancelada'));
+        $this->page('cards/invoice', 'Fatura ' . $invoice['competencia'], ['invoice' => $invoice, 'items' => $items, 'showCancelled' => $showCancelled, 'payments' => $this->cards->payments($u, (int) $id), 'credits' => $this->cards->credits($u, (int) $id), 'accounts' => $this->accounts->listActive($u)]);
     }
 
     public function pay(string $id): void

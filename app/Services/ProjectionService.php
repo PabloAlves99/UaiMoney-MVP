@@ -32,7 +32,7 @@ final class ProjectionService
     public function detail(int $user, int $id): array
     {
         $projection = $this->projections->find($user, $id);
-        if (!$projection || !(int)$projection['ativo']) throw new DomainException('Projeção não encontrada.');
+        if (!$projection || !(int)$projection['ativo'] || !(int)$projection['origem_ativa']) throw new DomainException('Projeção não encontrada.');
         $projection['result'] = $this->calculateRow($projection);
         $sourceId = (int) ($projection['investimento_id'] ?: $projection['objetivo_id']);
         $projection['history'] = $sourceId ? $this->projections->history($user, (string) $projection['origem_tipo'], $sourceId) : [];
@@ -58,7 +58,7 @@ final class ProjectionService
         if (!$this->projections->delete($user, $id)) throw new DomainException('Projeção não encontrada.');
     }
 
-    public function reactivate(int $user,int $id): void { if(!$this->projections->reactivate($user,$id)) throw new DomainException('Projeção arquivada não encontrada.'); }
+    public function reactivate(int $user,int $id): void { $projection=$this->projections->find($user,$id); if(!$projection || !(int)$projection['origem_ativa']) throw new DomainException('Reative a fonte da projeção primeiro.'); if(!$this->projections->reactivate($user,$id)) throw new DomainException('Projeção arquivada não encontrada.'); }
 
     private function validated(int $user, array $input): array
     {

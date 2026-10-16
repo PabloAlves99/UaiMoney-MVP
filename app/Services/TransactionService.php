@@ -642,10 +642,13 @@ final class TransactionService
             'data_inicio' => '',
             'data_fim' => '',
             'status' => '',
+            'exibir_cancelados' => '',
             'tipo' => '',
             'conta_id' => null,
             'grupo_id' => null
         ];
+
+        if (($filters['exibir_cancelados'] ?? '') === '1') $normalized['exibir_cancelados'] = '1';
 
 
         /*

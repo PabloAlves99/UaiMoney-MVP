@@ -19,13 +19,13 @@ Em uma instalação existente, execute `php bin/backup.php` antes das migrations
 
 ## Dados de demonstração
 
-Para criar um demonstrador com dados dos últimos seis meses, execute:
+Para criar um demonstrador com dados fictícios de janeiro a dezembro do ano corrente, execute:
 
 ```text
 php bin/seed_demo.php
 ```
 
-O comando cria o usuário `demonstracao` (senha `UaiMoneyDemo2026!`) com contas, categorias, orçamentos, lançamentos, cartão e faturas. Para recriar somente esse usuário e renovar os dados, use `php bin/seed_demo.php --reset`; os dados dos demais usuários não são alterados.
+O comando cria o usuário `demonstracao` (senha `UaiMoneyDemo2026!`) com contas, categorias, limites, lançamentos, cartão, faturas, investimentos com aportes e rendimentos confirmados, objetivos com reservas e projeções. Datas posteriores à execução ficam pendentes. Para recriar somente esse usuário e renovar os dados, use `php bin/seed_demo.php --reset`; os dados dos demais usuários não são alterados.
 
 O menu **Investimentos** permite registrar a posição atual de aplicações, sem alterar o saldo das contas. Em **Estratégias**, há métodos de organização financeira como 50·30·20, orçamento base zero, pague-se primeiro e envelopes.
 
@@ -39,9 +39,10 @@ php tests/upgrade.php
 php database/status.php
 ```
 
-Os testes financeiros usam SQLite em memória. O teste de atualização parte do schema 017 com lançamentos existentes e verifica preservação de registros, saldo e integridade ao migrar para 030. `php tests/statement_import.php` cobre importação sem usar o banco real.
+Os testes financeiros usam SQLite em memória. O teste de atualização parte do schema 017 com lançamentos existentes e verifica preservação de registros, saldo e integridade ao migrar para 031. `php tests/statement_import.php` cobre importação sem usar o banco real.
 
 - [Implementação, regras e teste HTTP](docs/mvp-implementation.md)
+- [Dossiê de funcionalidades e regras do produto](docs/dossie-funcionalidades.md)
 - [Backup, restauração e publicação](docs/operations.md)
 
 A separação Controller → Service → Repository foi mantida. Dinheiro é armazenado em centavos; consumo e caixa possuem consultas próprias para evitar dupla contagem. Não é necessário migrar a stack para validar o produto com poucos usuários.

@@ -6,7 +6,8 @@ final class ActivityRepository extends FinanceRepository
 {
     private function query(int $user, array $filters): array
     {
-        $where = 't.usuario_id=? AND g.usuario_id=t.usuario_id AND t.excluida_em IS ' . (($filters['lixeira'] ?? '') === '1' ? 'NOT NULL' : 'NULL');
+        $where = 't.usuario_id=? AND g.usuario_id=t.usuario_id AND t.excluida_em IS NULL';
+        if (($filters['exibir_cancelados'] ?? '') !== '1') $where .= " AND t.status<>'cancelada'";
         $params = [$user];
         foreach (['status' => 't.status', 'tipo' => 'g.tipo', 'conta_id' => 't.conta_id', 'cartao_id' => 't.cartao_id', 'grupo_id' => 'g.id', 'subgrupo_id' => 's.id', 'meio_pagamento' => 't.meio_pagamento'] as $key => $column) {
             if (!empty($filters[$key])) {
@@ -78,7 +79,7 @@ final class ActivityRepository extends FinanceRepository
     public function categories(int $user): array
     {
         return $this->rows('SELECT s.id,s.nome,g.id AS grupo_id,g.nome AS grupo_nome,g.tipo
-            FROM subgrupos s JOIN grupos g ON g.id=s.grupo_id WHERE g.usuario_id=?
+            FROM subgrupos s JOIN grupos g ON g.id=s.grupo_id WHERE g.usuario_id=? AND g.ativo=1 AND s.ativo=1
             ORDER BY g.nome,s.nome', [$user]);
     }
 

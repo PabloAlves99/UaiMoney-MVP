@@ -76,6 +76,6 @@ final class StatementImportController extends FinancialController
 
     public function undo(): void
     {
-        $this->action('/movimentacoes/importar', fn($user) => $this->imports->undo($user, (int) ($_POST['lote_id'] ?? 0)), 'Lote desfeito. Lançamentos preservados na lixeira.');
+        $this->action('/movimentacoes/importar', fn($user) => $this->imports->undo($user, (int) ($_POST['lote_id'] ?? 0)), 'Lote desfeito. Lançamentos preservados em Arquivados.');
     }
 }

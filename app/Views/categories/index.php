@@ -6,7 +6,7 @@ foreach ($subgrupos as $sub) $children[(int)$sub['grupo_id']][] = $sub;
 ?>
 <div class="page-heading">
     <div><p class="eyebrow">ORGANIZAÇÃO</p><h1><?= $inactive ? 'Categorias desativadas' : 'Categorias' ?></h1><p class="text-secondary mb-0">Clique em uma categoria para ver suas subcategorias.</p></div>
-    <div class="d-flex gap-2"><a class="btn btn-uai-primary" href="<?=H::escape($basePath.'/categorias/limites')?>">Limites mensais</a><a class="btn btn-outline-secondary" href="<?= H::escape($basePath . ($inactive ? '/categorias' : '/categorias/desativadas')) ?>"><?= $inactive ? '← Categorias ativas' : 'Ver desativadas' ?></a></div>
+    <div class="d-flex gap-2"><a class="btn btn-uai-primary" href="<?=H::escape($basePath.'/categorias/limites')?>">Limites mensais</a><a class="btn btn-outline-secondary" href="<?= H::escape($basePath . '/arquivados') ?>">Ver arquivados</a></div>
 </div>
 <?php if ($error!==null): ?><div class="alert alert-danger" role="alert"><?= H::escape($error) ?></div><?php endif; ?>
 <?php if ($inactive): ?><p class="small text-secondary mb-4">Reative a categoria para disponibilizar suas subcategorias. As subcategorias desativadas individualmente precisam ser reativadas separadamente.</p><?php endif; ?>

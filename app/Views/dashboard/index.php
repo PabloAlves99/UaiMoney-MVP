@@ -17,9 +17,9 @@ $budgetRemaining = array_sum(array_map(static fn(array $b): int => (int) $b['val
 <section aria-labelledby="today-title" class="mb-4">
     <h2 class="h5 mb-3" id="today-title">Hoje · <?= date('d/m') ?></h2>
     <div class="row g-3">
-        <div class="col-md-4"><article class="card metric-card featured"><div class="card-body"><p>Saldo disponível nas contas</p><strong class="metric-value"><?= Money::format((int) $balance) ?></strong><small>Contas ativas · valores confirmados</small></div></article></div>
+        <div class="col-md-4"><article class="card metric-card dashboard-balance"><div class="card-body"><p>Saldo disponível nas contas</p><strong class="metric-value"><?= Money::format((int) $balance) ?></strong><small>Contas ativas · valores confirmados</small></div></article></div>
         <div class="col-md-4"><article class="card metric-card"><div class="card-body"><p>Previsão até <?= date('t/m') ?></p><strong class="metric-value"><?= Money::format((int) $projection) ?></strong><small>Saldo + valores a receber − valores e faturas a pagar</small></div></article></div>
-        <div class="col-md-4"><article class="card metric-card"><div class="card-body"><p>Restante nos limites do mês</p><strong class="metric-value <?= $budgetRemaining < 0 ? 'text-danger' : '' ?>"><?= $budgets ? Money::format($budgetRemaining) : '—' ?></strong><small><a href="<?= H::escape($basePath . '/planejamento') ?>"><?= $budgets ? 'Ver planejamento' : 'Definir limites' ?> →</a></small></div></article></div>
+        <div class="col-md-4"><article class="card metric-card"><div class="card-body"><p>Restante nos limites do mês</p><strong class="metric-value <?= $budgetRemaining < 0 ? 'text-danger' : '' ?>"><?= $budgets ? Money::format($budgetRemaining) : '—' ?></strong><small><a href="<?= H::escape($basePath . '/categorias/limites?mes=' . $month) ?>"><?= $budgets ? 'Ver limites' : 'Definir limites' ?> →</a></small></div></article></div>
     </div>
     <p class="small text-secondary mt-3">A previsão considera compromissos cadastrados até o fim do mês. Recorrências ainda não geradas ficam de fora. <a href="<?= H::escape($basePath . '/investimentos') ?>">Investimentos cadastrados: <?= Money::format((int) $investmentSummary['atual']) ?> →</a></p>
 </section>
@@ -45,16 +45,30 @@ $budgetRemaining = array_sum(array_map(static fn(array $b): int => (int) $b['val
         <?php endforeach; ?>
     </div></section></div>
 </div>
-<section class="card"><div class="card-body">
+<section class="card dashboard-month-summary"><div class="card-body">
     <div class="section-heading"><div><h2 class="h4">Resumo do mês</h2><p class="small text-secondary mb-0">Receitas e despesas realizadas, pela data usada nas análises.</p></div><form method="get" class="d-flex gap-2"><label class="visually-hidden" for="dash-month">Mês do resumo</label><input id="dash-month" type="month" name="mes" class="form-control" value="<?= H::escape($month) ?>" required><button class="btn btn-outline-secondary">Ver</button></form></div>
     <div class="row g-3 my-2">
         <?php foreach (['Receitas' => (int) $totals['receitas'], 'Despesas' => (int) $totals['despesas'], 'Resultado' => (int) $totals['receitas'] - (int) $totals['despesas']] as $label => $amount): ?>
-            <div class="col-md-4"><p class="text-secondary mb-1"><?= $label ?></p><strong class="h4 <?= $label === 'Receitas' ? 'text-success' : ($amount < 0 ? 'text-danger' : '') ?>"><?= Money::format($amount) ?></strong></div>
+            <div class="col-md-4"><p class="text-secondary mb-1"><?= $label ?></p><strong class="h4 <?= $label === 'Receitas' ? 'text-success' : ($label === 'Despesas' || $amount < 0 ? 'text-danger' : '') ?>"><?= Money::format($amount) ?></strong></div>
         <?php endforeach; ?>
     </div>
     <p class="small text-secondary">Neste mês: <?= Money::format((int) $totals['receber']) ?> a receber e <?= Money::format((int) $totals['pagar']) ?> a pagar. Esses valores ainda não entram no resultado acima.</p>
-    <?php foreach (array_slice($budgets, 0, 4) as $budget): ?>
-        <div class="py-2"><div class="d-flex justify-content-between small mb-2"><strong><?= H::escape($budget['nome']) ?></strong><span><?= Money::format((int) $budget['realizado']) ?> de <?= Money::format((int) $budget['valor_limite_centavos']) ?></span></div><progress class="uai-progress budget-progress" max="<?= (int) $budget['valor_limite_centavos'] ?>" value="<?= min(max(0, (int) $budget['realizado']), (int) $budget['valor_limite_centavos']) ?>" aria-label="Consumo de <?= H::escape($budget['nome']) ?>"></progress></div>
-    <?php endforeach; ?>
-    <div class="detail-actions mt-3"><a class="btn btn-outline-secondary" href="<?= H::escape($basePath . '/analises?mes=' . $month) ?>">Explorar análises</a><a class="btn btn-outline-secondary" href="<?= H::escape($basePath . '/planejamento?mes=' . $month) ?>">Ajustar planejamento</a></div>
+    <hr class="dashboard-month-divider">
+    <div class="row g-3 dashboard-month-details">
+        <div class="col-lg-6">
+            <div class="section-heading mb-2"><h3 class="h6 mb-0">Limites por categoria</h3><a href="<?= H::escape($basePath . '/categorias/limites?mes=' . $month) ?>">Ver todos →</a></div>
+            <?php if (!$budgets): ?><p class="small text-secondary mb-0">Nenhum limite definido para este mês.</p><?php endif; ?>
+            <?php foreach (array_slice($budgets, 0, 4) as $budget): ?>
+                <div class="py-2"><div class="d-flex justify-content-between gap-2 small mb-2"><strong><?= H::escape($budget['nome']) ?></strong><span class="text-end"><?= Money::format((int) $budget['realizado']) ?> de <?= Money::format((int) $budget['valor_limite_centavos']) ?></span></div><progress class="uai-progress budget-progress" max="<?= (int) $budget['valor_limite_centavos'] ?>" value="<?= min(max(0, (int) $budget['realizado']), (int) $budget['valor_limite_centavos']) ?>" aria-label="Consumo de <?= H::escape($budget['nome']) ?>"></progress></div>
+            <?php endforeach; ?>
+        </div>
+        <div class="col-lg-6">
+            <div class="section-heading mb-2"><h3 class="h6 mb-0">Objetivos em foco</h3><a href="<?= H::escape($basePath . '/objetivos') ?>">Ver todos →</a></div>
+            <?php if (!$goals): ?><p class="small text-secondary mb-0">Defina um objetivo para acompanhar o valor que deseja guardar.</p><?php endif; ?>
+            <?php foreach (array_slice($goals, 0, 3) as $goal): $remaining = max(0, (int) $goal['valor_meta_centavos'] - (int) $goal['valor_atual_centavos']); ?>
+                <a class="dashboard-goal-row" href="<?= H::escape($basePath . '/objetivos/' . (int) $goal['id']) ?>"><span><strong><?= H::escape($goal['nome']) ?></strong><small><?= Money::format((int) $goal['valor_atual_centavos']) ?> de <?= Money::format((int) $goal['valor_meta_centavos']) ?> registrados</small></span><span class="dashboard-goal-remaining"><?= $remaining ? 'Faltam ' . Money::format($remaining) : 'Meta alcançada' ?></span></a>
+            <?php endforeach; ?>
+        </div>
+    </div>
+    <div class="detail-actions mt-3"><a class="btn btn-outline-secondary" href="<?= H::escape($basePath . '/analises?mes=' . $month) ?>">Explorar análises</a><a class="btn btn-outline-secondary" href="<?= H::escape($basePath . '/planejamento?mes=' . $month) ?>">Ver meu plano</a></div>
 </div></section>

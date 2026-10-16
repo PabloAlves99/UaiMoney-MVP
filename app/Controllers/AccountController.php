@@ -208,7 +208,6 @@ final class AccountController extends BaseController
             [
                 'usuario' => $usuario,
                 'contas' => $contas,
-                'inativas' => $this->accountService->inactive((int)$usuario['id']),
                 'error' => $error,
                 'basePath' => $this->basePath,
                 'csrfToken'

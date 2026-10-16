@@ -99,14 +99,14 @@ final class ReportRepository extends FinanceRepository
     {
         return $this->rows("SELECT t.id,t.descricao,t.data_vencimento,t.valor_centavos,g.tipo FROM transacoes t
             JOIN subgrupos s ON s.id=t.subgrupo_id JOIN grupos g ON g.id=s.grupo_id AND g.usuario_id=t.usuario_id
-            WHERE t.usuario_id=? AND t.status='pendente' AND t.cartao_id IS NULL ORDER BY t.data_vencimento LIMIT 8", [$user]);
+            WHERE t.usuario_id=? AND t.excluida_em IS NULL AND t.status='pendente' AND t.cartao_id IS NULL ORDER BY t.data_vencimento LIMIT 8", [$user]);
     }
 
     public function pendingCash(int $user, string $end): int
     {
         return (int) $this->rows("SELECT COALESCE(SUM(CASE g.tipo WHEN 'receita' THEN t.valor_centavos ELSE -t.valor_centavos END),0) AS valor
             FROM transacoes t JOIN subgrupos s ON s.id=t.subgrupo_id JOIN grupos g ON g.id=s.grupo_id AND g.usuario_id=t.usuario_id
-            WHERE t.usuario_id=? AND t.status='pendente' AND t.cartao_id IS NULL AND t.data_vencimento<=?", [$user, $end])[0]['valor'];
+            WHERE t.usuario_id=? AND t.excluida_em IS NULL AND t.status='pendente' AND t.cartao_id IS NULL AND t.data_vencimento<=?", [$user, $end])[0]['valor'];
     }
 
     public function budgets(int $user, string $month): array
@@ -114,7 +114,7 @@ final class ReportRepository extends FinanceRepository
         return $this->rows("SELECT b.*,g.nome,
             COALESCE((SELECT SUM(c.valor_centavos) FROM consumo c WHERE c.usuario_id=b.usuario_id AND c.grupo_id=b.grupo_id AND substr(c.data,1,7)=b.ano_mes AND c.status='efetivada'),0) AS realizado,
             COALESCE((SELECT SUM(c.valor_centavos) FROM consumo c WHERE c.usuario_id=b.usuario_id AND c.grupo_id=b.grupo_id AND substr(c.data,1,7)=b.ano_mes AND c.status='pendente'),0) AS pendente
-            FROM orcamentos b JOIN grupos g ON g.id=b.grupo_id AND g.usuario_id=b.usuario_id WHERE b.usuario_id=? AND b.ano_mes=? AND b.ativo=1 ORDER BY g.nome", [$user, $month]);
+            FROM orcamentos b JOIN grupos g ON g.id=b.grupo_id AND g.usuario_id=b.usuario_id WHERE b.usuario_id=? AND b.ano_mes=? AND b.ativo=1 AND g.ativo=1 ORDER BY g.nome", [$user, $month]);
     }
 
     public function saveBudget(int $user, string $month, int $group, int $amount): void
@@ -128,7 +128,11 @@ final class ReportRepository extends FinanceRepository
     }
 
     public function inactiveBudgets(int $user): array { return $this->rows('SELECT b.*,g.nome FROM orcamentos b JOIN grupos g ON g.id=b.grupo_id WHERE b.usuario_id=? AND b.ativo=0 ORDER BY b.ano_mes DESC,g.nome',[$user]); }
-    public function reactivateBudget(int $user,int $id): void { $this->run('UPDATE orcamentos SET ativo=1,atualizado_em=CURRENT_TIMESTAMP WHERE usuario_id=? AND id=?',[$user,$id]); }
+    public function reactivateBudget(int $user,int $id): void
+    {
+        if ($this->run('UPDATE orcamentos SET ativo=1,atualizado_em=CURRENT_TIMESTAMP WHERE usuario_id=? AND id=? AND ativo=0 AND EXISTS (SELECT 1 FROM grupos g WHERE g.id=orcamentos.grupo_id AND g.usuario_id=orcamentos.usuario_id AND g.ativo=1)',[$user,$id]) !== 1)
+            throw new \DomainException('Reative a categoria antes de restaurar o limite.');
+    }
 
     public function copyBudgets(int $user, string $from, string $to): void
     {

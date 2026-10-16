@@ -17,11 +17,11 @@ final class CategoryController extends BaseController
     }
 
     public function index(): void { $this->renderIndex($this->requireUser()); }
-    public function inactive(): void { $this->renderIndex($this->requireUser(),null,true); }
+    public function inactive(): void { $this->requireUser(); $this->redirect('/arquivados'); }
 
     private function destination(): string
     {
-        if (($_POST['origem'] ?? '') === 'desativadas') return '/categorias/desativadas';
+        if (($_POST['origem'] ?? '') === 'desativadas') return '/arquivados';
         $group = filter_var($_POST['grupo_id'] ?? null,FILTER_VALIDATE_INT);
         return $group && $group>0 ? '/categorias?grupo_id='.$group : '/categorias';
     }
@@ -36,7 +36,7 @@ final class CategoryController extends BaseController
             $this->redirect($this->destination());
         } catch (DomainException $e) {
             http_response_code(422);
-            $this->renderIndex($user,$e->getMessage(),$this->destination()==='/categorias/desativadas');
+            $this->renderIndex($user,$e->getMessage());
         }
     }
 
@@ -100,11 +100,12 @@ final class CategoryController extends BaseController
             return;
         }
         $inactive = !(int)$record['ativo'] || ($kind==='subgrupo' && !(int)$record['grupo_ativo']);
+        if ($inactive) { $this->redirect('/arquivados'); return; }
         View::render('categories/form',[
             'usuario'=>$user,'kind'=>$kind,'record'=>$record,'error'=>$error,
             'old'=>$error!==null ? $_POST : [],
             'typeLocked'=>$kind==='grupo' && $this->categoryService->groupHasHistory((int)$user['id'],$parsed),
-            'returnPath'=>$inactive ? '/categorias/desativadas' : '/categorias',
+            'returnPath'=>'/categorias',
             'basePath'=>$this->basePath,'csrfToken'=>$this->csrf->token(),'pageTitle'=>'Editar '.($kind==='grupo' ? 'categoria' : 'subcategoria').' - UaiMoney',
         ],'layouts/app');
     }
@@ -134,7 +135,7 @@ final class CategoryController extends BaseController
         $selectedGroup = (string)($_GET['grupo_id'] ?? '');
         if (!ctype_digit($selectedGroup)) $selectedGroup='';
         View::render('categories/index',[
-            'usuario'=>$usuario,'grupos'=>$groups,'subgrupos'=>$subgroups,'allGroups'=>$data['groups'],
+            'usuario'=>$usuario,'grupos'=>$groups,'subgrupos'=>$subgroups,'allGroups'=>array_values(array_filter($data['groups'],fn($g)=>(int)$g['ativo']===1)),
             'inactive'=>$inactive,'selectedGroup'=>$selectedGroup,'error'=>$error,'old'=>$error!==null ? $_POST : [],
             'basePath'=>$this->basePath,'csrfToken'=>$this->csrf->token(),'pageTitle'=>($inactive ? 'Categorias desativadas' : 'Categorias').' - UaiMoney',
         ],'layouts/app');

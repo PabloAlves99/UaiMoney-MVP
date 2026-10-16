@@ -91,11 +91,11 @@ final class MovementController extends FinancialController
     public function delete(string $id): void
     {
         $return = MovementReturn::path($_POST['_retorno'] ?? '');
-        $this->action($return . '#lista', fn($user) => $this->service->delete($user, $this->parseId($id), $_POST), 'Movimentação movida para a lixeira. Você pode restaurá-la.');
+        $this->action($return . '#lista', fn($user) => $this->service->delete($user, $this->parseId($id), $_POST), 'Movimentação arquivada. Você pode restaurá-la em Arquivados.');
     }
 
     public function restore(string $id): void
     {
-        $this->action('/movimentacoes?lixeira=1#lista', fn($user) => $this->service->restore($user, $this->parseId($id), $_POST), 'Movimentação restaurada. Os saldos foram recalculados.');
+        $this->action('/arquivados', fn($user) => $this->service->restore($user, $this->parseId($id), $_POST), 'Movimentação restaurada. Os saldos foram recalculados.');
     }
 }

@@ -32,6 +32,7 @@ final class WalletController extends FinancialController
         $accounts = $this->accounts->listActive($u);
         $id = (int) ($_GET['conta'] ?? ($accounts[0]['id'] ?? 0));
         $account = $id ? $this->accounts->findById($id, $u) : null;
+        if ($account && !(int)$account['ativo']) $account = null;
         $page = max(1, (int) ($_GET['pagina'] ?? 1));
         $this->page('wallet/index', 'Conferir e transferir', ['accounts' => $accounts, 'account' => $account, 'entries' => $account ? $this->ledger->statement($u, $id, $page) : [], 'page' => $page]);
     }
@@ -40,7 +41,7 @@ final class WalletController extends FinancialController
     {
         $user = (int) $this->requireUser()['id'];
         $account = $this->accounts->findById($this->parseId($id), $user);
-        if (!$account) {
+        if (!$account || !(int)$account['ativo']) {
             http_response_code(404);
             $this->page('errors/not-found', 'Conta não encontrada');
             return;

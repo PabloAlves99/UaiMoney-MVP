@@ -8,7 +8,7 @@ final class InvestmentRepository extends FinanceRepository
 {
     public function list(int $user): array
     {
-        return $this->rows("SELECT i.*,(SELECT COALESCE(SUM(e.valor_centavos),0) FROM investimento_eventos e WHERE e.investimento_id=i.id AND e.usuario_id=i.usuario_id AND e.ativo=1 AND e.tipo IN ('saldo_inicial','aporte','retirada')) AS aporte_liquido_centavos FROM investimentos i WHERE i.usuario_id=? ORDER BY i.ativo DESC,i.valor_atual_centavos DESC,i.nome", [$user]);
+        return $this->rows("SELECT i.*,(SELECT COALESCE(SUM(e.valor_centavos),0) FROM investimento_eventos e WHERE e.investimento_id=i.id AND e.usuario_id=i.usuario_id AND e.ativo=1 AND e.tipo IN ('saldo_inicial','aporte','retirada')) AS aporte_liquido_centavos FROM investimentos i WHERE i.usuario_id=? AND i.ativo=1 ORDER BY i.valor_atual_centavos DESC,i.nome", [$user]);
     }
 
     public function summary(int $user): array
@@ -44,7 +44,7 @@ final class InvestmentRepository extends FinanceRepository
 
     public function events(int $user, int $id): array
     {
-        return $this->rows('SELECT * FROM investimento_eventos WHERE usuario_id=? AND investimento_id=? ORDER BY data DESC,id DESC', [$user,$id]);
+        return $this->rows('SELECT * FROM investimento_eventos WHERE usuario_id=? AND investimento_id=? AND ativo=1 ORDER BY data DESC,id DESC', [$user,$id]);
     }
 
     public function balanceAt(int $user, int $id, string $date): int

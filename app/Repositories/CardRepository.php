@@ -10,7 +10,7 @@ final class CardRepository extends FinanceRepository
             COALESCE((SELECT SUM(t.valor_centavos) FROM transacoes t WHERE t.usuario_id=c.usuario_id AND t.cartao_id=c.id AND t.status<>'cancelada'),0)
             -COALESCE((SELECT SUM(e.valor_centavos) FROM estornos e JOIN transacoes t ON t.id=e.transacao_id WHERE e.usuario_id=c.usuario_id AND t.cartao_id=c.id AND t.excluida_em IS NULL),0)
             -COALESCE((SELECT SUM(p.valor_centavos) FROM pagamentos_fatura p JOIN faturas f ON f.id=p.fatura_id WHERE p.usuario_id=c.usuario_id AND f.cartao_id=c.id),0) AS utilizado
-            FROM cartoes c WHERE c.usuario_id=? ORDER BY c.ativo DESC,c.nome", [$user]);
+            FROM cartoes c WHERE c.usuario_id=? AND c.ativo=1 ORDER BY c.nome", [$user]);
     }
 
     public function find(int $user, int $id): ?array
@@ -44,7 +44,7 @@ final class CardRepository extends FinanceRepository
             -COALESCE((SELECT SUM(x.valor_centavos) FROM creditos_fatura x WHERE x.destino_id=f.id AND x.usuario_id=f.usuario_id),0) AS total,
             COALESCE((SELECT SUM(p.valor_centavos) FROM pagamentos_fatura p WHERE p.fatura_id=f.id AND p.usuario_id=f.usuario_id),0) AS pago
             FROM faturas f JOIN cartoes c ON c.id=f.cartao_id AND c.usuario_id=f.usuario_id
-            WHERE f.usuario_id=?" . ($card ? ' AND f.cartao_id=?' : '') . ' ORDER BY f.data_vencimento DESC', $card ? [$user, $card] : [$user]);
+            WHERE f.usuario_id=? AND c.ativo=1" . ($card ? ' AND f.cartao_id=?' : '') . ' ORDER BY f.data_vencimento DESC', $card ? [$user, $card] : [$user]);
     }
 
     public function invoice(int $user, int $id): ?array

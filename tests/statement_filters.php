@@ -67,13 +67,14 @@ try {
 check(str_starts_with($publicExporter->excel('Vazio', [], ['entradas'=>0, 'saidas'=>0], 'sem resultados'), 'PK'), 'Empty filtered Excel remains valid');
 $activityFilter = ['conta_id'=>(string) $account, 'grupo_id'=>(string) $group, 'subgrupo_id'=>(string) $market, 'data_inicio'=>'2025-02-01', 'data_fim'=>'2025-02-28'];
 $activityTotals = $activity->totals(1, $activityFilter);
-check((int) $activityTotals['quantidade'] === 3 && (int) $activityTotals['saidas'] === 12001 && (int) $activityTotals['pagar'] === 2000, 'Activity totals include pending and exclude cancelled amounts');
-check(count($activity->list(1, $activityFilter)) === 3 && count(iterator_to_array($activity->export(1, $activityFilter))) === 3, 'Activity table and CSV respect category and subcategory');
+check((int) $activityTotals['quantidade'] === 2 && (int) $activityTotals['saidas'] === 12001 && (int) $activityTotals['pagar'] === 2000, 'Activity totals hide cancelled by default');
+check(count($activity->list(1, $activityFilter)) === 2 && count(iterator_to_array($activity->export(1, $activityFilter))) === 2, 'Activity table and CSV hide cancelled by default');
+check((int)$activity->count(1, $activityFilter + ['exibir_cancelados'=>'1'])===3, 'Cancelled flag restores cancelled rows');
 check((int) $activity->monthly(1, $activityFilter)[0]['saidas'] === 12001, 'Activity chart agrees with filtered cards');
-check((int) $activity->totals(1, $activityFilter + ['status'=>'cancelada'])['saidas'] === 0 && $activity->monthly(1, $activityFilter + ['status'=>'cancelada']) === [], 'Cancelled-only filters show no financial totals');
+check((int) $activity->totals(1, $activityFilter + ['status'=>'cancelada','exibir_cancelados'=>'1'])['saidas'] === 0 && $activity->monthly(1, $activityFilter + ['status'=>'cancelada','exibir_cancelados'=>'1']) === [], 'Cancelled-only filters show no financial totals');
 check((int) $activity->totals(2, $activityFilter)['quantidade'] === 0, 'Activity summaries enforce owner scope');
 $db->prepare('UPDATE grupos SET ativo=0 WHERE id=?')->execute([$group]);
-check(in_array($market, array_column($shares->categories($share), 'id')) && in_array($market, array_column($activity->categories(1), 'id')), 'Historical categories remain available for filters');
+check(!in_array($market, array_column($shares->categories($share), 'id')) && !in_array($market, array_column($activity->categories(1), 'id')), 'Archived categories leave filter lists');
 for ($i = 0; $i < 55; $i++) $tx->create(1, $salary, $account, 'Paginação ' . $i, '1', '2025-02-01', '2025-02-01', '2025-02-01', 'efetivada', 'pix', null);
 $paginated = ['subgrupo_id'=>(string) $salary];
 check(count($shares->entries($share, $paginated, 1)) === 51 && count($shares->entries($share, $paginated, 2)) === 6 && (int) $shares->totals($share, $paginated)['quantidade'] === 56, 'Shared cards count all pages');

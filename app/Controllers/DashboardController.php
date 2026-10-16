@@ -63,6 +63,7 @@ final class DashboardController extends FinancialController
             'budgets' => $this->reports->budgets($u, $month),
             'categories' => $this->reports->categories($u),
             'investmentSummary' => $this->investments->summary($u),
+            'goals' => $this->goals->list($u),
         ]);
     }
 

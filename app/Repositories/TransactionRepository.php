@@ -66,6 +66,10 @@ final class TransactionRepository
         WHERE t.usuario_id = :usuario_id AND t.excluida_em IS NULL
     ";
 
+        if (($filters['exibir_cancelados'] ?? '') !== '1') {
+            $sql .= " AND t.status <> 'cancelada'";
+        }
+
 
         $params = [
             ':usuario_id' => $usuarioId

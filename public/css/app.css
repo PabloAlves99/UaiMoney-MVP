@@ -2511,6 +2511,30 @@ h1 { font-size: clamp(1.75rem, 2.4vw, 2.25rem); letter-spacing: -.035em; font-we
 .table tbody tr:hover { background: color-mix(in srgb, var(--uai-accent) 6%, transparent); }
 [data-bs-theme="dark"] .metric-card.featured { background: linear-gradient(135deg, #174e6b, #136d72); border-color: #288c90; }
 
+/* Dashboard: flat financial highlights and a balanced monthly summary. */
+.metric-card.dashboard-balance {
+  background: var(--uai-surface);
+  border-color: var(--uai-border);
+  border-top: 3px solid var(--uai-primary);
+  box-shadow: var(--uai-shadow);
+}
+.dashboard-balance .metric-value { color: var(--uai-text); }
+.dashboard-month-summary { background: var(--uai-surface); }
+.dashboard-month-divider { margin: 20px 0 0; border: 0; border-top: 1px solid var(--uai-border); opacity: 1; }
+.dashboard-month-details { margin-top: 0; }
+.dashboard-month-summary .budget-progress,
+.dashboard-month-summary .budget-progress::-webkit-progress-bar { background: var(--uai-surface-secondary); }
+.dashboard-month-summary .budget-progress { accent-color: var(--uai-danger); }
+.dashboard-month-summary .budget-progress::-webkit-progress-value { background: var(--uai-danger); }
+.dashboard-month-summary .budget-progress::-moz-progress-bar { background: var(--uai-danger); }
+.dashboard-goal-row { display: flex; justify-content: space-between; gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--uai-border); color: var(--uai-text); text-decoration: none; }
+.dashboard-goal-row:last-child { border-bottom: 0; }
+.dashboard-goal-row:hover, .dashboard-goal-row:focus-visible { color: var(--uai-primary); }
+.dashboard-goal-row strong, .dashboard-goal-row small { display: block; }
+.dashboard-goal-row small { margin-top: 3px; color: var(--uai-muted); font-size: .75rem; }
+.dashboard-goal-remaining { align-self: center; flex: 0 0 auto; font-size: .78rem; font-weight: 650; text-align: right; }
+@media (max-width: 575.98px) { .dashboard-goal-row { flex-wrap: wrap; gap: 4px 12px; } .dashboard-goal-remaining { text-align: left; } }
+
 /* Interactive analytics charts. */
 .income-donut { position: relative; width: min(260px, 100%); flex: 0 0 240px; max-width: 100%; margin-inline: auto; aspect-ratio: 1; }
 .income-donut svg { display: block; width: 100%; height: 100%; overflow: visible; }

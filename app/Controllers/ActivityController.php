@@ -25,11 +25,14 @@ final class ActivityController extends FinancialController
 
     private function filters(): array
     {
-        return array_filter(array_intersect_key($_GET, array_flip(['q', 'status', 'tipo', 'conta_id', 'cartao_id', 'grupo_id', 'subgrupo_id', 'meio_pagamento', 'data_inicio', 'data_fim', 'lixeira', 'ordenacao', 'direcao'])), fn($v) => is_string($v) && $v !== '');
+        $filters = array_filter(array_intersect_key($_GET, array_flip(['q', 'status', 'tipo', 'conta_id', 'cartao_id', 'grupo_id', 'subgrupo_id', 'meio_pagamento', 'data_inicio', 'data_fim', 'exibir_cancelados', 'ordenacao', 'direcao'])), fn($v) => is_string($v) && $v !== '');
+        if (($filters['status'] ?? '') === 'cancelada') $filters['exibir_cancelados'] = '1';
+        return $filters;
     }
 
     public function index(): void
     {
+        if (($_GET['lixeira'] ?? '') === '1') { $this->redirect('/arquivados'); return; }
         $u = (int) $this->requireUser()['id'];
         $filters = $this->filters();
         $page = max(1, min(100000, (int) ($_GET['pagina'] ?? 1)));

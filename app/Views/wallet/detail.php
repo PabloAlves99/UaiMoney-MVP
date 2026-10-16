@@ -2,7 +2,7 @@
 <a class="back-link" href="<?= H::escape($basePath.$returnPath.'#lista') ?>">← Movimentações</a><div class="page-heading"><div><p class="eyebrow"><?= H::escape($t['tipo']) ?> · <?= H::escape(['efetivada' => 'Realizada', 'pendente' => 'Pendente', 'cancelada' => 'Cancelada'][$t['status']] ?? $t['status']) ?></p><h1><?= H::escape($t['descricao']) ?></h1><p class="text-secondary"><?= H::escape($t['grupo_nome'].' · '.$t['subgrupo_nome']) ?></p></div><strong class="metric-value"><?= Money::format((int)$t['valor_centavos']) ?></strong></div>
 <div class="detail-actions mb-4">
     <a class="btn btn-uai-primary" href="<?= H::escape($basePath . '/movimentacoes/' . $t['id'] . '/editar?voltar=' . urlencode($returnPath)) ?>">Editar movimentação</a>
-    <form method="post" action="<?= H::escape($basePath . '/movimentacoes/' . $t['id'] . '/excluir') ?>" data-confirm="Enviar este lançamento e seus efeitos nos saldos para a lixeira? As outras parcelas e recorrências serão mantidas.">
+    <form method="post" action="<?= H::escape($basePath . '/movimentacoes/' . $t['id'] . '/excluir') ?>" data-confirm="Arquivar este lançamento e seus efeitos nos saldos? As outras parcelas e recorrências serão mantidas.">
         <?= H::fields($csrfToken) ?>
         <input type="hidden" name="versao" value="<?= (int) $t['versao'] ?>">
         <input type="hidden" name="_retorno" value="<?= H::escape($returnPath) ?>">
