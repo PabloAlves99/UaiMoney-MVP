@@ -215,6 +215,12 @@ $adminUserController = new AdminUserController(
     $basePath,
     new UserManagementService($userRepository)
 );
+$statementImportController = new \App\Controllers\StatementImportController(
+    $authService, $csrf, $basePath,
+    new \App\Services\StatementImportService($pdo, $transactionService),
+    $accountRepository, new \App\Repositories\ReportRepository($pdo),
+    new \App\Repositories\MovementRepository($pdo)
+);
 
 /*
 |--------------------------------------------------------------------------

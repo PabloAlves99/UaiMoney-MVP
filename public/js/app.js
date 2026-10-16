@@ -167,6 +167,16 @@ document.addEventListener("DOMContentLoaded", () => {
     const status = form.querySelector("[data-movement-status]");
     const category = form.querySelector("[data-movement-category]");
     const advanced = form.querySelector("[data-movement-advanced]");
+    const description = form.querySelector("[data-category-suggestion]");
+    const suggestionFeedback = form.querySelector("[data-suggestion-feedback]");
+    const suggestions = JSON.parse(form.dataset.categorySuggestions || "[]");
+    description?.addEventListener("change", () => {
+      const match = suggestions.find((item) => item.descricao.toLocaleLowerCase("pt-BR") === description.value.trim().toLocaleLowerCase("pt-BR") && item.tipo === typeValue());
+      if (match && !category.value) {
+        category.value = String(match.subgrupo_id);
+        if (suggestionFeedback) suggestionFeedback.textContent = "Categoria sugerida com base em um lançamento anterior. Confira antes de salvar.";
+      } else if (suggestionFeedback) suggestionFeedback.textContent = "";
+    });
     const sync = () => {
       const income = type.value === "receita";
       form.classList.toggle("movement-form--receita", income);

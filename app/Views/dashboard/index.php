@@ -5,6 +5,7 @@ use App\Core\Money;
 
 $unpaid = array_values(array_filter($invoices, fn($invoice) => $invoice['status'] !== 'cancelada' && (int) $invoice['total'] > (int) $invoice['pago']));
 usort($unpaid, fn($a, $b) => strcmp($a['data_vencimento'], $b['data_vencimento']));
+$budgetRemaining = array_sum(array_map(static fn(array $b): int => (int) $b['valor_limite_centavos'] - (int) $b['realizado'], $budgets));
 ?>
 <div class="page-heading">
     <div><p class="eyebrow">SEU DINHEIRO, COM CLAREZA</p><h1>Visão geral</h1><p class="text-secondary">Olá, <?= H::escape(explode(' ', $usuario['nome'])[0]) ?>. Veja o que precisa da sua atenção.</p></div>
@@ -18,13 +19,13 @@ usort($unpaid, fn($a, $b) => strcmp($a['data_vencimento'], $b['data_vencimento']
     <div class="row g-3">
         <div class="col-md-4"><article class="card metric-card featured"><div class="card-body"><p>Saldo disponível nas contas</p><strong class="metric-value"><?= Money::format((int) $balance) ?></strong><small>Contas ativas · valores confirmados</small></div></article></div>
         <div class="col-md-4"><article class="card metric-card"><div class="card-body"><p>Previsão até <?= date('t/m') ?></p><strong class="metric-value"><?= Money::format((int) $projection) ?></strong><small>Saldo + valores a receber − valores e faturas a pagar</small></div></article></div>
-        <div class="col-md-4"><article class="card metric-card"><div class="card-body"><p>Investimentos cadastrados</p><strong class="metric-value"><?= Money::format((int) $investmentSummary['atual']) ?></strong><small><a href="<?= H::escape($basePath . '/investimentos') ?>">Acompanhar patrimônio →</a></small></div></article></div>
+        <div class="col-md-4"><article class="card metric-card"><div class="card-body"><p>Restante nos limites do mês</p><strong class="metric-value <?= $budgetRemaining < 0 ? 'text-danger' : '' ?>"><?= $budgets ? Money::format($budgetRemaining) : '—' ?></strong><small><a href="<?= H::escape($basePath . '/planejamento') ?>"><?= $budgets ? 'Ver planejamento' : 'Definir limites' ?> →</a></small></div></article></div>
     </div>
-    <p class="small text-secondary mt-3">A previsão considera os compromissos cadastrados até o fim deste mês, incluindo atrasados. Recorrências ainda não geradas ficam de fora.</p>
+    <p class="small text-secondary mt-3">A previsão considera compromissos cadastrados até o fim do mês. Recorrências ainda não geradas ficam de fora. <a href="<?= H::escape($basePath . '/investimentos') ?>">Investimentos cadastrados: <?= Money::format((int) $investmentSummary['atual']) ?> →</a></p>
 </section>
 <div class="row g-4 mb-4">
     <div class="col-xl-7"><section class="card h-100"><div class="card-body">
-        <div class="section-heading"><h2 class="h4">Próximos compromissos</h2><a href="<?= H::escape($basePath . '/movimentacoes?status=pendente') ?>">Ver todos →</a></div>
+        <div class="section-heading"><h2 class="h4">Próximos compromissos</h2><a href="<?= H::escape($basePath . '/conferir') ?>">Para conferir →</a></div>
         <?php if (!$upcoming): ?><p class="empty-state">Nenhuma pendência cadastrada.</p><?php endif; ?>
         <?php foreach ($upcoming as $entry): ?>
             <article class="movement-row">

@@ -71,6 +71,19 @@ final class DashboardController extends FinancialController
         $this->page('planning/index', 'Planejamento', ['month' => $month, 'budgets' => $this->reports->budgets($u, $month), 'categories' => $this->reports->categories($u)]);
     }
 
+    public function review(): void
+    {
+        $u = (int) $this->requireUser()['id'];
+        $invoices = array_values(array_filter($this->cards->invoices($u),
+            static fn(array $invoice): bool => $invoice['status'] !== 'cancelada' && (int) $invoice['total'] > (int) $invoice['pago']));
+        usort($invoices, static fn(array $a, array $b): int => strcmp($a['data_vencimento'], $b['data_vencimento']));
+        $this->page('dashboard/review', 'Para conferir', [
+            'upcoming' => $this->reports->upcoming($u),
+            'invoices' => $invoices,
+            'accounts' => $this->accounts->listActive($u),
+        ]);
+    }
+
     public function saveBudget(): void
     {
         $this->action('/planejamento?mes=' . urlencode((string) ($_POST['mes'] ?? date('Y-m'))), fn($u) => $this->planning->save($u, $_POST), 'Orçamento salvo.');

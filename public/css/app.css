@@ -6,22 +6,22 @@
 
 :root,
 [data-bs-theme="light"] {
-  --uai-bg: #f4f7fa;
+  --uai-bg: #f2f6fa;
   --uai-surface: #ffffff;
-  --uai-surface-secondary: #eaf0f4;
+  --uai-surface-secondary: #e8f0f6;
 
-  --uai-primary: #123e63;
-  --uai-primary-hover: #0d314f;
-  --uai-accent: #71889b;
+  --uai-primary: #0e4568;
+  --uai-primary-hover: #083650;
+  --uai-accent: #168b99;
 
-  --uai-text: #172b3a;
-  --uai-muted: #617485;
+  --uai-text: #132c3f;
+  --uai-muted: #5b7181;
 
-  --uai-border: #d5e0e7;
+  --uai-border: #d4e1e9;
 
-  --uai-success: #24735c;
-  --uai-warning: #a96f16;
-  --uai-danger: #dc2626;
+  --uai-success: #167a62;
+  --uai-warning: #a46910;
+  --uai-danger: #bf424f;
 
   --uai-shadow: 0 10px 30px rgba(18, 62, 99, 0.08);
 }
@@ -2440,18 +2440,19 @@ h1 { font-size: clamp(1.75rem, 2.4vw, 2.25rem); letter-spacing: -.035em; font-we
 /* Steel gray theme: cool charcoal surfaces and UaiMoney accents. */
 [data-bs-theme="dark"] {
   color-scheme: dark;
-  --uai-bg: #191f26;
-  --uai-surface: #26303a;
-  --uai-surface-secondary: #303d49;
-  --uai-primary: #94bedf;
-  --uai-primary-hover: #c5dff2;
-  --uai-text: #e7eef4;
-  --uai-muted: #a5b6c5;
+  --uai-bg: #101d2a;
+  --uai-surface: #192b3b;
+  --uai-surface-secondary: #243a4b;
+  --uai-primary: #91d5ee;
+  --uai-primary-hover: #c1eff7;
+  --uai-accent: #4cc9bf;
+  --uai-text: #e9f2f6;
+  --uai-muted: #afc4cf;
   --uai-text-muted: var(--uai-muted);
-  --uai-border: #40505e;
-  --uai-success: #78c9a7;
+  --uai-border: #355267;
+  --uai-success: #77d5b2;
   --uai-warning: #e2b96c;
-  --uai-danger: #f48a91;
+  --uai-danger: #ff9299;
   --uai-shadow: 0 6px 24px rgba(0, 0, 0, .14);
   --bs-primary: #94bedf;
   --bs-primary-rgb: 148, 190, 223;
@@ -2464,7 +2465,7 @@ h1 { font-size: clamp(1.75rem, 2.4vw, 2.25rem); letter-spacing: -.035em; font-we
   --bs-link-color: var(--uai-primary);
   --bs-link-hover-color: var(--uai-primary-hover);
 }
-[data-bs-theme="dark"] .site-header { background: #222c35; border-color: #40505e; }
+[data-bs-theme="dark"] .site-header { background: #172838; border-color: var(--uai-border); }
 [data-bs-theme="dark"] .site-header .user-avatar { background: #344452; border-color: #526778; }
 
 
@@ -2476,8 +2477,8 @@ h1 { font-size: clamp(1.75rem, 2.4vw, 2.25rem); letter-spacing: -.035em; font-we
 [data-bs-theme="dark"] .public-share-header .brand-logo { filter: brightness(0) invert(1); }
 [data-bs-theme="dark"] .btn-uai-primary {
   --bs-btn-color: #fff;
-  --bs-btn-bg: #28699f;
-  --bs-btn-border-color: #377bad;
+  --bs-btn-bg: #12638d;
+  --bs-btn-border-color: #207ba2;
   --bs-btn-hover-color: #fff;
   --bs-btn-hover-bg: #327cb5;
   --bs-btn-hover-border-color: #4c93c6;
@@ -2490,6 +2491,25 @@ h1 { font-size: clamp(1.75rem, 2.4vw, 2.25rem); letter-spacing: -.035em; font-we
 [data-bs-theme="dark"] .text-danger { color: #f48a91 !important; }
 [data-bs-theme="dark"] #themeToggle { background: #304151; color: #e7eef4; border-color: #597184; }
 [data-bs-theme="dark"] #themeToggle:hover { background: #3c5366; border-color: #9bbbd2; }
+
+/* Financial hierarchy: strong balances and actions, quieter supporting fields. */
+.metric-card.featured {
+  background: linear-gradient(135deg, #0d486b 0%, #126579 100%);
+  border-color: #176982;
+  box-shadow: 0 16px 34px rgba(13, 72, 107, .18);
+}
+.metric-card:not(.featured) { border-top: 3px solid color-mix(in srgb, var(--uai-accent) 58%, var(--uai-border)); }
+.metric-value { font-weight: 750; }
+.page-heading h1 { letter-spacing: -.035em; }
+.form-control:not(:focus), .form-select:not(:focus) {
+  border-color: var(--uai-border);
+  background-color: color-mix(in srgb, var(--uai-surface) 88%, var(--uai-surface-secondary));
+}
+.form-label { color: var(--uai-text); font-weight: 600; }
+.form-text, .text-secondary { color: var(--uai-muted) !important; }
+.table thead th { color: var(--uai-muted); font-size: .77rem; letter-spacing: .025em; }
+.table tbody tr:hover { background: color-mix(in srgb, var(--uai-accent) 6%, transparent); }
+[data-bs-theme="dark"] .metric-card.featured { background: linear-gradient(135deg, #174e6b, #136d72); border-color: #288c90; }
 
 /* Interactive analytics charts. */
 .income-donut { position: relative; width: min(260px, 100%); flex: 0 0 240px; max-width: 100%; margin-inline: auto; aspect-ratio: 1; }

@@ -52,12 +52,17 @@ $movementController = new \App\Controllers\MovementController(
 );
 
 $router->get('/movimentacoes/nova', [$movementController, 'form']);
+$router->get('/movimentacoes/importar', [$statementImportController, 'index']);
+$router->post('/movimentacoes/importar/previa', [$statementImportController, 'preview']);
+$router->post('/movimentacoes/importar', [$statementImportController, 'save']);
+$router->post('/movimentacoes/importar/desfazer', [$statementImportController, 'undo']);
 $router->post('/movimentacoes', [$movementController, 'save']);
 $router->get('/movimentacoes/{id}/editar', [$movementController, 'form']);
 $router->post('/movimentacoes/{id}/editar', [$movementController, 'save']);
 $router->post('/movimentacoes/{id}/excluir', [$movementController, 'delete']);
 $router->post('/movimentacoes/{id}/restaurar', [$movementController, 'restore']);
 $router->get('/', [$dashboardController, 'index']);
+$router->get('/conferir', [$dashboardController, 'review']);
 $router->get('/movimentacoes', [$activityController, 'index']);
 $router->get('/movimentacoes/exportar', [$activityController, 'export']);
 $router->get('/movimentacoes/avancado', [$activityController, 'installment']);

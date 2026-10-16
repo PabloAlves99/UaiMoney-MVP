@@ -15,7 +15,7 @@ $selects = [
 ?>
 <div class="page-heading">
     <div><p class="eyebrow">SEU DIA A DIA</p><h1><?= $trash ? 'Lixeira' : 'Movimentações' ?></h1><p class="text-secondary"><?= $trash ? 'Restaure um lançamento excluído quando precisar.' : 'Registre, encontre e organize o que entrou e saiu.' ?></p></div>
-    <a class="btn btn-uai-primary" href="<?= H::escape($basePath . '/movimentacoes/nova?' . $context) ?>">+ Novo lançamento</a>
+    <div class="detail-actions"><a class="btn btn-outline-secondary" href="<?= H::escape($basePath . '/movimentacoes/importar') ?>">Importar extrato</a><a class="btn btn-uai-primary" href="<?= H::escape($basePath . '/movimentacoes/nova?' . $context) ?>">+ Novo lançamento</a></div>
 </div>
 <nav class="quick-filters mb-4" aria-label="Situação dos lançamentos">
     <?php foreach (['Todas' => ['status' => null, 'tipo' => null, 'lixeira' => null], 'A pagar' => ['status' => 'pendente', 'tipo' => 'despesa', 'lixeira' => null], 'A receber' => ['status' => 'pendente', 'tipo' => 'receita', 'lixeira' => null], 'Realizadas' => ['status' => 'efetivada', 'tipo' => null, 'lixeira' => null], 'Lixeira' => ['status' => null, 'tipo' => null, 'lixeira' => '1']] as $label => $changes):

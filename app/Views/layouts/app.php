@@ -2,15 +2,17 @@
 use App\Core\Html as H;
 $path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
 $relative = $basePath !== '' && str_starts_with($path, $basePath) ? substr($path, strlen($basePath)) : $path;
-$planningLinks = ['/planejamento' => 'Planejamento', '/investimentos' => 'Investimentos', '/objetivos' => 'Objetivos', '/projecoes' => 'Projeções'];
-$moreLinks = ['/contas' => 'Contas', '/cartoes' => 'Cartões', '/categorias' => 'Categorias', '/recorrencias' => 'Recorrências', '/estrategias' => 'Dicas e estratégias', '/comecar' => 'Primeiros passos'];
+$exploreLinks = ['/analises' => 'Análises', '/investimentos' => 'Investimentos', '/objetivos' => 'Objetivos', '/projecoes' => 'Projeções'];
+$moreLinks = ['/cartoes' => 'Cartões', '/categorias' => 'Categorias', '/recorrencias' => 'Recorrências'];
 if (($usuario['tipo'] ?? '') === 'admin') $moreLinks['/admin/usuarios'] = 'Administração de usuários';
 $isActive = fn(string $url): bool => $url === '/' ? ($relative === '' || $relative === '/') : ($relative === $url || str_starts_with($relative, $url . '/'));
 $navigation = [
     ['label' => 'Visão geral', 'url' => '/'],
     ['label' => 'Movimentações', 'url' => '/movimentacoes'],
-    ['label' => 'Análises', 'url' => '/analises'],
-    ['label' => 'Planejar', 'items' => $planningLinks],
+    ['label' => 'Para conferir', 'url' => '/conferir'],
+    ['label' => 'Planejamento', 'url' => '/planejamento'],
+    ['label' => 'Contas', 'url' => '/contas'],
+    ['label' => 'Explorar', 'items' => $exploreLinks],
     ['label' => 'Mais', 'items' => $moreLinks],
 ];
 $flash = $_SESSION['flash'] ?? null;
@@ -25,7 +27,7 @@ unset($_SESSION['flash']);
     <title><?= H::escape($pageTitle ?? 'UaiMoney') ?></title>
     <link rel="icon" type="image/png" sizes="any" href="<?= H::escape($basePath . '/images/brand/favicon.png?v=10') ?>">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="<?= H::escape($basePath . '/css/app.css?v=20261015-sortable-tables') ?>" rel="stylesheet">
+    <link href="<?= H::escape($basePath . '/css/app.css?v=20261016-finance') ?>" rel="stylesheet">
 </head>
 <body class="top-navigation-layout">
     <a class="skip-link" href="#main-content">Pular para o conteúdo</a>
@@ -75,7 +77,7 @@ unset($_SESSION['flash']);
     </div>
     <script>window.UaiMoney = { themeUrl: <?= json_encode($basePath . '/preferencias/tema', JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?> };</script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="<?= H::escape($basePath . '/js/app.js?v=20261015-async-sort') ?>"></script>
+    <script src="<?= H::escape($basePath . '/js/app.js?v=20261016-suggestions') ?>"></script>
     <script src="<?= H::escape($basePath . '/js/financial-overview.js?v=20261014') ?>"></script>
     <script src="<?= \App\Core\Html::escape($basePath . '/js/theme.js?v=20261015-graphite-theme') ?>"></script>
     <script src="<?= \App\Core\Html::escape($basePath . '/js/table-sort.js?v=20261015-async') ?>"></script>

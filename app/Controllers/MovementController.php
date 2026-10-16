@@ -54,6 +54,7 @@ final class MovementController extends FinancialController
             'accounts' => $accounts,
             'cards' => array_values(array_filter($this->cards->list($user), fn($card) => (int) $card['ativo'] === 1)),
             'categories' => $categories,
+            'suggestions' => $movement ? [] : $this->movements->categorySuggestions($user),
             'returnPath' => MovementReturn::path($_POST['_retorno'] ?? $_GET['voltar'] ?? ''),
         ]);
     }

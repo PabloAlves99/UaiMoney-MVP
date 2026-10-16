@@ -1,12 +1,20 @@
 # Implementação do MVP financeiro
 
-Atualização de 30 de setembro de 2026. Este documento registra o comportamento implementado sobre o projeto existente e complementa o roadmap inicial.
+Atualização de 16 de outubro de 2026. Este documento registra o comportamento implementado sobre o projeto existente e complementa o roadmap inicial.
+
+## Rotina simplificada
+
+A navegação principal destaca visão geral, movimentações, pendências, planejamento e contas. Análises, investimentos, objetivos e projeções ficam em **Explorar**. **Para conferir** reúne movimentações pendentes, faturas em aberto e links para conferir saldos. O início guiado aparece na visão geral quando faltam contas ou categorias.
+
+O formulário de lançamento usa uma única data e uma única situação; parcelamento, recorrência e outros ajustes ficam em **Mais opções**. Descrições anteriores sugerem uma categoria ativa do próprio usuário, que pode ser alterada antes de salvar.
+
+A importação de CSV/OFX aceita até 200 linhas e 2 MB por arquivo. A prévia permite revisar categorias e possíveis duplicatas. Somente linhas selecionadas entram no banco. Cada importação fica em um lote que pode ser desfeito enquanto seus lançamentos não forem editados. Transferências e pagamentos de fatura devem usar os fluxos próprios.
 
 ## Escopo entregue
 
 | Área | Comportamento |
 |---|---|
-| Acesso | Cadastro público separado do administrativo, login, proteção de sessão, limite de tentativas e isolamento por usuário |
+| Acesso | Cadastro pelo administrador, login, proteção de sessão, limite de tentativas e isolamento por usuário |
 | Primeiro acesso | Conta, categorias sugeridas sem duplicação e primeiro lançamento |
 | Interface | Navegação consistente, identidade verde-petróleo, responsividade, temas claro/escuro, foco visível e link para pular navegação |
 | Movimentações | Busca, filtros, paginação de 50 itens, detalhes de origem, estorno e duplicação como pendente |
@@ -74,6 +82,6 @@ A fixture usa `ana` e `bia`, com senha `UaiTeste!2026`. Nunca use essa base nem 
 
 ## Próximo marco comercial
 
-Antes da oferta por assinatura, faltam provedor de cobrança, planos, webhooks idempotentes, inadimplência, verificação/recuperação de e-mail, documentos do serviço, implantação e monitoramento. Nenhuma cobrança nem publicação foi feita.
+Antes da oferta por assinatura, faltam provedor de cobrança, planos, webhooks idempotentes, inadimplência, verificação de e-mail, documentos do serviço e monitoramento. A recuperação de senha por e-mail já está implementada e depende da configuração do transporte SMTP. Nenhuma cobrança foi feita por esta aplicação.
 
-Open Finance, importação OFX/CSV, notificações, compartilhamento familiar e reescrita da stack continuam fora deste escopo.
+Open Finance, notificações, compartilhamento familiar e reescrita da stack continuam fora deste escopo.

@@ -66,12 +66,18 @@ class Client:
 ana = Client()
 status, html, _ = ana.submit('/login', '/login', {'identifier': 'ana', 'senha': 'UaiTeste!2026'})
 check(status == 200 and 'Visão geral' in html, 'Login')
-paths = ['/', '/cartoes', '/cartoes/1', '/faturas/1', '/planejamento', '/investimentos', '/objetivos', '/projecoes', '/projecoes/nova', '/estrategias', '/analises', '/analises?agrupar=mes', '/carteira', '/comecar', '/movimentacoes', '/movimentacoes/1', '/movimentacoes/avancado', '/recorrencias', '/categorias', '/contas', '/contas/1', '/movimentacoes/5/editar']
+paths = ['/', '/conferir', '/cartoes', '/cartoes/1', '/faturas/1', '/planejamento', '/investimentos', '/objetivos', '/projecoes', '/projecoes/nova', '/estrategias', '/analises', '/analises?agrupar=mes', '/carteira', '/comecar', '/movimentacoes', '/movimentacoes/importar', '/movimentacoes/1', '/movimentacoes/avancado', '/recorrencias', '/categorias', '/contas', '/contas/1', '/movimentacoes/5/editar']
 for path in paths:
     status, html, headers = ana.request(path)
     check(status == 200, f'Route {path}: {status}')
     check('Fatal error' not in html and 'Warning:' not in html and 'Falha inesperada' not in html, f'Clean render {path}')
     check('no-store' in headers.get('Cache-Control', ''), f'No-cache {path}')
+
+for path in ['/movimentacoes/nova', '/movimentacoes/5/editar']:
+    status, html, _ = ana.request(path)
+    check(status == 200 and len(re.findall(r'name="status"', html)) == 1, f'Single situation field {path}')
+    if path.endswith('/nova'):
+        check(len(re.findall(r'name="data"', html)) == 1, 'Single date field in quick entry')
 
 for path in ['/analises?periodo=anterior', '/analises?periodo=semestre', '/analises?inicio=2025-03-02&fim=2025-03-02&conferir=1', '/analises?inicio=2025-03-20&fim=2025-03-10', '/analises?tipo=receita&conferir=1', '/analises?conta_id=99999&conferir=1', '/analises?inicio=1900-01-01&fim=1900-01-31', '/analises?inicio=2199-12-01&fim=2199-12-31']:
     status, html, _ = ana.request(path)

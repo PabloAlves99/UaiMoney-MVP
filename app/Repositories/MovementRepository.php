@@ -6,6 +6,16 @@ namespace App\Repositories;
 
 final class MovementRepository extends FinanceRepository
 {
+    public function categorySuggestions(int $user): array
+    {
+        return $this->rows('SELECT descricao, subgrupo_id, tipo FROM (SELECT t.descricao, t.subgrupo_id, g.tipo, t.id,
+                ROW_NUMBER() OVER (PARTITION BY LOWER(t.descricao), g.tipo ORDER BY t.id DESC) AS ordem
+            FROM transacoes t JOIN subgrupos s ON s.id=t.subgrupo_id AND s.ativo=1
+            JOIN grupos g ON g.id=s.grupo_id AND g.usuario_id=t.usuario_id AND g.ativo=1
+            WHERE t.usuario_id=? AND t.excluida_em IS NULL AND t.descricao<>\'\'
+            ) WHERE ordem=1 ORDER BY id DESC LIMIT 100', [$user]);
+    }
+
     public function find(int $user, int $id): ?array
     {
         return $this->rows(
