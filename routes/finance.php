@@ -84,6 +84,7 @@ $router->post('/cartoes/{id}/desativar', [$cardController, 'deactivate']);
 $router->get('/faturas/{id}', [$cardController, 'invoice']);
 $router->post('/faturas/{id}/pagar', [$cardController, 'pay']);
 $router->post('/faturas/{id}/fechar', [$cardController, 'close']);
+$router->post('/faturas/{id}/reabrir', [$cardController, 'reopen']);
 $router->post('/faturas/{id}/credito', [$cardController, 'carry']);
 $router->get('/planejamento', [$dashboardController, 'budget']);
 $router->get('/arquivados', [$archiveController, 'index']);

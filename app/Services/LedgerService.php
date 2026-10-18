@@ -91,11 +91,10 @@ final class LedgerService
             $t = $this->ledger->transaction($user, $id) ?? throw new DomainException('Compra não encontrada.');
             if (!$t['cartao_id'] || $t['status'] === 'cancelada' || (int) $t['estornado'] > 0)
                 throw new DomainException('Esta compra não pode ser movida.');
-            $source = $this->cards->invoice($user, (int) $t['fatura_id']);
+            $source = $this->cards->invoice($user, (int) $t['fatura_id']) ?? throw new DomainException('Fatura de origem não encontrada.');
             $target = $this->cardService->invoiceFor($user, $this->cardService->get($user, (int) $t['cartao_id']), $month);
-            $full = $this->cards->invoice($user, (int) $target['id']);
-            if ($source['status'] !== 'aberta' || $target['status'] !== 'aberta' || (int) $source['pago'] > 0 || (int) $full['pago'] > 0)
-                throw new DomainException('Só é possível mover entre faturas abertas e sem pagamentos.');
+            if ($source['status'] === 'cancelada' || $target['status'] === 'cancelada')
+                throw new DomainException('Não é possível mover compras de ou para uma fatura cancelada.');
             $this->cards->move($user, $id, $target);
         });
     }

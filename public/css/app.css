@@ -2642,3 +2642,45 @@ th[aria-sort="descending"] .table-sort-indicator::after { content: '↓'; font-s
   .table-sort-mobile label { flex: 1; min-width: 140px; font-size: .75rem; color: var(--uai-muted); }
   .table-sort-mobile select { margin-top: 5px; }
 }
+
+/* Form controls need room for touch and prevent automatic zoom on phones. */
+@media (max-width: 767.98px) {
+  .form-control, .form-select { min-width: 0; max-width: 100%; min-height: 44px; font-size: 16px; }
+  textarea.form-control { min-height: 88px; }
+  .app-main, .app-main .card, .app-main .card-body, .page-heading > *, .section-heading > * { min-width: 0; }
+  .app-main .table-responsive { max-width: 100%; }
+  .app-main .btn { min-height: 44px; }
+  .site-header #themeToggle, .site-header .user-avatar, .compact-menu-toggle { width: 44px; min-width: 44px; height: 44px; }
+  input[type="date"], input[type="month"], input[type="time"], input[type="file"] { width: 100%; min-width: 0; }
+}
+@media (max-width: 375px) {
+  .site-header-bar { padding-inline: 8px; gap: 4px; }
+  .site-header-actions { gap: 4px; }
+  .site-brand, .site-brand .brand-identity { width: 75px; flex-basis: 75px; }
+  .header-new-entry { padding-inline: .4rem; }
+}
+
+/* The import preview contains several controls per row: stack them on phones. */
+@media (max-width: 767.98px) {
+  .import-preview-container { overflow: visible; }
+  .import-preview-table, .import-preview-table tbody { display: block; width: 100%; }
+  .import-preview-table thead { display: none; }
+  .import-preview-table tr[data-import-row] {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px 12px;
+    padding: 16px; margin-bottom: 12px; border: 1px solid var(--uai-border); border-radius: 8px;
+  }
+  .import-preview-table tr[data-import-row] > td { display: block; min-width: 0; padding: 0; border: 0; box-shadow: none; overflow-wrap: anywhere; }
+  .import-preview-table tr[data-import-row] > td:nth-child(1) { grid-column: 2; grid-row: 1; }
+  .import-preview-table tr[data-import-row] > td:nth-child(2) { grid-column: 1; grid-row: 1; }
+  .import-preview-table tr[data-import-row] > td:nth-child(3) { grid-column: 1 / -1; font-weight: 600; }
+  .import-preview-table tr[data-import-row] > td:nth-child(4) { grid-column: 1 / -1; font-weight: 600; }
+  .import-preview-table tr[data-import-row] > td:nth-child(5),
+  .import-preview-table tr[data-import-row] > td:nth-child(6),
+  .import-preview-table tr[data-import-row] > td:nth-child(7) { grid-column: 1 / -1; white-space: normal !important; text-align: left !important; }
+  .import-preview-table tr[data-import-row] > td:nth-child(5)::before,
+  .import-preview-table tr[data-import-row] > td:nth-child(6)::before { display: block; margin-bottom: 5px; color: var(--uai-muted); font-size: .85rem; font-weight: 600; }
+  .import-preview-table tr[data-import-row] > td:nth-child(5)::before { content: 'Destino'; }
+  .import-preview-table tr[data-import-row] > td:nth-child(6)::before { content: 'Categoria'; }
+  .import-preview-table tr[data-import-row] > td:nth-child(7) > div { justify-content: flex-start !important; flex-wrap: wrap; }
+  .import-preview-table .form-check-input { width: 1.4rem; height: 1.4rem; margin: 0; }
+}

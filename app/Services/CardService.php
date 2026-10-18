@@ -87,8 +87,10 @@ final class CardService
         $ids = [];
         for ($i = 0; $i < $count; $i++) {
             $invoice = $this->invoiceFor($user, $card, Dates::shift($month, $i));
-            $existing = $this->cards->invoice($user, (int)$invoice['id']);
-            if ($invoice['status'] !== 'aberta' || (int)$existing['pago'] > 0) throw new DomainException('A fatura calculada pela data da compra já foi fechada ou recebeu pagamentos.');
+            if ($invoice['status'] !== 'aberta') throw new DomainException('A fatura calculada pela data da compra está fechada. Reabra a fatura para adicionar compras.');
+            foreach ($this->cards->payments($user, (int)$invoice['id']) as $payment) {
+                if ($date > $payment['data_pagamento']) throw new DomainException('A compra não pode ser posterior a um pagamento já registrado nesta fatura.');
+            }
             // Budget consumption follows each installment's cycle; a single purchase uses its purchase date.
             $competence = $count === 1 ? $date : Dates::day(Dates::shift($month, $i), (int)substr($date, 8, 2));
             $ids[] = $this->cards->purchase($user, (int)$category['id'], (int)$card['id'], $invoice, $description, intdiv($amount, $count) + ($i < $amount % $count ? 1 : 0), $competence, $installment, $i + 1, $date, trim((string)($input['observacao'] ?? '')) ?: null);
@@ -119,6 +121,15 @@ final class CardService
         $invoice = $this->cards->invoice($user, $id) ?? throw new DomainException('Fatura não encontrada.');
         if ($invoice['status'] !== 'aberta') throw new DomainException('Esta fatura já está fechada.');
         $this->cards->close($user, $id);
+    }
+
+    public function reopen(int $user, int $id): void
+    {
+        $this->cards->atomic(function () use ($user, $id) {
+            $invoice = $this->cards->invoice($user, $id) ?? throw new DomainException('Fatura não encontrada.');
+            if ($invoice['status'] !== 'fechada') throw new DomainException('Só é possível reabrir uma fatura fechada.');
+            $this->cards->reopen($user, $id);
+        });
     }
 
     public function deactivate(int $user, int $id): void

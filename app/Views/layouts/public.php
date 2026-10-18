@@ -7,8 +7,8 @@
     <link rel="icon" type="image/png" sizes="any" href="<?= \App\Core\Html::escape($basePath.'/images/brand/favicon.png?v=10') ?>">
     <title><?= \App\Core\Html::escape($pageTitle ?? 'UaiMoney') ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="<?= \App\Core\Html::escape($basePath . '/css/app.css?v=20261016-finance') ?>">
-    <link rel="stylesheet" href="<?= \App\Core\Html::escape($basePath . '/css/searchable-select.css?v=1') ?>">
+    <link rel="stylesheet" href="<?= \App\Core\Html::escape($basePath . '/css/app.css?v=20261018-import-mobile') ?>">
+    <link rel="stylesheet" href="<?= \App\Core\Html::escape($basePath . '/css/searchable-select.css?v=20261018-touch') ?>">
     <?php require __DIR__ . '/theme-head.php'; ?>
 </head>
 <body class="public-share-page">
@@ -17,6 +17,6 @@
     <script src="<?= \App\Core\Html::escape($basePath . '/js/financial-overview.js?v=20261017-select') ?>"></script>
     <script src="<?= \App\Core\Html::escape($basePath . '/js/theme.js?v=20261015-graphite-theme') ?>"></script>
     <script src="<?= \App\Core\Html::escape($basePath . '/js/table-sort.js?v=20261017-select') ?>"></script>
-    <script src="<?= \App\Core\Html::escape($basePath . '/js/searchable-select.js?v=1') ?>"></script>
+    <script src="<?= \App\Core\Html::escape($basePath . '/js/searchable-select.js?v=20261018-global-touch') ?>"></script>
 </body>
 </html>

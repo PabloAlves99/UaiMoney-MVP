@@ -85,6 +85,11 @@ final class CardRepository extends FinanceRepository
         $this->run("UPDATE faturas SET status='fechada',atualizado_em=CURRENT_TIMESTAMP WHERE usuario_id=? AND id=? AND status='aberta'", [$user, $invoice]);
     }
 
+    public function reopen(int $user, int $invoice): void
+    {
+        $this->run("UPDATE faturas SET status='aberta',atualizado_em=CURRENT_TIMESTAMP WHERE usuario_id=? AND id=? AND status='fechada'", [$user, $invoice]);
+    }
+
     public function items(int $user, int $invoice): array
     {
         return $this->rows('SELECT t.*,s.nome AS categoria,COALESCE((SELECT SUM(e.valor_centavos) FROM estornos e WHERE e.usuario_id=t.usuario_id AND e.transacao_id=t.id),0) AS estornado FROM transacoes t JOIN subgrupos s ON s.id=t.subgrupo_id WHERE t.usuario_id=? AND t.fatura_id=? AND t.excluida_em IS NULL ORDER BY t.data_competencia,t.id', [$user, $invoice]);

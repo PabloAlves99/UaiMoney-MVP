@@ -88,6 +88,11 @@ final class CardController extends FinancialController
         $this->action('/faturas/' . $this->parseId($id), fn($u) => $this->service->close($u, (int) $id), 'Fatura fechada.');
     }
 
+    public function reopen(string $id): void
+    {
+        $this->action('/faturas/' . $this->parseId($id), fn($u) => $this->service->reopen($u, (int) $id), 'Fatura reaberta. Os pagamentos registrados foram preservados.');
+    }
+
     public function carry(string $id): void
     {
         $this->action('/faturas/' . $this->parseId($id), fn($u) => $this->service->carryCredit($u, (int) $id, (string) ($_POST['mes'] ?? '')), 'Crédito transportado para a próxima fatura escolhida.');

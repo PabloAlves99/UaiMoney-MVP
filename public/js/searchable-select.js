@@ -2,6 +2,7 @@
   const normalize = (value) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR').trim();
   const widgets = new WeakMap();
   let active = null;
+  let touchingList = false;
   let sequence = 0;
   const list = document.createElement('div');
   list.className = 'searchable-select-list';
@@ -15,18 +16,19 @@
       active.input.removeAttribute('aria-activedescendant');
     }
     active = null;
+    touchingList = false;
     list.hidden = true;
   }
   function position() {
     if (!active) return;
     const rect = active.input.getBoundingClientRect();
-    const below = window.innerHeight - rect.bottom;
-    const above = rect.top;
-    const height = Math.max(80, Math.min(260, Math.max(below, above) - 12));
+    const viewport = window.visualViewport;
+    const bottom = viewport ? viewport.offsetTop + viewport.height : window.innerHeight;
+    const height = Math.max(44, Math.min(260, bottom - rect.bottom - 8));
     list.style.width = `${rect.width}px`;
     list.style.left = `${rect.left}px`;
     list.style.maxHeight = `${height}px`;
-    list.style.top = below < 160 && above > below ? `${Math.max(4, rect.top - Math.min(height, list.scrollHeight))}px` : `${rect.bottom + 2}px`;
+    list.style.top = `${rect.bottom + 2}px`;
   }
   function available(select) {
     return [...select.options].filter(option => !option.hidden && !option.disabled && !option.closest('optgroup[disabled], optgroup[hidden]'));
@@ -69,7 +71,23 @@
       item.setAttribute('role', 'option');
       item.setAttribute('aria-selected', String(option.selected));
       item.textContent = option.textContent.trim();
-      item.addEventListener('pointerdown', event => { event.preventDefault(); choose(widget, option); widget.input.focus(); });
+      // Do not cancel touch down: the browser needs it to start a scroll.
+      let touchStart = null;
+      item.addEventListener('pointerdown', event => {
+        if (event.pointerType === 'mouse') event.preventDefault();
+        else touchStart = { id: event.pointerId, x: event.clientX, y: event.clientY };
+      });
+      item.addEventListener('pointercancel', () => { touchStart = null; });
+      item.addEventListener('pointerup', event => {
+        if (!touchStart || touchStart.id !== event.pointerId) return;
+        const tapped = Math.hypot(event.clientX - touchStart.x, event.clientY - touchStart.y) < 10;
+        touchStart = null;
+        if (tapped) { event.preventDefault(); widget.input.focus(); choose(widget, option); }
+      });
+      item.addEventListener('click', event => {
+        if (event.pointerType && event.pointerType !== 'mouse') return;
+        widget.input.focus(); choose(widget, option);
+      });
       list.appendChild(item);
     }
     if (!options.length) {
@@ -141,13 +159,22 @@
     const widget = { select, input, toggle, id: ++sequence, editing: false, visibleOptions: [], highlight: -1 };
     widgets.set(select, widget);
     sync(widget);
-    input.addEventListener('focus', () => { render(widget, widget.editing ? input.value : ''); input.select(); });
+    input.addEventListener('focus', () => {
+      if (!widget.editing) input.value = '';
+      render(widget, widget.editing ? input.value : '');
+      // Mobile browsers may scroll or resize the visual viewport after focus.
+      requestAnimationFrame(position);
+    });
     input.addEventListener('input', () => {
       widget.editing = true;
       input.setCustomValidity('Selecione uma opção da lista.');
       render(widget, input.value);
     });
-    input.addEventListener('blur', () => { finishEditing(widget); if (active === widget) close(); });
+    input.addEventListener('blur', () => {
+      if (active === widget && touchingList) return;
+      if (widget.editing) finishEditing(widget); else sync(widget);
+      if (active === widget) close();
+    });
     input.addEventListener('keydown', event => {
       if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
         event.preventDefault();
@@ -180,8 +207,21 @@
     scan(document);
     new MutationObserver(records => records.forEach(record => record.addedNodes.forEach(node => { if (node.nodeType === 1) scan(node); }))).observe(document.body, { childList: true, subtree: true });
   }
-  document.addEventListener('pointerdown', event => { if (active && !active.select.parentElement.contains(event.target) && !list.contains(event.target)) close(); });
+  list.addEventListener('pointerdown', event => { if (event.pointerType !== 'mouse') touchingList = true; }, true);
+  list.addEventListener('pointerup', () => { touchingList = false; });
+  list.addEventListener('pointercancel', () => { touchingList = false; });
+  document.addEventListener('pointerdown', event => {
+    if (active && !active.select.parentElement.contains(event.target) && !list.contains(event.target)) {
+      const widget = active;
+      if (document.activeElement !== widget.input) {
+        if (widget.editing) finishEditing(widget); else sync(widget);
+      }
+      close();
+    }
+  });
   window.addEventListener('resize', position);
   window.addEventListener('scroll', position, true);
+  window.visualViewport?.addEventListener('resize', position);
+  window.visualViewport?.addEventListener('scroll', position);
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
 })();
