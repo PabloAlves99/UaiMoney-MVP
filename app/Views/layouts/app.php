@@ -28,6 +28,7 @@ unset($_SESSION['flash']);
     <link rel="icon" type="image/png" sizes="any" href="<?= H::escape($basePath . '/images/brand/favicon.png?v=10') ?>">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="<?= H::escape($basePath . '/css/app.css?v=20261016-summary3') ?>" rel="stylesheet">
+    <link href="<?= H::escape($basePath . '/css/searchable-select.css?v=1') ?>" rel="stylesheet">
 </head>
 <body class="top-navigation-layout">
     <a class="skip-link" href="#main-content">Pular para o conteúdo</a>
@@ -77,9 +78,10 @@ unset($_SESSION['flash']);
     </div>
     <script>window.UaiMoney = { themeUrl: <?= json_encode($basePath . '/preferencias/tema', JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?> };</script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="<?= H::escape($basePath . '/js/app.js?v=20261016-suggestions') ?>"></script>
-    <script src="<?= H::escape($basePath . '/js/financial-overview.js?v=20261014') ?>"></script>
+    <script src="<?= H::escape($basePath . '/js/app.js?v=20261017-select') ?>"></script>
+    <script src="<?= H::escape($basePath . '/js/financial-overview.js?v=20261017-select') ?>"></script>
     <script src="<?= \App\Core\Html::escape($basePath . '/js/theme.js?v=20261015-graphite-theme') ?>"></script>
-    <script src="<?= \App\Core\Html::escape($basePath . '/js/table-sort.js?v=20261015-async') ?>"></script>
+    <script src="<?= \App\Core\Html::escape($basePath . '/js/table-sort.js?v=20261017-select') ?>"></script>
+    <script src="<?= H::escape($basePath . '/js/searchable-select.js?v=1') ?>"></script>
 </body>
 </html>

@@ -1,0 +1,12 @@
+.searchable-select { position: relative; min-width: 0; width: 100%; }
+.searchable-select-native { position: absolute !important; width: 1px !important; height: 1px !important; padding: 0 !important; margin: 0 !important; opacity: 0; overflow: hidden; pointer-events: none; }
+.searchable-select-input { padding-right: 2.4rem; background-color: var(--uai-surface); color: var(--uai-text); }
+.searchable-select-toggle { position: absolute; inset: 0 0 0 auto; width: 2.3rem; border: 0; background: transparent; color: var(--uai-text); cursor: pointer; }
+.searchable-select-toggle:disabled { opacity: .5; cursor: default; }
+.searchable-select-list { position: fixed; z-index: 2000; overflow-y: auto; border: 1px solid var(--uai-border); border-radius: .375rem; background: var(--uai-surface); color: var(--uai-text); box-shadow: 0 8px 24px rgba(0, 0, 0, .18); }
+.searchable-select-list[hidden] { display: none; }
+.searchable-select-option, .searchable-select-empty { padding: .5rem .75rem; overflow-wrap: anywhere; }
+.searchable-select-option { cursor: pointer; }
+.searchable-select-option:hover, .searchable-select-option.is-active { background: var(--uai-surface-secondary); }
+.searchable-select-option[aria-selected="true"] { font-weight: 600; }
+.searchable-select-empty { color: var(--bs-secondary-color); }

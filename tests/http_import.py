@@ -24,7 +24,7 @@ html = post('/login', {'_token': token(html), 'identifier': 'ana', 'senha': 'Uai
 assert 'Visão geral' in html
 html = get('/movimentacoes/importar')
 boundary = '----UaiMoney' + secrets.token_hex(8)
-csv = 'Data;Descrição;Valor\n14/04/2025;Teste HTTP importação;-9,50\n'
+csv = 'Data;Descrição;Valor\n14/04/2025;Supermercado HTTP;-9,50\n'
 parts = [
     f'--{boundary}\r\nContent-Disposition: form-data; name="_token"\r\n\r\n{token(html)}\r\n',
     f'--{boundary}\r\nContent-Disposition: form-data; name="conta_id"\r\n\r\n1\r\n',
@@ -35,7 +35,9 @@ parts = [
 request = urllib.request.Request(base + '/movimentacoes/importar/previa', ''.join(parts).encode(),
     headers={'Content-Type': 'multipart/form-data; boundary=' + boundary})
 html = opener.open(request).read().decode('utf-8')
-assert 'Teste HTTP importação' in html and 'Prévia salva' in html
+assert 'Supermercado HTTP' in html and 'Prévia salva' in html
+assert 'Sugerida pela descrição' in html
+assert re.search(r'<option value="\d+"\s+selected>Mercado · Alimentação</option>', html)
 nonce = re.search(r'name="nonce" value="([^"]+)"', html).group(1)
 category = re.search(r'name="categoria\[0\]".*?<option value="(\d+)"', html, re.S).group(1)
 html = post('/movimentacoes/importar', {'_token': token(html), 'nonce': nonce,

@@ -23,9 +23,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const checkbox = row.querySelector("[data-import-select]");
     checkbox.disabled = invalidIncome;
     if (invalidIncome) checkbox.checked = false;
-    row.querySelector("[data-import-account]").classList.toggle("d-none", card);
-    row.querySelector("[data-import-card]").classList.toggle("d-none", !card);
-    row.querySelector("[data-import-method]").classList.toggle("d-none", card);
+    const showControl = (selector, visible) => {
+      const control = row.querySelector(selector);
+      (control.closest('.searchable-select') || control).classList.toggle('d-none', !visible);
+    };
+    showControl("[data-import-account]", !card);
+    showControl("[data-import-card]", card);
+    showControl("[data-import-method]", !card);
     row.querySelector("[data-import-income-note]")?.classList.toggle("d-none", !invalidIncome);
   };
   form.querySelectorAll("[data-import-row]").forEach(updateDestination);
@@ -58,6 +62,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   form.addEventListener("change", (event) => {
     if (event.target.matches("[data-import-target]")) updateDestination(event.target.closest("[data-import-row]"));
+    if (event.target.matches("select[name^='categoria']")) event.target.closest("td").querySelector("[data-category-suggestion-note]")?.remove();
     if (event.target.matches("[data-import-select], select[name^='categoria'], [data-import-target], [data-import-account], [data-import-card], [data-import-method]")) save();
   });
   form.querySelector("[data-select-all]").addEventListener("click", () => {

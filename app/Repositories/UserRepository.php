@@ -157,6 +157,9 @@ final class UserRepository
         string $tipo = 'usuario',
         string $tema = 'light'
     ): int {
+        $ownsTransaction = !$this->pdo->inTransaction();
+        if ($ownsTransaction) $this->pdo->beginTransaction();
+        try {
         $stmt = $this->pdo->prepare("
             INSERT INTO usuarios (
                 nome,
@@ -185,7 +188,14 @@ final class UserRepository
             ':tema' => $tema
         ]);
 
-        return (int) $this->pdo->lastInsertId();
+        $id = (int) $this->pdo->lastInsertId();
+        \App\Services\DefaultCategories::add($this->pdo, $id);
+        if ($ownsTransaction) $this->pdo->commit();
+        return $id;
+        } catch (\Throwable $e) {
+            if ($ownsTransaction && $this->pdo->inTransaction()) $this->pdo->rollBack();
+            throw $e;
+        }
     }
 
     public function updateTheme(

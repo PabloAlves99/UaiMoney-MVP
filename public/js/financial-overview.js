@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
         option.disabled = !visible;
       });
       if (subgroup.selectedOptions[0]?.disabled) subgroup.value = '';
+      subgroup.dispatchEvent(new Event('searchable:sync'));
     };
     group.addEventListener('change', update);
     update();

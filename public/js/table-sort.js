@@ -157,6 +157,7 @@
         syncMobile = () => {
           const active = controls.findIndex((control) => control.header.getAttribute("aria-sort") !== "none");
           if (active >= 0) select.value = String(active);
+          select.dispatchEvent(new Event('searchable:sync'));
           direction.textContent = controls[Number(select.value)].header.getAttribute("aria-sort") === "descending" ? "Decrescente ↓" : "Crescente ↑";
         };
         select.addEventListener("change", () => { const control=controls[Number(select.value)]; control.header.setAttribute("aria-sort", "none"); control.button.click(); });

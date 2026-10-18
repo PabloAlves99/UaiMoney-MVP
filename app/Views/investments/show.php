@@ -20,7 +20,7 @@ $labels=['saldo_inicial'=>'Saldo inicial','aporte'=>'Aporte','retirada'=>'Retira
   if (!type || !mode || !value || !percent) return;
   const refresh = () => {
     const yieldEvent = type.value === 'rendimento';
-    mode.parentElement.hidden = !yieldEvent;
+    (mode.closest('.searchable-select')?.parentElement || mode.parentElement).hidden = !yieldEvent;
     const usePercent = yieldEvent && mode.value === 'percentual';
     percent.parentElement.hidden = !usePercent;
     value.parentElement.hidden = usePercent;

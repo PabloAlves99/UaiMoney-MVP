@@ -26,6 +26,7 @@
         'UTF-8'
     ) ?>">
 
+    <link rel="stylesheet" href="<?= \App\Core\Html::escape($basePath . '/css/searchable-select.css?v=1') ?>">
     <?php require __DIR__ . '/theme-head.php'; ?>
 </head>
 
@@ -51,6 +52,7 @@
     </div>
 
     <script src="<?= \App\Core\Html::escape($basePath . '/js/theme.js?v=20261015-graphite-theme') ?>"></script>
+    <script src="<?= \App\Core\Html::escape($basePath . '/js/searchable-select.js?v=1') ?>"></script>
 </body>
 
 </html>

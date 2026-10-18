@@ -119,6 +119,73 @@ final class StatementImportService
         return $rows;
     }
 
+    /** Suggest only active categories owned by this user; ambiguous matches stay blank. */
+    public function suggestCategories(int $user, array $rows): array
+    {
+        $stmt = $this->pdo->prepare('SELECT t.descricao,t.subgrupo_id,g.tipo FROM transacoes t JOIN subgrupos s ON s.id=t.subgrupo_id AND s.ativo=1 JOIN grupos g ON g.id=s.grupo_id AND g.ativo=1 AND g.usuario_id=t.usuario_id WHERE t.usuario_id=? AND t.excluida_em IS NULL AND t.status<>\'cancelada\'');
+        $stmt->execute([$user]);
+        $history = [];
+        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $item) {
+            $key = $item['tipo'] . '|' . self::normalizeDescription($item['descricao']);
+            $history[$key][(int) $item['subgrupo_id']] = true;
+        }
+        $stmt = $this->pdo->prepare('SELECT s.id,s.nome,g.nome grupo,g.tipo FROM subgrupos s JOIN grupos g ON g.id=s.grupo_id WHERE g.usuario_id=? AND g.ativo=1 AND s.ativo=1');
+        $stmt->execute([$user]);
+        $categories = [];
+        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $item) {
+            $categories[$item['tipo'] . '|' . self::normalizeDescription($item['grupo']) . '|' . self::normalizeDescription($item['nome'])] = (int) $item['id'];
+        }
+        $rules = [
+            ['despesa', 'Alimentação', 'Mercado', '/\b(supermercado|hipermercado)\b/'],
+            ['despesa', 'Alimentação', 'Padaria', '/\bpadaria\b/'],
+            ['despesa', 'Alimentação', 'Restaurante', '/\brestaurante\b/'],
+            ['despesa', 'Alimentação', 'Delivery', '/\bdelivery\b/'],
+            ['despesa', 'Saúde', 'Medicamentos', '/\b(farmacia|drogaria)\b/'],
+            ['despesa', 'Transporte', 'Combustível', '/\b(combustivel|gasolina)\b/'],
+            ['despesa', 'Transporte', 'Estacionamento', '/\bestacionamento\b/'],
+            ['despesa', 'Moradia', 'Aluguel', '/\baluguel\b/'],
+            ['despesa', 'Moradia', 'Condomínio', '/\bcondominio\b/'],
+            ['receita', 'Trabalho', 'Salário', '/\bsalario\b/'],
+        ];
+        $generic = ['pix', 'transferencia', 'pagamento', 'compra', 'debito', 'credito'];
+        foreach ($rows as &$row) {
+            $type = $row['centavos'] < 0 ? 'despesa' : 'receita';
+            $description = self::normalizeDescription($row['descricao']);
+            $key = $type . '|' . $description;
+            $row['category_id'] = 0;
+            unset($row['category_suggestion']);
+            if ($description !== '' && !in_array($description, $generic, true) && isset($history[$key])) {
+                if (count($history[$key]) === 1) {
+                    $row['category_id'] = (int) array_key_first($history[$key]);
+                    $row['category_suggestion'] = 'histórico';
+                }
+                continue;
+            }
+            $matches = [];
+            foreach ($rules as [$ruleType, $group, $child, $pattern]) {
+                if ($type !== $ruleType || !preg_match($pattern, $description)) continue;
+                $categoryKey = $type . '|' . self::normalizeDescription($group) . '|' . self::normalizeDescription($child);
+                $matches[$categoryKey] = true;
+            }
+            if (count($matches) === 1) {
+                $match = array_key_first($matches);
+                if (isset($categories[$match])) {
+                    $row['category_id'] = $categories[$match];
+                    $row['category_suggestion'] = 'descrição';
+                }
+            }
+        }
+        unset($row);
+        return $rows;
+    }
+
+    private static function normalizeDescription(string $description): string
+    {
+        $description = mb_strtolower(trim($description), 'UTF-8');
+        $description = strtr($description, ['á'=>'a','à'=>'a','â'=>'a','ã'=>'a','ä'=>'a','é'=>'e','ê'=>'e','ë'=>'e','í'=>'i','ï'=>'i','ó'=>'o','ô'=>'o','õ'=>'o','ö'=>'o','ú'=>'u','ü'=>'u','ç'=>'c']);
+        return trim((string) preg_replace('/[^\p{L}\p{N}]+/u', ' ', $description));
+    }
+
     public function draft(int $user): ?array
     {
         $stmt = $this->pdo->prepare('SELECT conta_id,nonce,itens_json,atualizado_em FROM rascunhos_importacao WHERE usuario_id=?');
@@ -151,7 +218,9 @@ final class StatementImportService
         foreach ($draft['rows'] as $index => &$row) {
             $previousTarget = [$row['destino_tipo'] ?? 'conta', (int) ($row['conta_id'] ?? $draft['account']), (int) ($row['cartao_id'] ?? 0)];
             $row['selected'] = isset($selected[$index]);
-            $row['category_id'] = max(0, (int) ($categories[$index] ?? 0));
+            $category = max(0, (int) ($categories[$index] ?? 0));
+            if ($category !== (int) ($row['category_id'] ?? 0)) unset($row['category_suggestion']);
+            $row['category_id'] = $category;
             if (isset($targets[$index])) $row['destino_tipo'] = (string) $targets[$index];
             if (isset($accounts[$index])) $row['conta_id'] = (int) $accounts[$index];
             if (isset($cards[$index])) $row['cartao_id'] = (int) $cards[$index];

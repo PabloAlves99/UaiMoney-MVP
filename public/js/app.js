@@ -106,7 +106,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   document.querySelectorAll("[data-analysis-date]").forEach((input) => {
     input.addEventListener("change", () => {
-      document.querySelector("[data-analysis-period]").value = "personalizado";
+      const period = document.querySelector("[data-analysis-period]");
+      period.value = "personalizado";
+      period.dispatchEvent(new Event('searchable:sync'));
     });
   });
   document.querySelectorAll("[data-chart-tip]").forEach((point) => {
@@ -174,6 +176,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const match = suggestions.find((item) => item.descricao.toLocaleLowerCase("pt-BR") === description.value.trim().toLocaleLowerCase("pt-BR") && item.tipo === typeValue());
       if (match && !category.value) {
         category.value = String(match.subgrupo_id);
+        category.dispatchEvent(new Event('searchable:sync'));
         if (suggestionFeedback) suggestionFeedback.textContent = "Categoria sugerida com base em um lançamento anterior. Confira antes de salvar.";
       } else if (suggestionFeedback) suggestionFeedback.textContent = "";
     });
@@ -222,6 +225,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const amountLabel = form.querySelector('label[for="movement-value"]');
         amountLabel.textContent = installment ? "Valor total (R$)" : "Valor (R$)";
       }
+      form.querySelectorAll('select').forEach(select => select.dispatchEvent(new Event('searchable:sync')));
     };
     typeButtons.forEach((button) => button.addEventListener("click", () => {
       type.value = button.dataset.value;

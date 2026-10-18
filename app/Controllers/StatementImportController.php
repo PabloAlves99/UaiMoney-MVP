@@ -53,14 +53,10 @@ final class StatementImportController extends FinancialController
             $rows = $this->imports->applyDefaults(
                 $this->imports->parse((string) $upload['name'], (string) file_get_contents($upload['tmp_name'])),
                 $defaultType, $account ?: null, $card ?: null);
-            $suggested = [];
-            foreach ($this->movements->categorySuggestions($user) as $item)
-                $suggested[mb_strtolower($item['descricao']) . '|' . $item['tipo']] = (int) $item['subgrupo_id'];
+            $rows = $this->imports->suggestCategories($user, $rows);
             foreach ($rows as &$row) {
                 $row['existente'] = $this->imports->duplicate($user, $account, $row);
                 $row['selected'] = !$row['repetida'] && !$row['existente'] && !($defaultType === 'cartao' && $row['centavos'] > 0);
-                $type = $row['centavos'] < 0 ? 'despesa' : 'receita';
-                $row['category_id'] = $suggested[mb_strtolower($row['descricao']) . '|' . $type] ?? 0;
             }
             unset($row);
             $this->imports->createDraft($user, $account ?: null, $rows);

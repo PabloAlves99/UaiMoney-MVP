@@ -49,12 +49,6 @@ final class LedgerRepository extends FinanceRepository
 
     public function startCategories(int $user): void
     {
-        foreach (['receita'=>['Renda'=>['Salário','Outras receitas']], 'despesa'=>['Moradia'=>['Aluguel','Contas da casa'],'Alimentação'=>['Mercado','Restaurantes'],'Transporte'=>['Combustível','Transporte público'],'Saúde'=>['Cuidados pessoais'],'Lazer'=>['Passeios','Assinaturas']]] as $type=>$groups) {
-            foreach ($groups as $name=>$children) {
-                $this->run('INSERT OR IGNORE INTO grupos(usuario_id,nome,tipo) VALUES(?,?,?)', [$user,$name,$type]);
-                $group = $this->rows('SELECT id FROM grupos WHERE usuario_id=? AND nome=? AND tipo=?', [$user,$name,$type])[0]['id'];
-                foreach ($children as $child) $this->run('INSERT OR IGNORE INTO subgrupos(grupo_id,nome) VALUES(?,?)', [$group,$child]);
-            }
-        }
+        \App\Services\DefaultCategories::add($this->pdo, $user);
     }
 }
