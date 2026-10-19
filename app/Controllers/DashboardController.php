@@ -116,29 +116,35 @@ final class DashboardController extends FinancialController
         $period = \App\Services\AnalyticsService::period($input, date('Y-m-d'));
         extract($period);
         $filters = array_filter(array_intersect_key($input, array_flip(['conta_id', 'cartao_id', 'grupo_id', 'subgrupo_id', 'tipo', 'meio_pagamento'])), fn($value) => $value !== '');
+        $categories = $this->reports->categories($u);
+        $selections = \App\Services\AnalyticsService::selections($_GET, $categories);
+        $reportFilters = $filters + $selections['filters'];
         $month = substr($end, 0, 7);
         $page = max(1, min(100000, (int)($input['pagina'] ?? 1)));
         $audit = ($input['conferir'] ?? '') === '1';
-        $budgetAvailable = $singleMonth && substr($start, 8) === '01' && !array_intersect_key($filters, array_flip(['conta_id', 'cartao_id', 'subgrupo_id', 'meio_pagamento'])) && ($filters['tipo'] ?? '') !== 'receita';
+        $budgetAvailable = $singleMonth && substr($start, 8) === '01' && !array_intersect_key($filters, array_flip(['conta_id', 'cartao_id', 'subgrupo_id', 'meio_pagamento'])) && ($filters['tipo'] ?? '') !== 'receita' && !$selections['active']['despesa_subgrupos'];
+        $budgets = $budgetAvailable ? $this->reports->budgets($u, $month) : [];
+        if ($selections['active']['despesa_grupos']) $budgets = array_values(array_filter($budgets, fn($row) => in_array((int)$row['grupo_id'], $selections['values']['despesa_grupos'], true)));
         $this->page('dashboard/analytics', 'Análises', $period + [
             'month' => $month,
             'filters' => $filters,
-            'totals' => $this->reports->totals($u, $start, $end, $filters),
-            'previous' => $this->reports->totals($u, $previousStart, $previousEnd, $filters),
-            'categoryRows' => $this->reports->breakdown($u, $start, $end, 'categoria', $filters),
-            'previousCategories' => $this->reports->breakdown($u, $previousStart, $previousEnd, 'categoria', $filters),
-            'subcategoryRows' => $this->reports->breakdown($u, $start, $end, 'subcategoria', $filters),
-            'monthlyRows' => $this->reports->monthly($u, $seriesStart, $end, $filters),
-            'monthlyExpenseAverage' => $this->reports->monthlyExpenseAverage($u, $end, $filters),
-            'spendingProfile' => $this->reports->spendingProfile($u, $start, $end, $filters),
-            'budgets' => $budgetAvailable ? $this->reports->budgets($u, $month) : [],
+            'selections' => $selections,
+            'totals' => $this->reports->totals($u, $start, $end, $reportFilters),
+            'previous' => $this->reports->totals($u, $previousStart, $previousEnd, $reportFilters),
+            'categoryRows' => $this->reports->breakdown($u, $start, $end, 'categoria', $reportFilters),
+            'previousCategories' => $this->reports->breakdown($u, $previousStart, $previousEnd, 'categoria', $reportFilters),
+            'subcategoryRows' => $this->reports->breakdown($u, $start, $end, 'subcategoria', $reportFilters),
+            'monthlyRows' => $this->reports->monthly($u, $seriesStart, $end, $reportFilters),
+            'monthlyExpenseAverage' => $this->reports->monthlyExpenseAverage($u, $end, $reportFilters),
+            'spendingProfile' => $this->reports->spendingProfile($u, $start, $end, $reportFilters),
+            'budgets' => $budgets,
             'budgetAvailable' => $budgetAvailable,
             'audit' => $audit,
             'auditPage' => $page,
-            'entries' => $audit ? $this->reports->entries($u, $start, $end, $filters, $page) : [],
+            'entries' => $audit ? $this->reports->entries($u, $start, $end, $reportFilters, $page) : [],
             'accounts' => $this->accounts->listActive($u),
             'cards' => $this->cards->list($u),
-            'categories' => $this->reports->categories($u),
+            'categories' => $categories,
         ]);
     }
 

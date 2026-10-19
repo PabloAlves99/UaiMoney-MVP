@@ -19,17 +19,30 @@ final class ReportRepository extends FinanceRepository
             COALESCE(SUM(CASE WHEN tipo='despesa' AND status='efetivada' THEN valor_centavos ELSE 0 END),0) AS despesas,
             COALESCE(SUM(CASE WHEN tipo='receita' AND status='pendente' THEN valor_centavos ELSE 0 END),0) AS receber,
             COALESCE(SUM(CASE WHEN tipo='despesa' AND status='pendente' THEN valor_centavos ELSE 0 END),0) AS pagar
-            FROM consumo WHERE $where", $params)[0];
+            FROM consumo c WHERE $where", $params)[0];
     }
 
     private function scope(int $user, string $start, string $end, array $filters): array
     {
-        $where = 'usuario_id=? AND data BETWEEN ? AND ?';
+        $where = 'c.usuario_id=? AND c.data BETWEEN ? AND ?';
         $params = [$user, $start, $end];
         foreach (['conta_id', 'cartao_id', 'grupo_id', 'subgrupo_id', 'meio_pagamento', 'tipo'] as $key) {
             if (!empty($filters[$key])) {
-                $where .= " AND $key=?";
+                $where .= " AND c.$key=?";
                 $params[] = $filters[$key];
+            }
+        }
+        foreach (['receita', 'despesa'] as $type) {
+            foreach (['grupos' => 'grupo_id', 'subgrupos' => 'subgrupo_id'] as $suffix => $column) {
+                $key = $type . '_' . $suffix;
+                if (!array_key_exists($key, $filters)) continue;
+                $ids = $filters[$key];
+                if (!$ids) {
+                    $where .= " AND c.tipo<>'$type'";
+                } else {
+                    $where .= " AND (c.tipo<>'$type' OR c.$column IN (" . implode(',', array_fill(0, count($ids), '?')) . '))';
+                    array_push($params, ...$ids);
+                }
             }
         }
         return [$where, $params];
@@ -75,7 +88,6 @@ final class ReportRepository extends FinanceRepository
     public function spendingProfile(int $user, string $start, string $end, array $filters = []): array
     {
         [$where, $params] = $this->scope($user, $start, $end, $filters);
-        $where = str_replace(['usuario_id=?', 'tipo=?'], ['c.usuario_id=?', 'c.tipo=?'], $where);
         return $this->rows("SELECT COALESCE(g.classificacao, 'nao_classificada') AS classificacao,
             COALESCE(SUM(c.valor_centavos), 0) AS despesas
             FROM consumo c JOIN grupos g ON g.id=c.grupo_id AND g.usuario_id=c.usuario_id

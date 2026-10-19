@@ -198,4 +198,28 @@ check($reports->entries(1,'2025-03-01','2025-03-31',[],2)===[],'Audit respects p
 foreach($reports->breakdown(1,'2025-03-01','2025-03-31','subcategoria') as $row) {
     check((int)$row['grupo_id']===(int)$expense['grupo_id'],'Subcategory drilldown preserves parent category');
 }
+$revenueCategory=array_values(array_filter($reports->categories(1),fn($c)=>$c['tipo']==='receita'))[0];
+$tx->create(1,(int)$revenueCategory['id'],$a,'Receita de teste','25','2025-03-01','2025-03-01','2025-03-01','efetivada','pix',null);
+$selection=\App\Services\AnalyticsService::selections(['despesa_grupos_ativo'=>'1','despesa_grupos'=>[(string)$expense['grupo_id'],(string)$foreignCategory['grupo_id'],'invalid']],$reports->categories(1));
+check($selection['values']['despesa_grupos']===[(int)$expense['grupo_id']],'Analysis selection accepts only owned groups');
+check((int)$reports->totals(1,'2025-03-01','2025-03-31',$selection['filters'])['despesas']>0,'Selected expense group remains in totals');
+$selection=\App\Services\AnalyticsService::selections(['despesa_grupos_ativo'=>'1'],$reports->categories(1));
+$selectedTotals=$reports->totals(1,'2025-03-01','2025-03-31',$selection['filters']);
+check((int)$selectedTotals['despesas']===0 && (int)$selectedTotals['receitas']===2500,'Unchecked expense groups do not remove income');
+$selection=\App\Services\AnalyticsService::selections(['receita_subgrupos_ativo'=>'1'],$reports->categories(1));
+check((int)$reports->totals(1,'2025-03-01','2025-03-31',$selection['filters'])['receitas']===0,'Unchecked income subgroups remove income');
+$selection=\App\Services\AnalyticsService::selections(['despesa_subgrupos_ativo'=>'1'],$reports->categories(1));
+check($reports->spendingProfile(1,'2025-03-01','2025-03-31',$selection['filters'])===[],'Expense subgroups also filter insight profile');
+check($reports->entries(1,'2025-03-01','2025-03-31',$selection['filters'])[0]['tipo']==='receita','Expense selection also filters audited entries');
+$charts=(static function() use ($reports): string {
+    $categories=$reports->categories(1);
+    $selections=\App\Services\AnalyticsService::selections([],$categories);
+    $query=['periodo'=>'personalizado','inicio'=>'2025-03-01','fim'=>'2025-03-31'];
+    $url=fn(array $changes=[])=>'/analises?'.http_build_query(array_replace($query,$changes));
+    $categoryRows=$reports->breakdown(1,'2025-03-01','2025-03-31','categoria');
+    $subcategoryRows=$reports->breakdown(1,'2025-03-01','2025-03-31','subcategoria');
+    ob_start(); require dirname(__DIR__).'/app/Views/dashboard/analytics-bars.php'; return ob_get_clean();
+})();
+check(str_contains($charts,'Recebimentos por grupo') && str_contains($charts,'Recebimentos por subgrupo') && str_contains($charts,'Despesas por grupo') && str_contains($charts,'Despesas por subgrupo'),'Analytics renders both income and expense breakdowns');
+check(str_contains($charts,'name="despesa_grupos[]"') && str_contains($charts,'name="receita_subgrupos[]"'),'Analytics renders group and subgroup checkboxes');
 echo "OK: $count verificações financeiras e de isolamento.\n";

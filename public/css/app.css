@@ -1449,7 +1449,7 @@ details summary {
 }
 .analysis-filter-panels {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 24px;
   margin: 20px 0;
 }
@@ -2087,6 +2087,12 @@ details summary {
 .income-subgroup-chart .spending-bar-name { overflow-wrap: anywhere; }
 .income-subgroup-chart .spending-bar-track > span { background: #198754; }
 .income-subgroup-chart .spending-bar-track > .income-bar-negative { background: #dc3545; }
+.expense-subgroup-chart .spending-bar-track > span { background: #d76a32; }
+.expense-subgroup-chart .spending-bar-track > .income-bar-negative { background: #dc3545; }
+.analysis-selection summary { cursor: pointer; font-weight: 600; }
+.analysis-check-list { min-width: 0; }
+.analysis-check-list label { display: block; padding: 5px 0; overflow-wrap: anywhere; }
+.analysis-check-list input { margin-right: 6px; accent-color: var(--uai-primary); }
 @media (max-width: 575px) {
   .income-subgroup-chart .spending-bar-row { grid-template-columns: minmax(0, 1fr) auto; }
   .income-pie { width: 180px; }

@@ -10,6 +10,33 @@ use DomainException;
 
 final class AnalyticsService
 {
+    public static function selections(array $input, array $categories): array
+    {
+        $available = [];
+        foreach ($categories as $category) {
+            $type = $category['tipo'];
+            $available[$type . '_grupos'][(int)$category['grupo_id']] = true;
+            $available[$type . '_subgrupos'][(int)$category['id']] = true;
+        }
+        $active = $values = $filters = $query = [];
+        foreach (['receita_grupos', 'receita_subgrupos', 'despesa_grupos', 'despesa_subgrupos'] as $key) {
+            $active[$key] = ($input[$key . '_ativo'] ?? null) === '1';
+            $submitted = $input[$key] ?? [];
+            if (!is_array($submitted)) $submitted = [];
+            $values[$key] = [];
+            if (!$active[$key]) continue;
+            foreach ($submitted as $id) {
+                if (!is_string($id) || !ctype_digit($id) || !isset($available[$key][(int)$id])) continue;
+                $values[$key][(int)$id] = (int)$id;
+            }
+            $values[$key] = array_values($values[$key]);
+            $filters[$key] = $values[$key];
+            $query[$key . '_ativo'] = '1';
+            if ($values[$key]) $query[$key] = $values[$key];
+        }
+        return compact('active', 'values', 'filters', 'query');
+    }
+
     public static function period(array $input, string $today): array
     {
         $month = substr($today, 0, 7);

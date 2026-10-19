@@ -1,10 +1,10 @@
 <?php
-use App\Core\Html as H;
-$incomeGroups = array_map(fn($row) => ['id'=>$row['id'], 'grupo_id'=>$row['id'], 'nome'=>$row['nome'], 'valor_centavos'=>(int) $row['receitas']], $categoryRows);
-$incomeSubgroups = array_map(fn($row) => ['id'=>$row['id'], 'grupo_id'=>$row['grupo_id'], 'nome'=>$row['nome'], 'valor_centavos'=>(int) $row['receitas']], $subcategoryRows);
-usort($incomeGroups, fn($a, $b) => $b['valor_centavos'] <=> $a['valor_centavos']);
-usort($incomeSubgroups, fn($a, $b) => $b['valor_centavos'] <=> $a['valor_centavos']);
-$incomeInteractiveDonut = true;
-$incomeChartNote = 'Receitas realizadas por competência, descontando estornos. Clique nas fatias, na legenda ou nas barras para filtrar toda a análise.';
-$incomeChartLink = fn($row, $dimension) => $url(['grupo_id'=>$row['grupo_id'], 'subgrupo_id'=>$dimension === 'subgrupo' ? $row['id'] : null, 'tipo'=>'receita', 'conferir'=>1]);
-require dirname(__DIR__) . '/partials/income-charts.php';
+foreach (['receita' => 'Recebimentos', 'despesa' => 'Despesas'] as $flow => $flowName) {
+    $column = $flow === 'receita' ? 'receitas' : 'despesas';
+    $flowGroups = array_map(fn($row) => ['id' => $row['id'], 'grupo_id' => $row['id'], 'nome' => $row['nome'], 'valor_centavos' => (int)$row[$column]], $categoryRows);
+    $flowSubgroups = array_map(fn($row) => ['id' => $row['id'], 'grupo_id' => $row['grupo_id'], 'nome' => $row['nome'], 'valor_centavos' => (int)$row[$column]], $subcategoryRows);
+    usort($flowGroups, fn($a, $b) => $b['valor_centavos'] <=> $a['valor_centavos']);
+    usort($flowSubgroups, fn($a, $b) => $b['valor_centavos'] <=> $a['valor_centavos']);
+    $flowLink = fn($row, $dimension) => $url(['grupo_id' => $row['grupo_id'], 'subgrupo_id' => $dimension === 'subgrupo' ? $row['id'] : null, 'tipo' => $flow, 'conferir' => 1]);
+    require __DIR__ . '/analytics-flow.php';
+}

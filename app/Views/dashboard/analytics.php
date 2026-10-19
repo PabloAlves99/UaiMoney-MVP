@@ -3,7 +3,7 @@
 use App\Core\Html as H;
 use App\Core\Money;
 
-$query = array_merge($filters, ['periodo' => 'personalizado', 'inicio' => $start, 'fim' => $end]);
+$query = array_merge($filters, $selections['query'], ['periodo' => 'personalizado', 'inicio' => $start, 'fim' => $end]);
 $url = fn(array $changes = [], string $anchor = '') => $basePath . '/analises?' . http_build_query(array_filter(array_replace($query, $changes), fn($value) => $value !== null && $value !== '')) . $anchor;
 $groups = [];
 foreach ($categories as $category) $groups[$category['grupo_id']] = H::flowLabel($category['grupo_nome'], $category['tipo']);
@@ -37,16 +37,16 @@ $previous['resultado'] = (int)$previous['receitas'] - (int)$previous['despesas']
             <span class="small text-secondary"><?= H::date($start) ?> a <?= H::date($end) ?><?= $partial ? ' · Mês parcial' : '' ?></span>
         </div>
         <input type="hidden" name="periodo" value="<?= H::escape($preset) ?>" data-analysis-period>
+        <?php foreach ($selections['query'] as $key => $value): if (is_array($value)): foreach ($value as $id): ?>
+            <input type="hidden" name="<?= H::escape($key) ?>[]" value="<?= (int)$id ?>">
+        <?php endforeach; else: ?><input type="hidden" name="<?= H::escape($key) ?>" value="<?= H::escape($value) ?>"><?php endif; endforeach; ?>
         <div class="analysis-filter-panels">
             <details <?= $preset === 'personalizado' ? 'open' : '' ?>>
-                <summary>Personalizar período</summary>
+                <summary>Expandir filtro<?= $filters ? ' (' . count($filters) . ')' : '' ?></summary>
                 <div class="row g-3 mt-1">
                     <div class="col-sm-6"><label for="analysis-start" class="form-label">Início</label><input id="analysis-start" type="date" name="inicio" class="form-control" value="<?= H::escape($start) ?>" required data-analysis-date></div>
                     <div class="col-sm-6"><label for="analysis-end" class="form-label">Fim</label><input id="analysis-end" type="date" name="fim" class="form-control" value="<?= H::escape($end) ?>" required data-analysis-date></div>
                 </div>
-            </details>
-            <details>
-                <summary>Mais filtros<?= $filters ? ' (' . count($filters) . ')' : '' ?></summary>
                 <div class="row g-3 mt-1">
                     <?php foreach ($filterOptions as $key => [$label, $options]): ?>
                         <div class="col-md-6">
