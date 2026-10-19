@@ -51,7 +51,7 @@ final class StatementImportController extends FinancialController
             if (!$upload || $upload['error'] !== UPLOAD_ERR_OK || $upload['size'] > 2_000_000 || !is_uploaded_file($upload['tmp_name']))
                 throw new DomainException('Selecione um arquivo CSV ou OFX de até 2 MB.');
             $rows = $this->imports->applyDefaults(
-                $this->imports->parse((string) $upload['name'], (string) file_get_contents($upload['tmp_name'])),
+                $this->imports->parse((string) $upload['name'], (string) file_get_contents($upload['tmp_name']), $_POST),
                 $defaultType, $account ?: null, $card ?: null);
             $rows = $this->imports->suggestCategories($user, $rows);
             foreach ($rows as &$row) {

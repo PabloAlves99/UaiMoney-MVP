@@ -2089,6 +2089,9 @@ details summary {
 .income-subgroup-chart .spending-bar-track > .income-bar-negative { background: #dc3545; }
 .expense-subgroup-chart .spending-bar-track > span { background: #d76a32; }
 .expense-subgroup-chart .spending-bar-track > .income-bar-negative { background: #dc3545; }
+.import-csv-settings { padding: 14px 16px; border: 1px solid var(--uai-border); border-radius: 10px; }
+.import-csv-settings summary { cursor: pointer; font-weight: 600; }
+.import-csv-settings .table-responsive { max-height: 220px; }
 .analysis-selection summary { cursor: pointer; font-weight: 600; }
 .analysis-check-list { min-width: 0; }
 .analysis-check-list label { display: block; padding: 5px 0; overflow-wrap: anywhere; }

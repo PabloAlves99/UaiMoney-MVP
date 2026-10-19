@@ -12,6 +12,23 @@ use App\Core\Money;
         <div class="col-md-2"><label for="import-card" class="form-label">Cartão padrão</label><select id="import-card" class="form-select" name="cartao_id"><option value="">Nenhum</option><?php foreach ($cards as $card): ?><option value="<?= (int) $card['id'] ?>"><?= H::escape($card['nome']) ?></option><?php endforeach; ?></select></div>
         <div class="col-md-3"><label for="import-file" class="form-label">Arquivo CSV ou OFX</label><input id="import-file" name="arquivo" type="file" accept=".csv,.ofx,text/csv" class="form-control" required></div>
         <div class="col-md-2"><button class="btn btn-uai-primary w-100">Conferir arquivo</button></div>
+        <div class="col-12" data-csv-options hidden>
+            <details class="import-csv-settings" data-csv-details>
+                <summary>Ajustar colunas CSV</summary>
+                <div class="row g-3 mt-1">
+                    <input type="hidden" name="csv_modo" value="auto" data-csv-mode>
+                    <div class="col-sm-6 col-lg-3"><label class="form-label" for="csv-separator">Separador</label><select class="form-select" id="csv-separator" name="csv_separador" data-csv-separator><option value="auto">Detectar automaticamente</option><option value="ponto_virgula">Ponto e vírgula (;)</option><option value="virgula">Vírgula (,)</option><option value="tabulacao">Tabulação</option><option value="barra_vertical">Barra vertical (|)</option></select></div>
+                    <div class="col-sm-6 col-lg-3"><label class="form-label" for="csv-header">Linha dos títulos</label><select class="form-select" id="csv-header" name="csv_cabecalho" data-csv-header><?php for ($line = 1; $line <= 10; $line++): ?><option value="<?= $line ?>">Linha <?= $line ?></option><?php endfor; ?></select></div>
+                    <div class="col-sm-6 col-lg-3"><label class="form-label" for="csv-date">Data</label><select class="form-select" id="csv-date" name="csv_data" data-csv-column="data"><option value="">Selecione a coluna</option></select></div>
+                    <div class="col-sm-6 col-lg-3"><label class="form-label" for="csv-description">Descrição</label><select class="form-select" id="csv-description" name="csv_descricao" data-csv-column="descricao"><option value="">Selecione a coluna</option></select></div>
+                    <div class="col-sm-6 col-lg-3"><label class="form-label" for="csv-value">Valor</label><select class="form-select" id="csv-value" name="csv_valor" data-csv-column="valor"><option value="">Selecione a coluna</option></select></div>
+                    <div class="col-sm-6 col-lg-3"><label class="form-label" for="csv-out">Saída/Débito</label><select class="form-select" id="csv-out" name="csv_saida" data-csv-column="saida"><option value="">Não usar</option></select></div>
+                    <div class="col-sm-6 col-lg-3"><label class="form-label" for="csv-in">Entrada/Crédito</label><select class="form-select" id="csv-in" name="csv_entrada" data-csv-column="entrada"><option value="">Não usar</option></select></div>
+                    <div class="col-sm-6 col-lg-3"><label class="form-label d-block">Sinal da coluna Valor</label><label class="form-check-label"><input class="form-check-input me-1" type="checkbox" name="csv_inverter_sinal" value="1"> Inverter entradas e saídas</label></div>
+                    <div class="col-12"><p class="small text-secondary mb-2">Use Valor quando entradas e saídas estão na mesma coluna. Se estiverem separadas, deixe Valor vazio e escolha Saída e Entrada. Saídas são registradas como negativas.</p><div class="table-responsive" data-csv-sample></div></div>
+                </div>
+            </details>
+        </div>
     </form>
     <p class="small text-secondary mt-3 mb-0">Escolha a conta ou o cartão correspondente ao tipo padrão. Você pode preencher ambos para facilitar arquivos mistos. Até 200 linhas e 2 MB por vez. Compras no cartão precisam ter valor negativo; elas entram na fatura sem debitar a conta. Transferências entre suas contas e pagamentos de fatura ainda usam seus fluxos próprios para evitar dupla contagem.</p>
     <?php if ($preview): ?><p class="small text-secondary mt-2 mb-0">Enviar outro arquivo substituirá a prévia salva abaixo.</p><?php endif; ?>
@@ -40,3 +57,4 @@ use App\Core\Money;
 <?php endif; ?>
 <?php if ($batches): ?><section class="card"><div class="card-body"><h2 class="h5">Importações realizadas</h2><p class="small text-secondary">A exclusão remove do banco o lote e seus lançamentos. Ela é definitiva; faça um backup antes se precisar guardar esses dados.</p><div class="table-responsive"><table class="table align-middle mb-0"><thead><tr><th>Lote</th><th>Data</th><th>Lançamentos</th><th>Situação</th><th class="text-end">Ação</th></tr></thead><tbody><?php foreach ($batches as $batch): ?><tr><td><?= (int) $batch['id'] ?></td><td><?= H::date(substr($batch['criado_em'], 0, 10)) ?></td><td><?= (int) $batch['quantidade'] ?></td><td><?= $batch['desfeito_em'] ? 'Arquivado' : 'Ativo' ?></td><td class="text-end"><form method="post" action="<?= H::escape($basePath . '/movimentacoes/importar/excluir') ?>" data-confirm="Excluir permanentemente o lote <?= (int) $batch['id'] ?> e todos os seus lançamentos? Esta ação não pode ser desfeita."><?= H::fields($csrfToken) ?><input type="hidden" name="lote_id" value="<?= (int) $batch['id'] ?>"><button class="btn btn-sm btn-outline-danger">Excluir permanentemente</button></form></td></tr><?php endforeach; ?></tbody></table></div></div></section><?php endif; ?>
 <script src="<?= H::escape($basePath . '/js/import-draft.js?v=20261017-select') ?>" defer></script>
+<script src="<?= H::escape($basePath . '/js/import-csv.js?v=20261019-columns') ?>" defer></script>

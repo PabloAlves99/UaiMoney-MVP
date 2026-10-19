@@ -8,6 +8,8 @@ Novos usuários recebem categorias e subcategorias iniciais para receitas e desp
 
 Em **Movimentações → Importar extrato**, arquivos CSV (Data, Descrição, Valor) e OFX têm prévia salva no banco por usuário. O tipo escolhido no topo é aplicado inicialmente a todas as linhas; cada linha pode depois ser destinada a uma conta, com meio de pagamento escolhido, ou registrada como compra em um cartão. Compras no cartão entram na fatura sem debitar a conta. A prévia sugere categorias a partir do histórico do usuário e de termos claros da descrição; casos ambíguos ficam sem categoria. As sugestões podem ser alteradas antes da importação. Há detecção de duplicatas, envio de uma linha ou das selecionadas e exclusão permanente de lotes importados. As linhas ainda não enviadas permanecem no rascunho para continuar depois de criar categorias. O formulário de lançamento também sugere categorias a partir de descrições já usadas.
 
+Se o CSV não seguir os nomes de coluna esperados, abra **Ajustar colunas CSV** após escolher o arquivo. A tela mostra uma amostra e permite indicar separador, linha dos títulos, Data, Descrição e Valor, ou colunas separadas de Saída e Entrada. Também é possível inverter o sinal de uma coluna Valor. O OFX usa campos identificados no próprio arquivo e não precisa desse mapeamento.
+
 O extrato de uma conta pode ser compartilhado em modo somente leitura por um link secreto revogável, com senha adicional opcional. A página pública mostra apenas datas, descrições, entradas, saídas e um gráfico mensal, sempre respeitando os filtros escolhidos.
 
 ## Executar

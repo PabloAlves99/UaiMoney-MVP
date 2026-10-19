@@ -12,12 +12,12 @@ final class StatementImportService
     public function __construct(private readonly PDO $pdo, private readonly TransactionService $transactions,
         private readonly CardService $cards) {}
 
-    public function parse(string $filename, string $content): array
+    public function parse(string $filename, string $content, array $options = []): array
     {
         if (strlen($content) > 2_000_000) throw new DomainException('Arquivo acima do limite de 2 MB.');
         $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
         $rows = match ($extension) {
-            'csv' => $this->csv($content),
+            'csv' => $this->csv($content, $options),
             'ofx' => $this->ofx($content),
             default => throw new DomainException('Envie um arquivo CSV ou OFX.'),
         };
@@ -40,31 +40,93 @@ final class StatementImportService
         return $rows;
     }
 
-    private function csv(string $content): array
+    private function csv(string $content, array $options): array
     {
         $content = preg_replace('/^\xEF\xBB\xBF/', '', $content);
         if (!mb_check_encoding($content, 'UTF-8')) $content = mb_convert_encoding($content, 'UTF-8', 'Windows-1252');
+        $separator = $options['csv_separador'] ?? 'auto';
+        $delimiters = ['ponto_virgula' => ';', 'virgula' => ',', 'tabulacao' => "\t", 'barra_vertical' => '|'];
+        if (!is_string($separator) || ($separator !== 'auto' && !isset($delimiters[$separator]))) throw new DomainException('Separador CSV inválido.');
+        $headerRow = filter_var($options['csv_cabecalho'] ?? 1, FILTER_VALIDATE_INT);
+        if ($headerRow === false || $headerRow < 1 || $headerRow > 10) throw new DomainException('Escolha uma linha de cabeçalho entre 1 e 10.');
         $stream = fopen('php://temp', 'w+');
         fwrite($stream, $content);
         rewind($stream);
-        $first = (string) fgets($stream);
-        $delimiter = substr_count($first, ';') >= substr_count($first, ',') ? ';' : ',';
+        for ($line = 1; $line < $headerRow; $line++) {
+            if (fgets($stream) === false) throw new DomainException('Linha de cabeçalho não encontrada no CSV.');
+        }
+        $first = (string)fgets($stream);
+        if ($first === '') throw new DomainException('Linha de cabeçalho não encontrada no CSV.');
+        $delimiter = $separator === 'auto' ? $this->csvDelimiter($first) : $delimiters[$separator];
         rewind($stream);
-        $headers = array_map(static fn($v) => mb_strtolower(trim((string) $v)), fgetcsv($stream, 0, $delimiter) ?: []);
+        for ($line = 1; $line < $headerRow; $line++) fgetcsv($stream, 0, $delimiter);
+        $headers = array_map(static fn($v) => self::normalizeDescription((string)$v), fgetcsv($stream, 0, $delimiter) ?: []);
         $lookup = static function (array $names) use ($headers): int {
             foreach ($names as $name) { $index = array_search($name, $headers, true); if ($index !== false) return $index; }
-            throw new DomainException('CSV precisa das colunas Data, Descrição e Valor.');
+            foreach ($names as $name) {
+                foreach ($headers as $index => $header) if (str_starts_with($header, $name . ' ')) return $index;
+            }
+            throw new DomainException('Não identifiquei as colunas do CSV. Abra "Ajustar colunas CSV" para indicar Data, Descrição e Valor.');
         };
-        $date = $lookup(['data', 'date']);
-        $description = $lookup(['descrição', 'descricao', 'description', 'histórico', 'historico', 'merchant']);
-        $amount = $lookup(['valor', 'amount', 'value']);
+        $manual = ($options['csv_modo'] ?? 'auto') === 'manual';
+        if (!in_array($options['csv_modo'] ?? 'auto', ['auto', 'manual'], true)) throw new DomainException('Configuração CSV inválida.');
+        if ($manual) {
+            $column = static function (string $name) use ($options, $headers): ?int {
+                $value = $options[$name] ?? '';
+                if ($value === '') return null;
+                $index = filter_var($value, FILTER_VALIDATE_INT);
+                if ($index === false || $index < 0 || $index >= count($headers)) throw new DomainException('Escolha colunas existentes no CSV.');
+                return $index;
+            };
+            $date = $column('csv_data');
+            $description = $column('csv_descricao');
+            $amount = $column('csv_valor');
+            $debit = $column('csv_saida');
+            $credit = $column('csv_entrada');
+            if ($date === null || $description === null || ($amount === null && $debit === null && $credit === null))
+                throw new DomainException('Indique Data, Descrição e Valor ou as colunas de Saída/Entrada.');
+            if ($amount !== null && ($debit !== null || $credit !== null)) throw new DomainException('Escolha uma coluna Valor ou as colunas de Saída/Entrada.');
+            $used = array_filter([$date, $description, $amount, $debit, $credit], fn($value) => $value !== null);
+            if (count($used) !== count(array_unique($used))) throw new DomainException('Cada informação deve usar uma coluna diferente.');
+        } else {
+            $date = $lookup(['data', 'date']);
+            $description = $lookup(['descricao', 'description', 'historico', 'merchant']);
+            $amount = $lookup(['valor', 'amount', 'value']);
+            $debit = $credit = null;
+        }
+        $invert = ($options['csv_inverter_sinal'] ?? '') === '1';
         $rows = [];
         while (($fields = fgetcsv($stream, 0, $delimiter)) !== false) {
             if ($fields === [null]) continue;
-            $rows[] = ['data' => (string) ($fields[$date] ?? ''), 'descricao' => (string) ($fields[$description] ?? ''), 'valor' => (string) ($fields[$amount] ?? '')];
+            if ($amount !== null) {
+                $value = trim((string)($fields[$amount] ?? ''));
+                if ($invert && $value !== '') {
+                    $value = preg_replace('/\s|R\$/iu', '', $value);
+                    if (str_starts_with($value, '-')) $value = substr($value, 1);
+                    elseif (preg_match('/^\((.+)\)$/', $value, $match)) $value = $match[1];
+                    else $value = '-' . ltrim($value, '+');
+                }
+            } else {
+                $out = $debit === null ? '' : trim((string)($fields[$debit] ?? ''));
+                $in = $credit === null ? '' : trim((string)($fields[$credit] ?? ''));
+                $out = preg_match('/^0+(?:[.,]0+)?$/', preg_replace('/\s|R\$/iu', '', $out)) ? '' : $out;
+                $in = preg_match('/^0+(?:[.,]0+)?$/', preg_replace('/\s|R\$/iu', '', $in)) ? '' : $in;
+                if ($out !== '' && $in !== '') throw new DomainException('Uma linha do CSV tem Saída e Entrada preenchidas ao mesmo tempo.');
+                if ($out === '' && $in === '') continue;
+                $value = $out !== '' ? '-' . ltrim($out, '+-') : ltrim($in, '+');
+            }
+            $rows[] = ['data' => (string)($fields[$date] ?? ''), 'descricao' => (string)($fields[$description] ?? ''), 'valor' => $value];
         }
         fclose($stream);
         return $rows;
+    }
+
+    private function csvDelimiter(string $line): string
+    {
+        $counts = [];
+        foreach ([';', ',', "\t", '|'] as $delimiter) $counts[$delimiter] = count(str_getcsv($line, $delimiter));
+        arsort($counts);
+        return (string)array_key_first($counts);
     }
 
     private function ofx(string $content): array
@@ -86,7 +148,8 @@ final class StatementImportService
     {
         $date = trim($date);
         if (preg_match('/^\d{8}$/', $date)) $date = substr($date, 0, 4) . '-' . substr($date, 4, 2) . '-' . substr($date, 6, 2);
-        elseif (preg_match('/^\d{2}\/\d{2}\/\d{4}$/', $date)) $date = substr($date, 6, 4) . '-' . substr($date, 3, 2) . '-' . substr($date, 0, 2);
+        elseif (preg_match('/^\d{2}[\/-]\d{2}[\/-]\d{4}$/', $date)) $date = substr($date, 6, 4) . '-' . substr($date, 3, 2) . '-' . substr($date, 0, 2);
+        elseif (preg_match('/^\d{4}\/\d{2}\/\d{2}$/', $date)) $date = str_replace('/', '-', $date);
         $parsed = \DateTimeImmutable::createFromFormat('!Y-m-d', $date);
         if (!$parsed || $parsed->format('Y-m-d') !== $date) throw new DomainException('Data inválida no extrato.');
         return $date;
