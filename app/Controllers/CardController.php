@@ -75,12 +75,33 @@ final class CardController extends FinancialController
         $showCancelled = ($_GET['exibir_cancelados'] ?? '') === '1';
         $items = $this->cards->items($u, (int) $id);
         if (!$showCancelled) $items = array_values(array_filter($items, static fn(array $item): bool => $item['status'] !== 'cancelada'));
-        $this->page('cards/invoice', 'Fatura ' . $invoice['competencia'], ['invoice' => $invoice, 'items' => $items, 'showCancelled' => $showCancelled, 'payments' => $this->cards->payments($u, (int) $id), 'credits' => $this->cards->credits($u, (int) $id), 'accounts' => $this->accounts->listActive($u)]);
+        $this->page('cards/invoice', 'Fatura ' . $invoice['competencia'], ['invoice' => $invoice, 'items' => $items, 'showCancelled' => $showCancelled, 'payments' => $this->cards->payments($u, (int) $id), 'credits' => $this->cards->credits($u, (int) $id), 'accounts' => $this->accounts->listActive($u), 'cardInvoices' => $this->cards->invoices($u, (int)$invoice['cartao_id'])]);
     }
 
     public function pay(string $id): void
     {
         $this->action('/faturas/' . $this->parseId($id), fn($u) => $this->service->pay($u, (int) $id, $_POST), 'Pagamento registrado na conta, sem duplicar despesas.');
+    }
+
+    public function updatePayment(string $id, string $payment): void
+    {
+        $invoice = $this->parseId($id);
+        $paymentId = $this->parseId($payment);
+        $this->action('/faturas/' . $invoice, fn($u) => $this->service->updatePayment($u, $invoice, $paymentId, $_POST), 'Pagamento atualizado.');
+    }
+
+    public function deletePayment(string $id, string $payment): void
+    {
+        $invoice = $this->parseId($id);
+        $paymentId = $this->parseId($payment);
+        $this->action('/faturas/' . $invoice, fn($u) => $this->service->deletePayment($u, $invoice, $paymentId), 'Pagamento excluído.');
+    }
+
+    public function deleteInvoice(string $id): void
+    {
+        $invoice = $this->cards->invoice((int)$this->requireUser()['id'], $this->parseId($id));
+        $return = $invoice ? '/cartoes/' . (int)$invoice['cartao_id'] : '/cartoes';
+        $this->action($return, fn($u) => $this->service->deleteInvoice($u, $this->parseId($id)), 'Fatura excluída com suas compras e pagamentos.');
     }
 
     public function close(string $id): void
@@ -95,6 +116,6 @@ final class CardController extends FinancialController
 
     public function carry(string $id): void
     {
-        $this->action('/faturas/' . $this->parseId($id), fn($u) => $this->service->carryCredit($u, (int) $id, (string) ($_POST['mes'] ?? '')), 'Crédito transportado para a próxima fatura escolhida.');
+        $this->action('/faturas/' . $this->parseId($id), fn($u) => $this->service->carryCredit($u, (int) $id, (string) ($_POST['mes'] ?? '')), 'Crédito transportado para a fatura escolhida.');
     }
 }

@@ -116,6 +116,40 @@ final class CardService
         });
     }
 
+    public function updatePayment(int $user, int $invoiceId, int $paymentId, array $input): void
+    {
+        $this->cards->atomic(function () use ($user, $invoiceId, $paymentId, $input) {
+            $source = $this->cards->invoice($user, $invoiceId) ?? throw new DomainException('Fatura não encontrada.');
+            $this->cards->findPayment($user, $invoiceId, $paymentId) ?? throw new DomainException('Pagamento não encontrado.');
+            $targetId = (int)($input['fatura_id'] ?? $invoiceId);
+            $target = $this->cards->invoice($user, $targetId) ?? throw new DomainException('Fatura de destino não encontrada.');
+            if ((int)$source['cartao_id'] !== (int)$target['cartao_id']) throw new DomainException('Escolha uma fatura do mesmo cartão.');
+            $account = $this->account($user, (int)($input['conta_id'] ?? 0));
+            $date = Dates::past((string)($input['data'] ?? ''));
+            $amount = Money::toCents((string)($input['valor'] ?? ''));
+            if ($amount <= 0) throw new DomainException('O pagamento deve ser positivo.');
+            if ($date < $account['saldo_inicial_em']) throw new DomainException('O pagamento não pode anteceder o saldo inicial da conta.');
+            $this->cards->updatePayment($user, $invoiceId, $paymentId, $targetId, (int)$account['id'], $amount, $date);
+        });
+    }
+
+    public function deletePayment(int $user, int $invoiceId, int $paymentId): void
+    {
+        $this->cards->atomic(function () use ($user, $invoiceId, $paymentId) {
+            $this->cards->findPayment($user, $invoiceId, $paymentId) ?? throw new DomainException('Pagamento não encontrado.');
+            $this->cards->deletePayment($user, $invoiceId, $paymentId);
+        });
+    }
+
+    public function deleteInvoice(int $user, int $id): int
+    {
+        return $this->cards->atomic(function () use ($user, $id) {
+            $invoice = $this->cards->invoice($user, $id) ?? throw new DomainException('Fatura não encontrada.');
+            $this->cards->deleteInvoice($user, $id);
+            return (int)$invoice['cartao_id'];
+        });
+    }
+
     public function close(int $user, int $id): void
     {
         $invoice = $this->cards->invoice($user, $id) ?? throw new DomainException('Fatura não encontrada.');
@@ -146,10 +180,10 @@ final class CardService
         $this->cards->atomic(function () use ($user, $id, $month) {
             $source = $this->cards->invoice($user, $id) ?? throw new DomainException('Fatura não encontrada.');
             $amount = (int)$source['pago'] - (int)$source['total'];
-            if ($amount <= 0 || Dates::month($month) <= $source['competencia']) throw new DomainException('Escolha uma fatura posterior para transportar o crédito disponível.');
+            Dates::month($month);
+            if ($amount <= 0) throw new DomainException('Não há crédito disponível para transportar.');
             $target = $this->invoiceFor($user, $this->get($user, (int)$source['cartao_id']), $month);
-            $full = $this->cards->invoice($user, (int)$target['id']);
-            if ($target['status'] !== 'aberta' || (int)$full['pago'] > 0) throw new DomainException('A fatura de destino precisa estar aberta, sem pagamentos.');
+            if ((int)$target['id'] === $id) throw new DomainException('Escolha outra fatura para transportar o crédito.');
             $this->cards->credit($user, $id, (int)$target['id'], $amount);
             $this->cards->close($user, $id);
         });

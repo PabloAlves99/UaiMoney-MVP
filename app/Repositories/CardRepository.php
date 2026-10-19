@@ -80,6 +80,32 @@ final class CardRepository extends FinanceRepository
         $this->run('INSERT INTO pagamentos_fatura(usuario_id,fatura_id,conta_id,valor_centavos,data_pagamento) VALUES(?,?,?,?,?)', [$user, $invoice, $account, $amount, $date]);
     }
 
+    public function findPayment(int $user, int $invoice, int $payment): ?array
+    {
+        return $this->rows('SELECT * FROM pagamentos_fatura WHERE usuario_id=? AND fatura_id=? AND id=?', [$user, $invoice, $payment])[0] ?? null;
+    }
+
+    public function updatePayment(int $user, int $invoice, int $payment, int $target, int $account, int $amount, string $date): void
+    {
+        $this->run('UPDATE pagamentos_fatura SET fatura_id=?,conta_id=?,valor_centavos=?,data_pagamento=? WHERE usuario_id=? AND fatura_id=? AND id=?', [$target, $account, $amount, $date, $user, $invoice, $payment]);
+    }
+
+    public function deletePayment(int $user, int $invoice, int $payment): void
+    {
+        $this->run('DELETE FROM pagamentos_fatura WHERE usuario_id=? AND fatura_id=? AND id=?', [$user, $invoice, $payment]);
+    }
+
+    public function deleteInvoice(int $user, int $invoice): void
+    {
+        $this->run('DELETE FROM creditos_fatura WHERE usuario_id=? AND (origem_id=? OR destino_id=?)', [$user, $invoice, $invoice]);
+        $this->run('DELETE FROM pagamentos_fatura WHERE usuario_id=? AND fatura_id=?', [$user, $invoice]);
+        $this->run('DELETE FROM estornos WHERE usuario_id=? AND (fatura_id=? OR transacao_id IN (SELECT id FROM transacoes WHERE usuario_id=? AND fatura_id=?))', [$user, $invoice, $user, $invoice]);
+        $this->run('DELETE FROM historico_movimentacoes WHERE usuario_id=? AND transacao_id IN (SELECT id FROM transacoes WHERE usuario_id=? AND fatura_id=?)', [$user, $user, $invoice]);
+        $this->run('DELETE FROM itens_importacao WHERE transacao_id IN (SELECT id FROM transacoes WHERE usuario_id=? AND fatura_id=?)', [$user, $invoice]);
+        $this->run('DELETE FROM transacoes WHERE usuario_id=? AND fatura_id=?', [$user, $invoice]);
+        $this->run('DELETE FROM faturas WHERE usuario_id=? AND id=?', [$user, $invoice]);
+    }
+
     public function close(int $user, int $invoice): void
     {
         $this->run("UPDATE faturas SET status='fechada',atualizado_em=CURRENT_TIMESTAMP WHERE usuario_id=? AND id=? AND status='aberta'", [$user, $invoice]);
