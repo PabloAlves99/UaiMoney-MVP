@@ -4,7 +4,7 @@
 .searchable-select-input:focus::placeholder { color: transparent; }
 .searchable-select-toggle { position: absolute; inset: 0 0 0 auto; width: 2.3rem; border: 0; background: transparent; color: var(--uai-text); cursor: pointer; }
 .searchable-select-toggle:disabled { opacity: .5; cursor: default; }
-.searchable-select-list { position: fixed; z-index: 2000; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; touch-action: pan-y; border: 1px solid var(--uai-border); border-radius: .375rem; background: var(--uai-surface); color: var(--uai-text); box-shadow: 0 8px 24px rgba(0, 0, 0, .18); }
+.searchable-select-list { position: absolute; z-index: 2000; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; touch-action: pan-y; border: 1px solid var(--uai-border); border-radius: .375rem; background: var(--uai-surface); color: var(--uai-text); box-shadow: 0 8px 24px rgba(0, 0, 0, .18); }
 .searchable-select-list[hidden] { display: none; }
 .searchable-select-option, .searchable-select-empty { padding: .5rem .75rem; overflow-wrap: anywhere; }
 .searchable-select-option { cursor: pointer; }

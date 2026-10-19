@@ -8,7 +8,7 @@
   list.className = 'searchable-select-list';
   list.setAttribute('role', 'listbox');
   list.hidden = true;
-  document.body.appendChild(list);
+  document.documentElement.appendChild(list);
 
   function close() {
     if (active) {
@@ -26,9 +26,9 @@
     const bottom = viewport ? viewport.offsetTop + viewport.height : window.innerHeight;
     const height = Math.max(44, Math.min(260, bottom - rect.bottom - 8));
     list.style.width = `${rect.width}px`;
-    list.style.left = `${rect.left}px`;
+    list.style.left = `${rect.left + window.scrollX}px`;
     list.style.maxHeight = `${height}px`;
-    list.style.top = `${rect.bottom + 2}px`;
+    list.style.top = `${rect.bottom + window.scrollY + 2}px`;
   }
   function available(select) {
     return [...select.options].filter(option => !option.hidden && !option.disabled && !option.closest('optgroup[disabled], optgroup[hidden]'));
@@ -162,8 +162,14 @@
     input.addEventListener('focus', () => {
       if (!widget.editing) input.value = '';
       render(widget, widget.editing ? input.value : '');
-      // Mobile browsers may scroll or resize the visual viewport after focus.
-      requestAnimationFrame(position);
+      // iOS can move the viewport over several frames while opening the keyboard.
+      const started = performance.now();
+      const followFocus = (now) => {
+        if (active !== widget) return;
+        position();
+        if (now - started < 1000) requestAnimationFrame(followFocus);
+      };
+      requestAnimationFrame(followFocus);
     });
     input.addEventListener('input', () => {
       widget.editing = true;

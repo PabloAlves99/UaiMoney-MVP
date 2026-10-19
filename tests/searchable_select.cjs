@@ -59,6 +59,12 @@ const { chromium } = require('playwright');
   let fieldBox = await category.boundingBox();
   let listBox = await mobile.locator('.searchable-select-list').boundingBox();
   assert(Math.abs(listBox.y - fieldBox.y - fieldBox.height - 2) < 1);
+  // A delayed layout shift mimics the movement while the mobile keyboard opens.
+  await mobile.evaluate(() => { document.body.style.paddingTop = '200px'; });
+  await mobile.waitForTimeout(100);
+  fieldBox = await category.boundingBox();
+  listBox = await mobile.locator('.searchable-select-list').boundingBox();
+  assert(Math.abs(listBox.y - fieldBox.y - fieldBox.height - 2) < 1);
   const touchAllowed = await mobile.getByRole('option', { name: 'Delivery · Alimentação' }).evaluate(option => option.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true, pointerType: 'touch' })));
   assert.equal(touchAllowed, true);
   assert.equal(await mobile.locator('.searchable-select-list').evaluate(list => { list.scrollTop = 80; return list.scrollTop > 0; }), true);

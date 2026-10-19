@@ -28,7 +28,7 @@ unset($_SESSION['flash']);
     <link rel="icon" type="image/png" sizes="any" href="<?= H::escape($basePath . '/images/brand/favicon.png?v=10') ?>">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="<?= H::escape($basePath . '/css/app.css?v=20261018-import-mobile') ?>" rel="stylesheet">
-    <link href="<?= H::escape($basePath . '/css/searchable-select.css?v=20261018-touch') ?>" rel="stylesheet">
+    <link href="<?= H::escape($basePath . '/css/searchable-select.css?v=20261018-position') ?>" rel="stylesheet">
 </head>
 <body class="top-navigation-layout">
     <a class="skip-link" href="#main-content">Pular para o conteúdo</a>
@@ -82,6 +82,6 @@ unset($_SESSION['flash']);
     <script src="<?= H::escape($basePath . '/js/financial-overview.js?v=20261017-select') ?>"></script>
     <script src="<?= \App\Core\Html::escape($basePath . '/js/theme.js?v=20261015-graphite-theme') ?>"></script>
     <script src="<?= \App\Core\Html::escape($basePath . '/js/table-sort.js?v=20261017-select') ?>"></script>
-    <script src="<?= H::escape($basePath . '/js/searchable-select.js?v=20261018-global-touch') ?>"></script>
+    <script src="<?= H::escape($basePath . '/js/searchable-select.js?v=20261018-position') ?>"></script>
 </body>
 </html>
